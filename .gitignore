@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output (created by `npm run build` / `npm install`)
+dist/
+build/
+
+# Downloaded at build time (scrcpy server binary, its license and version marker)
+public/scrcpy-server.*
+
+# Packed releases
+*.tgz
+
+# Relay secrets from older versions (now stored in the per-user config dir)
+.dex-web/
+
+# Local tooling and OS files
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

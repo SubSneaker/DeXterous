@@ -1,0 +1,74 @@
+{
+  "name": "@subsneaker/dexterous",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Run Samsung DeX from your Galaxy phone in any web browser.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/fetch-server.mjs && tsc --noEmit -p tsconfig.json && vite build && tsc -p tsconfig.server.json",
+    "relay": "node server/relay.ts --no-open",
+    "start": "node bin/dexterous.js",
+    "start:lan": "node bin/dexterous.js --lan",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.server.json",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "selfsigned": "^5.5.0",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/w3c-web-usb": "^1.0.14",
+    "@types/ws": "^8.18.2",
+    "@yume-chan/adb": "3.0.0-beta.4",
+    "@yume-chan/adb-credential-web": "3.0.0-beta.4",
+    "@yume-chan/adb-daemon-webusb": "3.0.0-beta.4",
+    "@yume-chan/adb-scrcpy": "3.0.0-beta.4",
+    "@yume-chan/fetch-scrcpy-server": "3.0.0-beta.4",
+    "@yume-chan/media-codec": "3.0.0-beta.4",
+    "@yume-chan/pcm-player": "3.0.0-beta.4",
+    "@yume-chan/scrcpy": "3.0.0-beta.4",
+    "@yume-chan/scrcpy-decoder-webcodecs": "3.0.0-beta.4",
+    "@yume-chan/stream-extra": "3.0.0-beta.4",
+    "@yume-chan/struct": "3.0.0-beta.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "license": "MIT",
+  "author": "SubSneaker",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SubSneaker/DeXterous.git"
+  },
+  "homepage": "https://github.com/SubSneaker/DeXterous#readme",
+  "bugs": "https://github.com/SubSneaker/DeXterous/issues",
+  "keywords": [
+    "samsung",
+    "dex",
+    "scrcpy",
+    "android",
+    "adb",
+    "webcodecs",
+    "desktop",
+    "remote-desktop"
+  ],
+  "bin": {
+    "dexterous": "bin/dexterous.js"
+  },
+  "files": [
+    "bin/",
+    "build/server/",
+    "dist/",
+    "docs/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "SECURITY.md",
+    "CONTRIBUTING.md"
+  ]
+}

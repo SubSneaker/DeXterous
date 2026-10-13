@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/SubSneaker/DeXterous/security/policy
+    about: Please report vulnerabilities privately, as described in the security policy. Don't open a public issue.
+  - name: User guide and troubleshooting
+    url: https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md
+    about: Setup, everyday use, troubleshooting and FAQ.

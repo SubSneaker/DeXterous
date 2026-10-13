@@ -1,0 +1,28 @@
+{
+  // The relay (server/*.ts). `npm run relay` runs these sources directly with
+  // Node's type stripping; `npm run build` compiles them to plain JavaScript in
+  // build/server/, which is what the `dexterous` command runs (Node refuses to
+  // strip types from files under node_modules, i.e. in an installed copy).
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    // Sources import each other as "./x.ts" (required by type stripping);
+    // the emitted JavaScript imports "./x.js".
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "skipLibCheck": true,
+    "rootDir": "server",
+    "outDir": "build/server",
+    "newLine": "lf"
+  },
+  "include": ["server"]
+}

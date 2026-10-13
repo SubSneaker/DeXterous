@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="description" content="Run Samsung DeX from your Galaxy phone in any web browser." />
+    <title>DeXterous</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body data-view="connect">
+    <!-- Connect screen -->
+    <main class="connect" id="connect-view">
+      <header class="brand">
+        <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+          <rect x="4" y="9" width="40" height="26" rx="4" />
+          <rect x="17" y="17" width="14" height="22" rx="3" class="brand-mark-phone" />
+          <path d="M14 41h20" />
+        </svg>
+        <div>
+          <h1>DeXterous</h1>
+          <p class="tagline">Your Galaxy desktop, in any browser.</p>
+        </div>
+      </header>
+
+      <section class="card" aria-labelledby="connect-title">
+        <h2 id="connect-title">Connect your phone</h2>
+
+        <div class="methods" id="methods" role="tablist" aria-label="Connection method">
+          <button type="button" role="tab" class="method" id="tab-relay" aria-controls="panel-relay" aria-selected="true">
+            <span class="method-name">Through this computer</span>
+            <span class="method-detail">USB or Wi‑Fi, any browser</span>
+          </button>
+          <button type="button" role="tab" class="method" id="tab-webusb" aria-controls="panel-webusb" aria-selected="false">
+            <span class="method-name">USB, browser only</span>
+            <span class="method-detail">Chrome or Edge, nothing to install</span>
+          </button>
+        </div>
+
+        <div class="panel" id="panel-relay" role="tabpanel" aria-labelledby="tab-relay">
+          <label class="field-label" for="relay-device">Phone</label>
+          <div class="device-row">
+            <select id="relay-device" class="select"></select>
+            <button type="button" class="icon-button" id="relay-refresh" aria-label="Refresh phone list" title="Refresh phone list">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 4v5h-5" /></svg>
+            </button>
+          </div>
+          <p class="hint" id="relay-hint"></p>
+        </div>
+
+        <div class="panel" id="panel-webusb" role="tabpanel" aria-labelledby="tab-webusb" hidden>
+          <label class="field-label" for="webusb-device">Phone</label>
+          <div class="device-row">
+            <select id="webusb-device" class="select"></select>
+            <button type="button" class="button-secondary" id="webusb-pick">Add phone…</button>
+          </div>
+          <p class="hint" id="webusb-hint"></p>
+        </div>
+
+        <button type="button" class="button-primary" id="start">Start DeX</button>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+
+        <details class="settings">
+          <summary>Display &amp; input</summary>
+          <form class="settings-grid" id="settings-form">
+            <label class="field">
+              <span class="field-label">Sharpness</span>
+              <select name="resolutionScale" class="select">
+                <option value="2">Retina (2×)</option>
+                <option value="1.5">Balanced (1.5×)</option>
+                <option value="1">Fast (1×)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">DeX text size</span>
+              <select name="uiZoom" class="select">
+                <option value="0.8">Small</option>
+                <option value="1">Default</option>
+                <option value="1.15">Large</option>
+                <option value="1.3">Larger</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">Video codec</span>
+              <select name="videoCodec" class="select">
+                <option value="h264">H.264 (most compatible)</option>
+                <option value="h265">H.265 (sharper, Chrome/Safari)</option>
+                <option value="av1">AV1 (newest phones)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">Bitrate</span>
+              <select name="videoBitRate" class="select">
+                <option value="4">4 Mbps (Wi‑Fi)</option>
+                <option value="8">8 Mbps</option>
+                <option value="16">16 Mbps</option>
+                <option value="24">24 Mbps (USB)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">Frame rate</span>
+              <select name="maxFps" class="select">
+                <option value="30">30 fps</option>
+                <option value="60">60 fps</option>
+                <option value="120">120 fps</option>
+              </select>
+            </label>
+            <div class="toggles">
+              <label class="toggle"><input type="checkbox" name="audio" /> <span>Play phone audio here</span></label>
+              <label class="toggle"><input type="checkbox" name="audioDup" /> <span>Keep audio on the phone too</span></label>
+              <label class="toggle"><input type="checkbox" name="clipboardSync" /> <span>Share the clipboard with this computer</span></label>
+              <label class="toggle" id="setting-command-as-ctrl"><input type="checkbox" name="commandAsCtrl" /> <span>Use ⌘ as Ctrl (Mac shortcuts)</span></label>
+              <label class="toggle"><input type="checkbox" name="showAndroidKeyboard" /> <span>Show the Android on-screen keyboard</span></label>
+              <label class="toggle"><input type="checkbox" name="keepAppsOnDisconnect" /> <span>Move open apps to the phone on disconnect</span></label>
+              <label class="toggle"><input type="checkbox" name="allowWhileLocked" /> <span>Keep DeX usable while the phone is locked</span></label>
+            </div>
+          </form>
+        </details>
+      </section>
+
+      <section class="requirements" aria-label="Before you start">
+        <h3>Before you start</h3>
+        <ol>
+          <li>A Galaxy phone or tablet with <strong>One UI 8 or newer</strong>.</li>
+          <li><strong>USB debugging</strong> on: Settings › About phone › Software information › tap <em>Build number</em> 7 times, then Developer options › USB debugging.</li>
+          <li>Plug the phone in and tap <em>Allow</em> when it asks.</li>
+        </ol>
+      </section>
+    </main>
+
+    <!-- DeX session -->
+    <div class="session" id="session-view" hidden>
+      <div class="stage" id="stage">
+        <canvas class="screen" id="screen" aria-label="DeX desktop"></canvas>
+      </div>
+
+      <textarea
+        class="keyboard-sink"
+        id="keyboard-sink"
+        aria-label="Keyboard input for DeX"
+        autocapitalize="off"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        tabindex="-1"
+      ></textarea>
+
+      <div class="loading" id="loading" role="status" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <p id="loading-text">Starting DeX…</p>
+        <button type="button" class="overlay-button" id="cancel-start">Cancel</button>
+      </div>
+
+      <!-- Covers DeX while the phone is locked (unless the user allows otherwise). -->
+      <div class="lock-screen" id="lock-screen" role="alert" hidden>
+        <svg class="lock-screen-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+        <h2 id="lock-screen-title">Your phone is locked</h2>
+        <p id="lock-screen-text">Unlock your phone to keep using DeX.</p>
+        <div class="lock-screen-actions">
+          <button type="button" class="overlay-button" id="wake-phone">Wake phone screen</button>
+          <button type="button" class="overlay-button overlay-button-quiet" data-command="disconnect">Disconnect</button>
+        </div>
+        <p class="lock-screen-hint">
+          Rather not unlock each time? Once your phone is unlocked, turn on
+          <em>Keep DeX usable while the phone is locked</em> in the shortcuts panel.
+        </p>
+      </div>
+
+      <div class="dock-zone" aria-hidden="true"></div>
+      <nav class="dock" id="dock" aria-label="DeX controls">
+        <button type="button" class="dock-button" data-command="back" title="Back" aria-label="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+        </button>
+        <button type="button" class="dock-button" data-command="home" title="Home" aria-label="Home">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" /></svg>
+        </button>
+        <button type="button" class="dock-button" data-command="recents" title="Recent apps" aria-label="Recent apps">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6v12M12 6v12M17 6v12" /></svg>
+        </button>
+        <span class="dock-divider" aria-hidden="true"></span>
+        <button type="button" class="dock-button" data-command="keyboard" title="Show keyboard" aria-label="Show keyboard">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" /><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" /></svg>
+        </button>
+        <button type="button" class="dock-button" data-command="mute" title="Mute phone audio" aria-label="Mute phone audio" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z" /><path class="when-unmuted" d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14" /><path class="when-muted" d="m22 9-6 6M16 9l6 6" /></svg>
+        </button>
+        <button type="button" class="dock-button" data-command="lock" title="Lock phone" aria-label="Lock phone">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+        </button>
+        <button type="button" class="dock-button" data-command="fullscreen" title="Full screen" aria-label="Full screen" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" /></svg>
+        </button>
+        <button type="button" class="dock-button" data-command="guide" title="Shortcuts &amp; commands" aria-label="Shortcuts and commands" aria-controls="guide" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01" /></svg>
+        </button>
+        <span class="dock-divider" aria-hidden="true"></span>
+        <button type="button" class="dock-button dock-button-danger" data-command="disconnect" title="Disconnect" aria-label="Disconnect">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+        </button>
+      </nav>
+      <button type="button" class="dock-handle" id="dock-handle" aria-label="Show DeX controls" aria-controls="dock" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+      </button>
+
+      <!-- Shortcuts & commands -->
+      <aside class="guide" id="guide" aria-labelledby="guide-title" hidden>
+        <header class="guide-header">
+          <h2 id="guide-title">Shortcuts &amp; commands</h2>
+          <button type="button" class="guide-close" data-command="guide" aria-label="Close">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          </button>
+        </header>
+        <p class="guide-intro">
+          Everything you type goes to DeX, except <kbd class="chord" data-key=""></kbd> shortcuts, which control DeXterous.
+        </p>
+
+        <section class="guide-section" aria-labelledby="guide-commands">
+          <h3 id="guide-commands">DeXterous</h3>
+          <ul class="guide-list">
+            <li><button type="button" class="guide-row" data-command="lock"><span>Lock phone</span><kbd class="chord" data-key="L"></kbd></button></li>
+            <li><button type="button" class="guide-row" data-command="wake"><span>Wake phone screen</span><kbd class="chord" data-key="W"></kbd></button></li>
+            <li><button type="button" class="guide-row" data-command="phone-screen"><span id="phone-screen-label">Turn phone screen off (DeX keeps running)</span><kbd class="chord" data-key="P"></kbd></button></li>
+            <li><button type="button" class="guide-row" data-command="back"><span>Back</span><kbd class="chord" data-key="B"></kbd></button></li>
+            <li><button type="button" class="guide-row" data-command="home"><span>Home</span><kbd class="chord" data-key="H"></kbd></button></li>
+            <li><button type="button" class="guide-row" data-command="recents"><span>Recent apps</span><kbd class="chord" data-key="R"></kbd></button></li>
+            <li><button type="button" class="guide-row" data-command="mute"><span>Mute or unmute phone audio</span><kbd class="chord" data-key="M"></kbd></button></li>
+            <li><button type="button" class="guide-row" data-command="fullscreen"><span>Full screen</span><kbd class="chord" data-key="F"></kbd></button></li>
+            <li><button type="button" class="guide-row" data-command="stats"><span>Connection stats</span><kbd class="chord" data-key="S"></kbd></button></li>
+            <li><button type="button" class="guide-row" data-command="guide"><span>Show or hide this panel</span><kbd class="chord" data-key="/"></kbd></button></li>
+            <li><button type="button" class="guide-row guide-row-danger" data-command="disconnect"><span>Disconnect</span><kbd class="chord" data-key="Q"></kbd></button></li>
+          </ul>
+        </section>
+
+        <section class="guide-section" aria-labelledby="guide-settings">
+          <h3 id="guide-settings">Keyboard &amp; security</h3>
+          <form class="guide-toggles" id="guide-settings-form">
+            <label class="toggle" id="guide-command-as-ctrl"><input type="checkbox" name="commandAsCtrl" /> <span>Use ⌘ as Ctrl (right ⌘ stays DeX's ⊞ key)</span></label>
+            <label class="toggle"><input type="checkbox" name="allowWhileLocked" /> <span>Keep DeX usable while the phone is locked</span></label>
+            <label class="toggle"><input type="checkbox" name="clipboardSync" /> <span>Share the clipboard with this computer</span></label>
+          </form>
+        </section>
+
+        <section class="guide-section" aria-labelledby="guide-dex">
+          <h3 id="guide-dex">In DeX</h3>
+          <dl class="guide-shortcuts">
+            <div><dt><kbd class="meta-key"></kbd> <kbd>/</kbd></dt><dd>All DeX shortcuts (on your phone's list)</dd></div>
+            <div><dt><kbd class="meta-key"></kbd> <kbd>←</kbd> <kbd>→</kbd></dt><dd>Snap a window left or right</dd></div>
+            <div><dt><kbd class="meta-key"></kbd> <kbd>D</kbd></dt><dd>Show the desktop</dd></div>
+            <div><dt><kbd>Alt</kbd> <kbd>Tab</kbd></dt><dd>Switch apps (in full screen)</dd></div>
+            <div><dt><kbd>Alt</kbd> <kbd>F4</kbd></dt><dd>Close the window</dd></div>
+            <div><dt><kbd class="paste-key"></kbd></dt><dd>Paste (from this computer when the clipboard is shared)</dd></div>
+          </dl>
+          <p class="guide-note">DeX shortcuts can vary between One UI versions.</p>
+        </section>
+      </aside>
+
+      <output class="stats" id="stats" hidden></output>
+      <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    </div>
+  </body>
+</html>

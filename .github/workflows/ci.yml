@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Superseded pull request runs are cancelled; every push to main is tested.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: ${{ matrix.os }} / Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # Linux on both supported Node versions; macOS and Windows (whose
+        # Actions minutes cost more on private repositories) on Node 22 only.
+        os: [ubuntu-latest]
+        node: [22, 24]
+        include:
+          - os: macos-latest
+            node: 22
+          - os: windows-latest
+            node: 22
+    defaults:
+      run:
+        # Git Bash on Windows: every step stops at the first failing command.
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      # Also runs `prepare` -> `npm run build`: downloads the scrcpy server
+      # from GitHub releases, builds the web app into dist/ and compiles the
+      # relay into build/server/.
+      - name: Install and build
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: CLI
+        run: |
+          node bin/dexterous.js --version
+          node bin/dexterous.js --help
+
+      # Starts the relay, checks that it serves /api/info, the app and the
+      # scrcpy server, then stops it. No phone is needed: adbReachable is just
+      # reported (the runner images may or may not have adb; the relay starts
+      # its server if it finds one, and carries on without it otherwise).
+      - name: Smoke test
+        run: node scripts/smoke-test.mjs --port 8686
+
+      - name: Package contents
+        run: npm pack --dry-run --ignore-scripts

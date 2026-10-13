@@ -1,0 +1,138 @@
+name: Bug report
+description: Something doesn't work as described in the README or the user guide.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please check the [troubleshooting section](https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md#troubleshooting) first.
+
+        **Security problems don't belong here.** Report them privately, as described in the [security policy](https://github.com/SubSneaker/DeXterous/security/policy).
+
+  - type: input
+    id: version
+    attributes:
+      label: DeXterous version
+      description: The output of `dexterous --version`, or the commit you built from.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install it?
+      options:
+        - Global install from GitHub (npm install -g github:SubSneaker/DeXterous)
+        - npx
+        - Release tarball
+        - From source
+    validations:
+      required: true
+
+  - type: input
+    id: phone
+    attributes:
+      label: Phone or tablet model
+      description: "Settings › About phone, e.g. Galaxy Z Fold8 (SM-F976Q)."
+      placeholder: "Galaxy Z Fold8"
+    validations:
+      required: true
+
+  - type: input
+    id: oneui
+    attributes:
+      label: One UI version
+      description: "Settings › About phone › Software information."
+      placeholder: "9.0"
+    validations:
+      required: true
+
+  - type: input
+    id: android
+    attributes:
+      label: Android version
+      placeholder: "17"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Connection mode
+      options:
+        - Through this computer (relay), phone on USB
+        - Through this computer (relay), phone on Wi-Fi adb
+        - From another device on the network (--lan)
+        - USB, browser only (WebUSB)
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: "Chrome 141"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system and version
+      description: The computer or device the browser runs on. In LAN mode, also say which computer runs DeXterous.
+      placeholder: "macOS 26.1"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Include any error message DeXterous showed, word for word.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `dexterous`
+        2. Pick the phone and click Start DeX
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Browser console: add `?debug` to the address (e.g. `http://localhost:8686/?debug`), reproduce the problem, and copy the console output. Turn on the Verbose / Debug level to include the scrcpy server's `[scrcpy]` lines.
+        Relay: run `dexterous -v` and copy the terminal output.
+        Remove the access token (`#token=…` or `token=…`) before posting.
+      render: text
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, settings you changed, whether a desktop scrcpy was running, and so on.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the existing issues for this problem.
+          required: true
+        - label: I removed any access token from the logs and screenshots above.
+          required: true

@@ -1,0 +1,55 @@
+name: Feature request
+description: Suggest an idea or an improvement for DeXterous.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. Please check the existing issues first, in case someone already suggested it.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe what you're trying to do and what gets in the way.
+      placeholder: "When I use DeX over Wi-Fi, I can't tell whether..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: What would you like to happen?
+      description: How you imagine it working. Mock-ups and examples are welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Workarounds you use today, or other ways to solve it.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Connecting (relay, LAN, WebUSB)
+        - Video and display
+        - Audio
+        - Keyboard, mouse and touch
+        - Clipboard
+        - Lock guard
+        - Dock, shortcuts and panel
+        - Command line and install
+        - Documentation
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else?
+      description: Your phone model and One UI version, browser, or links to related issues, if they matter.
