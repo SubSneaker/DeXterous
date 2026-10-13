@@ -23,7 +23,7 @@ body:
     attributes:
       label: How did you install it?
       options:
-        - Global install from GitHub (npm install -g github:SubSneaker/DeXterous)
+        - Release tarball (npm install -g ./subsneaker-dexterous-*.tgz)
         - npx
         - Release tarball
         - From source

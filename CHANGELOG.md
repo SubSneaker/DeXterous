@@ -10,7 +10,7 @@ First release.
 ### Added
 
 - Samsung DeX in any browser, running on a scrcpy 5.0.1 virtual display that resizes with the window. Works on One UI 8 and newer, without root.
-- An installable `dexterous` command. It starts the relay and opens your browser (`--no-open` to skip that), and `--version` prints the version. Install it globally from GitHub, run it once with `npx`, or install a release tarball.
+- An installable `dexterous` command. It starts the relay and opens your browser (`--no-open` to skip that), and `--version` prints the version. Install it from the release tarball, run it from GitHub with `npx`, or link a clone with `npm install -g .`.
 - Relay mode (`dexterous`): a local Node server that tunnels the browser to the computer's adb server. It accepts only same-origin pages on localhost and blocks DNS rebinding. It starts the adb server if none is running.
 - LAN mode (`dexterous --lan`): HTTPS with a self-signed certificate plus a required access token, for using DeX from other devices. Bring your own certificate with `--cert`/`--key`, and put DeXterous behind a reverse proxy with `--allow-origin`.
 - A per-user state directory for the access token and certificate (`~/Library/Application Support/DeXterous`, `%APPDATA%\DeXterous` or `~/.config/dexterous`), overridable with `DEXTEROUS_HOME`. `DEXTEROUS_TOKEN` sets a fixed token.

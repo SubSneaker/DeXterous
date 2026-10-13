@@ -38,38 +38,40 @@ New here? The [user guide](docs/GUIDE.md) walks through everything step by step.
 
 ## Install
 
-Pick one. Options 1 and 3 install the `dexterous` command, `npx` runs it once, and from source you run `npm start` instead.
+Pick one. The repository is private for now, so each option needs access to it: sign in with the GitHub CLI (`gh auth login`, and let it set up Git) or add an SSH key to your GitHub account.
 
-**1. Global install from GitHub (recommended)**
+**1. From the latest release (recommended)**
+
+This installs the `dexterous` command:
 
 ```bash
-npm install -g github:SubSneaker/DeXterous
+gh release download v0.1.0 -R SubSneaker/DeXterous -p '*.tgz'
+npm install -g ./subsneaker-dexterous-0.1.0.tgz
 dexterous
 ```
 
-The repository is private for now, so npm needs Git access to it. Sign in with `gh auth login` and let it set up Git, or add an SSH key to your GitHub account.
+You can also download the `.tgz` file from the [Releases page](https://github.com/SubSneaker/DeXterous/releases) in your browser. npm 11 may warn that `prepare: npm run build` isn't covered by `allowScripts`. Ignore it: the release tarball is already built, and nothing runs.
 
-**2. Run once, without installing**
+**2. Run it from GitHub with npx (no install)**
 
 ```bash
 npx github:SubSneaker/DeXterous
 ```
 
-**3. From a release tarball**
+The first run downloads and builds DeXterous (about half a minute). Later runs start from npm's cache.
 
-Download `subsneaker-dexterous-0.1.0.tgz` from [GitHub Releases](https://github.com/SubSneaker/DeXterous/releases), then:
-
-```bash
-npm install -g ./subsneaker-dexterous-0.1.0.tgz
-```
-
-**4. From source**
+**3. From source**
 
 ```bash
-git clone https://github.com/SubSneaker/DeXterous.git && cd DeXterous && npm install && npm start
+git clone https://github.com/SubSneaker/DeXterous.git
+cd DeXterous
+npm install
+npm start
 ```
 
-`npm install` builds everything. The first build downloads the scrcpy server (v5.0.1) from GitHub and checks its SHA-256.
+`npm install` builds everything. The first build downloads the scrcpy server (v5.0.1) from GitHub and checks its SHA-256. To also get the `dexterous` command, run `npm install -g .` in that folder. It links the command to the clone, so keep the folder.
+
+`npm install -g github:SubSneaker/DeXterous` does **not** work. npm prepares GitHub packages for global installs without their build tools. Use one of the options above.
 
 To uninstall: `npm uninstall -g @subsneaker/dexterous`. The [guide](docs/GUIDE.md#updating-and-uninstalling) explains how to remove the rest.
 

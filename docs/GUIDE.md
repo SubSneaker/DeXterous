@@ -70,14 +70,14 @@ In DeXterous, Wi‑Fi phones are listed with "· Wi‑Fi" after their name, belo
 
 1. Install Node.js 22.18 or newer, either from [nodejs.org](https://nodejs.org) or with Homebrew: `brew install node`.
 2. Install adb: `brew install --cask android-platform-tools`.
-3. Install DeXterous: `npm install -g github:SubSneaker/DeXterous`.
+3. Install DeXterous from the latest release (see [Install the command](#install-the-command)).
 
 ### Windows
 
 1. Install Node.js 22.18 or newer: `winget install OpenJS.NodeJS.LTS`, or the installer from [nodejs.org](https://nodejs.org).
 2. Install adb: `winget install Google.PlatformTools`.
 3. Open a **new** terminal, so it picks up the updated `PATH`.
-4. Install DeXterous: `npm install -g github:SubSneaker/DeXterous`.
+4. Install DeXterous from the latest release (see [Install the command](#install-the-command)).
 
 If `adb devices` doesn't list the phone when it's plugged in, install Samsung's Android USB driver for Windows, from Samsung's developer site.
 
@@ -90,20 +90,30 @@ If `adb devices` doesn't list the phone when it's plugged in, install Samsung's 
    - Arch: `sudo pacman -S android-tools`
 
    Or download Google's [platform-tools zip](https://developer.android.com/tools/releases/platform-tools) and put its folder on your `PATH`.
-3. Install DeXterous: `npm install -g github:SubSneaker/DeXterous`.
+3. Install DeXterous from the latest release (see [Install the command](#install-the-command)).
 
 If `adb devices` says "no permissions", your user can't open the USB device. Install your distribution's Android udev rules (for example `android-sdk-platform-tools-common` on Debian and Ubuntu, or `android-udev` on Arch), then unplug and replug the phone.
 
 If `npm install -g` fails with `EACCES`, npm is trying to write to a system folder. Use Node from nvm, or point npm at a folder you own: `npm config set prefix ~/.local`, and make sure `~/.local/bin` is on your `PATH`.
 
-### About the GitHub install
+### Install the command
 
-The repository is private for now, so npm needs Git access to it. Either sign in with the GitHub CLI (`gh auth login`, and answer yes when it offers to authenticate Git), or add an SSH key to your GitHub account.
+The repository is private for now, so you need access to it. Either sign in with the GitHub CLI (`gh auth login`, and answer yes when it offers to authenticate Git), or add an SSH key to your GitHub account.
+
+Install the latest release. It comes as a ready-built npm package:
+
+```bash
+gh release download v0.1.0 -R SubSneaker/DeXterous -p '*.tgz'
+npm install -g ./subsneaker-dexterous-0.1.0.tgz
+```
+
+You can also download `subsneaker-dexterous-0.1.0.tgz` from the [Releases page](https://github.com/SubSneaker/DeXterous/releases) in your browser. npm 11 may warn that `prepare: npm run build` isn't covered by `allowScripts`. That's harmless: the tarball is already built, and no script runs.
+
+`npm install -g github:SubSneaker/DeXterous` doesn't work. npm prepares GitHub packages for global installs without their build tools, so use the release or one of the options below.
 
 ### Other ways to install
 
-- **Run it once, without installing:** `npx github:SubSneaker/DeXterous`. Options go at the end, e.g. `npx github:SubSneaker/DeXterous --lan`.
-- **From a release tarball:** download `subsneaker-dexterous-0.1.0.tgz` from [GitHub Releases](https://github.com/SubSneaker/DeXterous/releases), then run `npm install -g ./subsneaker-dexterous-0.1.0.tgz`.
+- **Run it from GitHub without installing:** `npx github:SubSneaker/DeXterous`. The first run downloads and builds it (about half a minute); later runs use npm's cache. Options go at the end, e.g. `npx github:SubSneaker/DeXterous --lan`.
 - **From source:**
 
   ```bash
@@ -473,8 +483,8 @@ Set `DEXTEROUS_HOME` to use another directory.
 
 ### Updating
 
-- **Global install from GitHub:** run the install command again: `npm install -g github:SubSneaker/DeXterous`. To install a specific release, add its tag: `npm install -g github:SubSneaker/DeXterous#v0.1.0`.
-- **Release tarball:** download the new tarball and install it the same way.
+- **Release tarball:** download the new release's tarball (`gh release download <tag> -R SubSneaker/DeXterous -p '*.tgz'`) and install it the same way.
+- **npx:** npx can keep running the copy it cached earlier. To get a specific release, name it: `npx github:SubSneaker/DeXterous#v0.1.0`.
 - **From source:** `git pull`, then `npm install`.
 
 Run `dexterous --version` to check which version you have. Your settings, token and certificate are kept.
@@ -494,7 +504,8 @@ Run `dexterous --version` to check which version you have. Your settings, token 
 
 ### Installing and starting
 
-- **`npm install -g github:SubSneaker/DeXterous` fails with a Git or permission error:** npm can't access the private repository. Run `gh auth login` and let it set up Git, or add an SSH key to GitHub, then try again.
+- **`gh release download` or `npx github:…` fails with an authentication or Git error:** you can't reach the private repository yet. Run `gh auth login` and let it set up Git, or add an SSH key to GitHub, then try again.
+- **`npm install -g github:SubSneaker/DeXterous` installs a broken command:** that install method doesn't work (npm prepares GitHub packages for global installs without their build tools). Remove it with `npm uninstall -g @subsneaker/dexterous` and install the release tarball instead.
 - **`dexterous: command not found`:** npm's global folder isn't on your `PATH`. `npm prefix -g` shows where it is; the command lives in its `bin` folder on macOS and Linux, and in the folder itself on Windows. On Windows, open a new terminal after installing.
 - **"Port 8686 is already in use":** another DeXterous (or something else) is using the port. Stop it, or start with `--port 8787`.
 - **The browser didn't open:** open the link DeXterous printed. DeXterous doesn't open a browser when `$CI` is set, when its output isn't a terminal, or on Linux without a graphical display.
