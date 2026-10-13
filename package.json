@@ -11,7 +11,7 @@
     "start": "node bin/dexterous.js",
     "start:lan": "node bin/dexterous.js --lan",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.server.json",
-    "prepare": "npm run build"
+    "prepare": "node scripts/prepare.mjs"
   },
   "dependencies": {
     "selfsigned": "^5.5.0",
