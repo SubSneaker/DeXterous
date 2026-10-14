@@ -12,6 +12,21 @@ export interface RelayInfo {
   version: string;
   adbReachable: boolean;
   tokenRequired: boolean;
+  /** Absent when update checks are off, or on a relay that doesn't know about them. */
+  update?: UpdateInfo;
+}
+
+export interface UpdateInfo {
+  current: string;
+  latest: string | null;
+  available: boolean;
+  canSelfUpdate: boolean;
+  /** What to run by hand. */
+  command: string;
+  /** "What's new" link. */
+  notesUrl: string;
+  state: "idle" | "installing" | "restarting" | "failed";
+  error?: string;
 }
 
 const TOKEN_KEY = "dexterous:relay-token";
@@ -74,19 +89,42 @@ export class RelayTransport {
           device.state === "device" ? "" : " · tap “Allow” on your phone";
         return {
           kind: "relay",
-          id: `relay:${device.transportId}`,
+          id: `relay:${device.serial}`,
           label: `${model} · ${wireless ? "Wi‑Fi" : "USB"}${state}`,
           serial: device.serial,
+          model,
+          wireless,
+          ready: device.state === "device",
           transportId: device.transportId,
           handle: device.state,
         };
       })
-      .sort((a, b) => Number(isWirelessSerial(a.serial)) - Number(isWirelessSerial(b.serial)));
+      .sort((a, b) => Number(a.wireless) - Number(b.wireless));
+  }
+
+  /**
+   * Pairs with a phone using Android's "Wireless debugging" pairing code
+   * (`adb pair`). Goes through the adb server's host services, which the relay
+   * passes along untouched.
+   */
+  async pair(address: string, code: string): Promise<void> {
+    await this.client.wireless.pair(address, code);
+  }
+
+  /** `adb connect`. An "already connected" answer counts as success. */
+  async connectWireless(address: string): Promise<void> {
+    try {
+      await this.client.wireless.connect(address);
+    } catch (error) {
+      if (!(error instanceof Error && error.name === "AlreadyConnectedError")) {
+        throw error;
+      }
+    }
   }
 
   async connect(choice: DeviceChoice): Promise<Adb> {
-    if (choice.handle !== "device") {
-      throw new Error("Unlock your phone and allow USB debugging for this computer, then refresh.");
+    if (!choice.ready) {
+      throw new Error("Unlock your phone and tap Allow on its USB debugging prompt, then refresh.");
     }
     if (choice.transportId === undefined) {
       throw new Error("Pick a phone first.");
@@ -119,6 +157,9 @@ function toChoice(device: AdbDaemonWebUsbDevice): DeviceChoice {
     id: `webusb:${device.serial}`,
     label: `${device.name || device.serial} · USB (browser)`,
     serial: device.serial,
+    model: device.name || device.serial,
+    wireless: false,
+    ready: true,
     handle: device,
   };
 }
@@ -159,7 +200,7 @@ export async function connectWebUsb(
   } catch (error) {
     if (error instanceof AdbDaemonWebUsbDevice.DeviceBusyError) {
       throw new Error(
-        "Another program on this computer is using the phone (usually the adb server). " +
+        "Another program on this device is using the phone (usually the adb server). " +
           "Stop it (`adb kill-server`) or use relay mode instead.",
       );
     }

@@ -4,7 +4,7 @@
 // secure context, and plain http:// on a LAN IP is not one. So LAN mode serves
 // HTTPS with a self-signed certificate (generated in pure JS, no openssl),
 // cached in the per-user state directory (see paths.ts) and regenerated when
-// it expires or when this machine gains an address the certificate does not
+// it expires or when the computer gains an address the certificate does not
 // cover.
 import { X509Certificate, createPrivateKey } from "node:crypto";
 import fs from "node:fs";
@@ -35,7 +35,7 @@ export interface CertificateNames {
 }
 
 /**
- * Names the self-signed certificate must cover: localhost, this machine's
+ * Names the self-signed certificate must cover: localhost, the computer's
  * hostname (plus its mDNS `.local` form) and every non-internal IPv4 address.
  */
 export function collectCertificateNames(extraHosts: readonly string[] = []): CertificateNames {

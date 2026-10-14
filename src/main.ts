@@ -9,9 +9,22 @@ import {
   type DisplayRequest,
   type PhoneState,
 } from "./lib/dex-session";
+import { Checklist, buildSteps, type RelayFacts } from "./lib/checklist";
+import { DeviceList, type DetailsState } from "./lib/device-list";
 import { InputController } from "./lib/input";
 import { appChordLabel, isAppChord, isMacLike, metaKeyLabel } from "./lib/keymap";
-import { fillForm, loadSettings, readForm, saveSettings } from "./lib/settings";
+import { readPhoneDetails, MIN_ONE_UI } from "./lib/phone-info";
+import {
+  CUSTOM_SUMMARY,
+  PRESETS,
+  describeQuality,
+  matchPreset,
+  presetValues,
+  type PresetId,
+  type QualityChoice,
+} from "./lib/presets";
+import { fillForm, hasSavedSettings, loadSettings, readForm, saveSettings } from "./lib/settings";
+import { readStored, writeStored } from "./lib/storage";
 import {
   connectWebUsb,
   listWebUsbDevices,
@@ -23,6 +36,8 @@ import {
   type RelayInfo,
 } from "./lib/transports";
 import type { DeviceChoice, DexSettings, TransportKind } from "./lib/types";
+import { UpdateBanner } from "./lib/update-banner";
+import { WirelessForm } from "./lib/wireless-form";
 
 // #region DOM
 
@@ -40,15 +55,26 @@ const ui = {
   tabList: $("methods"),
   tabs: { relay: $<HTMLButtonElement>("tab-relay"), webusb: $<HTMLButtonElement>("tab-webusb") },
   panels: { relay: $("panel-relay"), webusb: $("panel-webusb") },
-  relayDevice: $<HTMLSelectElement>("relay-device"),
+  relayDevices: $("relay-devices"),
+  relayEmpty: $("relay-empty"),
   relayRefresh: $<HTMLButtonElement>("relay-refresh"),
   relayHint: $("relay-hint"),
-  webUsbDevice: $<HTMLSelectElement>("webusb-device"),
+  wifiAdd: $<HTMLDetailsElement>("wifi-add"),
+  webUsbDevices: $("webusb-devices"),
+  webUsbEmpty: $("webusb-empty"),
   webUsbPick: $<HTMLButtonElement>("webusb-pick"),
   webUsbHint: $("webusb-hint"),
+  suggestion: $("suggestion"),
+  suggestionText: $("suggestion-text"),
+  suggestionAccept: $<HTMLButtonElement>("suggestion-accept"),
+  suggestionDismiss: $<HTMLButtonElement>("suggestion-dismiss"),
   start: $<HTMLButtonElement>("start"),
   status: $("status"),
   settingsForm: $<HTMLFormElement>("settings-form"),
+  presets: $("presets"),
+  presetSummary: $("preset-summary"),
+  customSettings: $<HTMLDetailsElement>("custom-settings"),
+  footerVersion: $("footer-version"),
   stage: $("stage"),
   screen: $<HTMLCanvasElement>("screen"),
   keyboardSink: $<HTMLTextAreaElement>("keyboard-sink"),
@@ -79,6 +105,12 @@ let relayDevices: DeviceChoice[] = [];
 let webUsbDevices: DeviceChoice[] = [];
 let starting: AbortController | undefined;
 
+const LAST_PHONE_KEY = "dexterous:last-phone";
+/** Phone details (name, One UI, battery) are read once, then again after this long. */
+const DETAILS_MAX_AGE_MS = 60_000;
+/** A failed read (say, right after tapping Allow) is tried again after this long. */
+const DETAILS_RETRY_MS = 8_000;
+
 interface ActiveSession {
   adb: Adb;
   session: DexSession;
@@ -103,9 +135,55 @@ let active: ActiveSession | undefined;
 
 // #region Connect screen
 
+const phoneDetails = new Map<string, DetailsState>();
+const detailsReadAt = new Map<string, number>();
+const unsupportedCodecs = new Set<DexSettings["videoCodec"]>();
+/** Phones whose "try Balanced" suggestion was waved away (or already answered). */
+const suggestionDismissed = new Set<string>();
+const QUALITY_FIELDS = ["resolutionScale", "videoCodec", "videoBitRate", "maxFps"];
+
+let quality: QualityChoice = "custom";
+let relayToken: string | undefined;
+/** Whether the last phone list loaded; undefined until the first try. */
+let relayListed: boolean | undefined;
+let relayEmptyText = "";
+/** A just-connected Wi‑Fi phone to select once adb lists it. */
+let pendingPick: string | undefined;
+let detailsRunning = false;
+let checklist: Checklist;
+let updateBanner: UpdateBanner | undefined;
+
+const relayList = new DeviceList({
+  root: ui.relayDevices,
+  onChange: onSelectionChange,
+  onActivate: startFromKeyboard,
+});
+const webUsbList = new DeviceList({
+  root: ui.webUsbDevices,
+  onChange: onSelectionChange,
+  onActivate: startFromKeyboard,
+});
+
 function setStatus(message: string, tone: "info" | "error" = "info") {
   ui.status.textContent = message;
   ui.status.dataset.tone = tone;
+}
+
+function setHint(element: HTMLElement, message: string, tone: "info" | "warning" = "info") {
+  element.textContent = message;
+  element.dataset.tone = tone;
+}
+
+function supportsCodec(codec: DexSettings["videoCodec"]): boolean {
+  return !unsupportedCodecs.has(codec);
+}
+
+function activeList(): DeviceList {
+  return method === "relay" ? relayList : webUsbList;
+}
+
+function currentChoice(): DeviceChoice | undefined {
+  return activeList().selected;
 }
 
 function selectMethod(next: TransportKind) {
@@ -115,31 +193,40 @@ function selectMethod(next: TransportKind) {
     ui.tabs[kind].tabIndex = kind === next ? 0 : -1;
     ui.panels[kind].hidden = kind !== next;
   }
-  updateStartButton();
-}
-
-function currentChoice(): DeviceChoice | undefined {
-  const [select, list] =
-    method === "relay" ? [ui.relayDevice, relayDevices] : [ui.webUsbDevice, webUsbDevices];
-  return list.find((device) => device.id === select.value);
+  refreshDerived();
 }
 
 function updateStartButton() {
-  ui.start.disabled = starting !== undefined || !currentChoice() || !WebCodecsVideoDecoder.isSupported;
+  ui.start.disabled = starting !== undefined || !currentChoice()?.ready || !WebCodecsVideoDecoder.isSupported;
 }
 
-function renderDevices(select: HTMLSelectElement, devices: DeviceChoice[], emptyLabel: string) {
-  const previous = select.value;
-  select.replaceChildren(
-    ...(devices.length
-      ? devices.map((device) => new Option(device.label, device.id))
-      : [new Option(emptyLabel, "")]),
-  );
-  select.disabled = devices.length === 0;
-  if (devices.some((device) => device.id === previous)) {
-    select.value = previous;
+function startFromKeyboard() {
+  if (!ui.start.disabled) {
+    void startDex();
   }
+}
+
+/** Everything that depends on which phone is selected or what the phone list says. */
+function refreshDerived() {
   updateStartButton();
+  updateSuggestion();
+  renderChecklist();
+}
+
+function onSelectionChange() {
+  refreshDerived();
+}
+
+function renderRelayPhones() {
+  relayList.render(relayDevices, phoneDetails, (device) => device.serial === readStored(LAST_PHONE_KEY));
+  ui.relayEmpty.textContent = relayEmptyText;
+  ui.relayEmpty.hidden = relayDevices.length > 0;
+}
+
+function renderWebUsbPhones(emptyText: string) {
+  webUsbList.render(webUsbDevices, phoneDetails);
+  ui.webUsbEmpty.textContent = emptyText;
+  ui.webUsbEmpty.hidden = webUsbDevices.length > 0;
 }
 
 async function refreshRelayDevices() {
@@ -149,39 +236,107 @@ async function refreshRelayDevices() {
   ui.relayRefresh.dataset.busy = "true";
   try {
     relayDevices = await relay.listDevices();
-    renderDevices(ui.relayDevice, relayDevices, "No phone found");
-    const ready = relayDevices.some((device) => device.handle === "device");
-    ui.relayHint.dataset.tone = "info";
-    ui.relayHint.textContent = relayDevices.length
-      ? ready
-        ? "USB is the smoothest; Wi‑Fi works too."
-        : "Unlock your phone and tap “Allow” on the USB debugging prompt."
-      : "Plug in your phone with USB debugging on. It will show up here.";
+    relayListed = true;
+    relayEmptyText = "No phone found yet. Plug one in and unlock it, and it will show up here.";
+    renderRelayPhones();
+    setHint(ui.relayHint, relayDevices.some((device) => device.ready) ? "USB is the smoothest; Wi‑Fi works too." : "");
+    if (pendingPick) {
+      // adb adds its default port when the address had none.
+      const added = relayDevices.find(
+        (device) => device.serial === pendingPick || device.serial.startsWith(`${pendingPick}:`),
+      );
+      if (added) {
+        pendingPick = undefined;
+        relayList.select(added.id);
+      }
+    }
+    void loadPhoneDetails();
   } catch (error) {
     relayDevices = [];
-    renderDevices(ui.relayDevice, relayDevices, "Couldn’t load phones");
-    ui.relayHint.dataset.tone = "warning";
-    ui.relayHint.textContent = errorMessage(error);
+    relayListed = false;
+    relayEmptyText = "Couldn’t load phones.";
+    renderRelayPhones();
+    setHint(ui.relayHint, errorMessage(error), "warning");
   } finally {
     delete ui.relayRefresh.dataset.busy;
+    refreshDerived();
   }
 }
 
-async function watchRelayDevices() {
+/**
+ * Reads each ready phone's name, One UI version and battery through the relay,
+ * one phone at a time. Failures are quietly ignored: the card just shows less.
+ */
+async function loadPhoneDetails() {
+  if (!relay || detailsRunning || active || starting) {
+    return;
+  }
+  detailsRunning = true;
+  try {
+    for (const device of [...relayDevices]) {
+      if (!device.ready || device.transportId === undefined) {
+        continue;
+      }
+      if (!needsDetails(device)) {
+        continue;
+      }
+      detailsReadAt.set(device.serial, Date.now());
+      if (!phoneDetails.has(device.serial)) {
+        phoneDetails.set(device.serial, "loading");
+        renderRelayPhones();
+        refreshDerived();
+      }
+      try {
+        phoneDetails.set(device.serial, await readPhoneDetails(relay.client, device.transportId));
+      } catch {
+        // Keep older details if there are any; otherwise show the phone without them.
+        if (typeof phoneDetails.get(device.serial) !== "object") {
+          phoneDetails.set(device.serial, "failed");
+        }
+        detailsReadAt.set(device.serial, Date.now() - DETAILS_MAX_AGE_MS + DETAILS_RETRY_MS);
+        window.setTimeout(() => void loadPhoneDetails(), DETAILS_RETRY_MS + 100);
+      }
+      renderRelayPhones();
+      refreshDerived();
+      if (active || starting) {
+        break;
+      }
+    }
+  } finally {
+    detailsRunning = false;
+  }
+  // Phones that showed up while we were reading.
+  if (relayDevices.some(needsDetails)) {
+    void loadPhoneDetails();
+  }
+}
+
+function needsDetails(device: DeviceChoice): boolean {
+  if (!device.ready || device.transportId === undefined) {
+    return false;
+  }
+  const readAt = detailsReadAt.get(device.serial);
+  return readAt === undefined || Date.now() - readAt >= DETAILS_MAX_AGE_MS;
+}
+
+function watchRelayDevices() {
   if (!relay) {
     return;
   }
-  try {
-    const observer = await relay.client.trackDevices();
-    observer.onListChange(() => void refreshRelayDevices());
-  } catch {
-    // Manual refresh still works.
-  }
+  relay.client.trackDevices().then(
+    (observer) => {
+      observer.onListChange(() => void refreshRelayDevices());
+    },
+    () => {
+      // Manual refresh still works.
+    },
+  );
 }
 
 async function refreshWebUsbDevices() {
   webUsbDevices = await listWebUsbDevices();
-  renderDevices(ui.webUsbDevice, webUsbDevices, "No phone added yet");
+  renderWebUsbPhones("No phone added yet. Use the Add phone button.");
+  refreshDerived();
 }
 
 /** Marks codecs this browser can't decode, so they can't be picked by accident. */
@@ -193,6 +348,7 @@ async function markUnsupportedCodecs() {
   for (const option of select.options) {
     const codec = option.value as DexSettings["videoCodec"];
     if (codec !== "h264" && !(await isCodecSupported(codec))) {
+      unsupportedCodecs.add(codec);
       option.disabled = true;
       option.textContent += " (not supported here)";
       if (select.value === codec) {
@@ -203,6 +359,146 @@ async function markUnsupportedCodecs() {
     }
   }
 }
+
+// ---- Picture quality presets
+
+function initQuality() {
+  const chips: { id: QualityChoice; label: string }[] = [
+    ...PRESETS.map((preset) => ({ id: preset.id, label: preset.label })),
+    { id: "custom", label: "Custom" },
+  ];
+  ui.presets.replaceChildren(
+    ...chips.map(({ id, label }) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "preset";
+      chip.dataset.preset = id;
+      chip.setAttribute("role", "radio");
+      chip.textContent = label;
+      return chip;
+    }),
+  );
+  ui.presets.addEventListener("click", (event) => {
+    const chip = (event.target as Element).closest<HTMLElement>("[data-preset]");
+    if (chip) {
+      choosePreset(chip.dataset.preset as QualityChoice);
+    }
+  });
+  // A radio group: arrow keys move and select.
+  ui.presets.addEventListener("keydown", (event) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+    if (step === undefined) {
+      return;
+    }
+    const all = [...ui.presets.querySelectorAll<HTMLElement>("[data-preset]")];
+    const index = all.findIndex((chip) => chip.dataset.preset === quality);
+    const next = all[(index + step + all.length) % all.length]!;
+    // Arrowing away from Custom would replace the user's own mix, so only move focus then.
+    if (quality !== "custom") {
+      choosePreset(next.dataset.preset as QualityChoice);
+    }
+    next.focus();
+    event.preventDefault();
+  });
+
+  // Any change to a raw control means "Custom".
+  ui.settingsForm.addEventListener("change", (event) => {
+    settings = readForm(ui.settingsForm, settings);
+    saveSettings(settings);
+    if (QUALITY_FIELDS.includes((event.target as HTMLInputElement).name)) {
+      quality = "custom";
+      renderQuality();
+      updateSuggestion();
+    }
+  });
+
+  quality = hasSavedSettings() ? matchPreset(settings, supportsCodec) : "best";
+  if (quality === "best") {
+    applyPreset("best");
+  }
+  renderQuality();
+}
+
+function applyPreset(id: PresetId) {
+  settings = { ...readForm(ui.settingsForm, settings), ...presetValues(id, supportsCodec) };
+  saveSettings(settings);
+  fillForm(ui.settingsForm, settings);
+}
+
+function choosePreset(choice: QualityChoice) {
+  if (choice === "custom") {
+    ui.customSettings.open = true;
+  } else {
+    applyPreset(choice);
+  }
+  quality = choice;
+  // The person picked for themselves, so don't suggest anything else for this phone.
+  const phone = currentChoice();
+  if (phone?.wireless) {
+    suggestionDismissed.add(phone.id);
+  }
+  renderQuality();
+  updateSuggestion();
+}
+
+function renderQuality() {
+  for (const chip of ui.presets.querySelectorAll<HTMLElement>("[data-preset]")) {
+    const selected = chip.dataset.preset === quality;
+    chip.setAttribute("aria-checked", String(selected));
+    chip.tabIndex = selected ? 0 : -1;
+  }
+  const preset = PRESETS.find((candidate) => candidate.id === quality);
+  const values = preset ? presetValues(preset.id, supportsCodec) : settings;
+  const detail = document.createElement("span");
+  detail.className = "preset-values";
+  detail.textContent = describeQuality(values);
+  ui.presetSummary.replaceChildren(`${preset?.summary ?? CUSTOM_SUMMARY} `, detail);
+}
+
+/** On Wi‑Fi, suggest Balanced rather than changing anything silently. */
+function updateSuggestion() {
+  const phone = currentChoice();
+  const heavy = quality === "best" || (quality === "custom" && settings.videoBitRate > 8);
+  const show = method === "relay" && phone?.wireless === true && phone.ready && heavy && !suggestionDismissed.has(phone.id);
+  ui.suggestion.hidden = !show;
+}
+
+// ---- Setup checklist
+
+function renderChecklist() {
+  if (method === "webusb") {
+    checklist.render(buildSteps({ method: "webusb", supported: webUsbSupport().supported, phones: webUsbDevices.length }));
+    return;
+  }
+  const phone = relayList.selected;
+  const details = phone ? phoneDetails.get(phone.serial) : undefined;
+  let oneUi: RelayFacts["oneUi"];
+  if (typeof details === "object") {
+    oneUi =
+      details.oneUi !== undefined
+        ? details.oneUi >= MIN_ONE_UI
+          ? "ok"
+          : "old"
+        : /samsung/i.test(details.manufacturer)
+          ? "old"
+          : "not-galaxy";
+  } else {
+    oneUi = details === "failed" ? "unknown" : "checking";
+  }
+  checklist.render(
+    buildSteps({
+      method: "relay",
+      relayRunning: relayInfo !== undefined,
+      tokenMissing: relayInfo?.tokenRequired === true && !relayToken,
+      adbReachable: relayListed ?? relayInfo?.adbReachable ?? false,
+      phones: relayDevices.length,
+      allowed: phone?.ready ? 1 : 0,
+      oneUi,
+    }),
+  );
+}
+
+// ---- Setup
 
 function initTabs() {
   for (const kind of ["relay", "webusb"] as const) {
@@ -226,37 +522,55 @@ function initTabs() {
   });
 }
 
+/** Fetches `/api/info` again and passes it to the update banner (used after a session). */
+async function refreshRelayInfo() {
+  const info = await probeRelay();
+  if (info) {
+    relayInfo = info;
+    updateBanner?.apply(info);
+  }
+}
+
 async function initConnectScreen() {
   fillForm(ui.settingsForm, settings);
-  ui.settingsForm.addEventListener("change", () => {
-    settings = readForm(ui.settingsForm, settings);
-    saveSettings(settings);
-  });
   if (!isMacLike()) {
     $("setting-command-as-ctrl").hidden = true;
     $("guide-command-as-ctrl").hidden = true;
   }
   fillShortcutLabels();
-  void markUnsupportedCodecs();
+  checklist = new Checklist({
+    root: $<HTMLDetailsElement>("checklist"),
+    count: $("checklist-count"),
+    list: $("checklist-steps"),
+  });
+  await markUnsupportedCodecs();
+  initQuality();
 
   initTabs();
-  ui.relayDevice.addEventListener("change", updateStartButton);
-  ui.webUsbDevice.addEventListener("change", updateStartButton);
   ui.relayRefresh.addEventListener("click", () => void refreshRelayDevices());
   ui.start.addEventListener("click", () => void startDex());
+  ui.suggestionAccept.addEventListener("click", () => {
+    choosePreset("balanced");
+    ui.suggestion.hidden = true;
+  });
+  ui.suggestionDismiss.addEventListener("click", () => {
+    const phone = currentChoice();
+    if (phone) {
+      suggestionDismissed.add(phone.id);
+    }
+    updateSuggestion();
+  });
 
   // WebUSB
   const usb = webUsbSupport();
   if (usb.supported) {
-    ui.webUsbHint.textContent =
-      "Talks to the phone straight from this tab. Quit other adb tools on this computer first.";
+    setHint(ui.webUsbHint, "Talks to the phone straight from this tab. Quit other adb tools on this device first.");
     ui.webUsbPick.addEventListener("click", async () => {
       try {
         const choice = await requestWebUsbDevice();
         await refreshWebUsbDevices();
         if (choice) {
-          ui.webUsbDevice.value = choice.id;
-          updateStartButton();
+          webUsbList.select(choice.id);
         }
       } catch (error) {
         // The user closed the picker without choosing.
@@ -271,43 +585,77 @@ async function initConnectScreen() {
   } else {
     ui.tabs.webusb.setAttribute("aria-disabled", "true");
     ui.webUsbPick.disabled = true;
-    ui.webUsbHint.textContent = usb.reason;
-    renderDevices(ui.webUsbDevice, [], "Not available in this browser");
+    setHint(ui.webUsbHint, usb.reason);
+    renderWebUsbPhones("Not available in this browser.");
   }
 
   // Relay
   relayInfo = await probeRelay();
+  const wireless = new WirelessForm(
+    {
+      form: $<HTMLFormElement>("wifi-form"),
+      address: $<HTMLInputElement>("wifi-address"),
+      pairSection: $<HTMLDetailsElement>("wifi-pair"),
+      pairAddress: $<HTMLInputElement>("wifi-pair-address"),
+      pairCode: $<HTMLInputElement>("wifi-pair-code"),
+      submit: $<HTMLButtonElement>("wifi-submit"),
+      status: $("wifi-status"),
+    },
+    {
+      pair: (address, code) => relay!.pair(address, code),
+      connect: (address) => relay!.connectWireless(address),
+      onConnected: (address) => {
+        pendingPick = address;
+        window.setTimeout(() => {
+          if (pendingPick === address) {
+            pendingPick = undefined;
+          }
+        }, 20_000);
+        void refreshRelayDevices();
+      },
+    },
+  );
   if (relayInfo) {
-    const token = readRelayToken();
-    relay = new RelayTransport(token);
+    relayToken = readRelayToken();
+    relay = new RelayTransport(relayToken);
+    ui.footerVersion.textContent = `DeXterous ${relayInfo.version}`;
+    updateBanner = new UpdateBanner(
+      {
+        root: $("update-banner"),
+        title: $("update-title"),
+        detail: $("update-detail"),
+        notes: $<HTMLAnchorElement>("update-notes"),
+        install: $<HTMLButtonElement>("update-install"),
+        command: $("update-command"),
+        commandText: $("update-command-text"),
+        copy: $<HTMLButtonElement>("update-copy"),
+        dismiss: $<HTMLButtonElement>("update-dismiss"),
+      },
+      relayToken,
+    );
+    updateBanner.apply(relayInfo);
     selectMethod("relay");
-    if (relayInfo.tokenRequired && !token) {
-      ui.relayHint.dataset.tone = "warning";
-      ui.relayHint.textContent =
-        "This relay needs an access token. Open the link with #token=… that it printed when it started.";
-      renderDevices(ui.relayDevice, [], "Access token needed");
+    if (relayInfo.tokenRequired && !relayToken) {
+      relayEmptyText = "Access token needed.";
+      renderRelayPhones();
+      wireless.setDisabled(true);
     } else {
       await refreshRelayDevices();
-      void watchRelayDevices();
-      if (!relayInfo.adbReachable) {
-        ui.relayHint.dataset.tone = "warning";
-        ui.relayHint.textContent =
-          "The relay can't reach adb. Install Android platform-tools and restart the relay.";
-      }
+      watchRelayDevices();
     }
   } else {
     ui.tabs.relay.setAttribute("aria-disabled", "true");
     ui.relayRefresh.disabled = true;
-    renderDevices(ui.relayDevice, [], "Relay not running");
-    ui.relayHint.textContent =
-      "Run `dexterous` on the computer the phone is plugged into, then open the address it prints.";
+    ui.wifiAdd.hidden = true;
+    relayEmptyText = "Relay not running.";
+    renderRelayPhones();
     selectMethod(usb.supported ? "webusb" : "relay");
   }
 
   if (!WebCodecsVideoDecoder.isSupported) {
     setStatus("This browser can't decode video (WebCodecs). Use a current Chrome, Edge, Safari or Firefox.", "error");
   }
-  updateStartButton();
+  refreshDerived();
 }
 
 // #endregion
@@ -355,12 +703,14 @@ async function startDex() {
   }
   settings = readForm(ui.settingsForm, settings);
   saveSettings(settings);
+  writeStored(LAST_PHONE_KEY, choice.serial);
 
   // Must be created inside the click: browsers only allow audio started by a gesture.
   const audioPlayer = settings.audio ? createAudioPlayer() : undefined;
 
   const abort = new AbortController();
   starting = abort;
+  activeList().setConnecting(choice.id, phoneDetails);
   updateStartButton();
   setStatus("");
   replaceCanvas();
@@ -429,7 +779,7 @@ async function startDex() {
       onShortcut: handleShortcut,
       // With clipboard sharing off, the two clipboards are separate and paste
       // uses the phone's own. With it on, paste the phone's copy if it hasn't
-      // reached the computer yet (e.g. Safari blocked the write).
+      // reached this device's clipboard yet (e.g. Safari blocked the write).
       preferPhonePaste: () => pendingClipboard !== undefined || !settings.clipboardSync,
     });
 
@@ -465,6 +815,7 @@ async function startDex() {
   } finally {
     ui.cancelStart.removeEventListener("click", cancel);
     starting = undefined;
+    activeList().setConnecting(undefined, phoneDetails);
     updateStartButton();
   }
 }
@@ -514,6 +865,7 @@ async function endSession(reason: string | undefined) {
   if (method === "relay") {
     void refreshRelayDevices();
   }
+  void refreshRelayInfo();
 }
 
 function resetSessionUi() {
@@ -670,7 +1022,7 @@ function attachSessionUi(current: ActiveSession, request: DisplayRequest): () =>
 
 /**
  * Shows or hides the lock screen. While shown, DeX gets no input, phone audio
- * is muted and nothing is copied to this computer.
+ * is muted and nothing is copied to this device's clipboard.
  *
  * Hiding is a latch: in secure mode DeX hides whenever the phone is locked,
  * asleep or its state is unknown, and only uncovers once the phone is seen

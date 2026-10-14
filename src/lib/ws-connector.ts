@@ -109,6 +109,7 @@ export class WebSocketServerConnector implements AdbServerClient.ServerConnector
 const RelayCloseCode = {
   ShuttingDown: 1001,
   AdbFailed: 1011,
+  Updating: 1012,
   TooManyTunnels: 1013,
   BadToken: 4401,
 } as const;
@@ -128,6 +129,9 @@ function describeClose(event: CloseEvent): string {
       return `The relay couldn't talk to adb${event.reason ? `: ${event.reason}` : ""}. Is Android platform-tools installed?`;
     case RelayCloseCode.ShuttingDown:
       return "The DeXterous relay was stopped.";
+    case RelayCloseCode.Updating:
+      // Refused while an update installs, or closed when DeXterous restarts with the new version.
+      return "DeXterous is updating. It restarts by itself; try again in a moment.";
     case RelayCloseCode.TooManyTunnels:
       return "The relay has too many open connections. Reload the page.";
     default:

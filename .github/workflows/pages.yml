@@ -1,0 +1,89 @@
+name: Pages
+
+# Publishes the landing page (site/) to GitHub Pages, and the browser-only
+# build of the web app under /app/.
+#
+# One-time setup: Settings > Pages > Build and deployment > Source: GitHub Actions.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      # The /app/ build comes from the web app, so rebuild when it changes.
+      - "src/**"
+      - "index.html"
+      - "public/**"
+      - "vite.config.ts"
+      - "tsconfig.json"
+      - "scripts/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never run two deployments at once, and never cancel one that is publishing.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # actions/configure-pages reads the Pages settings through the API.
+      pages: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      # Build the web app. Its dist/ uses relative URLs, so it works under /app/.
+      # --ignore-scripts skips the `prepare` build; the next step runs it once.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build the web app
+        run: npm run build
+
+      - name: Assemble the site
+        run: |
+          set -euo pipefail
+          test -f dist/index.html
+          mkdir _site
+          cp -R site/. _site/
+          mkdir _site/app
+          cp -R dist/. _site/app/
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,117 @@
+name: Publish to npm
+
+# Publishes @subsneaker/dexterous to the npm registry when a version tag
+# (v1.2.3) is pushed. It uses npm trusted publishing: GitHub Actions proves
+# which repository and workflow it is with a short-lived OIDC token, so no npm
+# token is stored anywhere, and npm attaches a provenance statement that links
+# the package to this run. The trusted publisher must be set up on npmjs.com
+# first (see "Releasing" in CONTRIBUTING.md).
+#
+# GitHub releases are separate and made by hand; this workflow doesn't touch
+# them. To run it by hand (Actions > Publish to npm > Run workflow), pick the
+# tag under "Use workflow from".
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write # the OIDC token npm trusted publishing exchanges
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      # No dependency cache: a release builds from a clean slate.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Check the tag matches package.json
+        id: version
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_TYPE" != "tag" ]; then
+            echo "::error::Run this workflow from a version tag (Use workflow from > Tags), not from a branch."
+            exit 1
+          fi
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match package.json, which says $version. Push the tag v$version instead."
+            exit 1
+          fi
+          # Already on npm (e.g. published by hand, or a re-run): test, but don't publish.
+          if [ -n "$(npm view "@subsneaker/dexterous@$version" version 2>/dev/null)" ]; then
+            echo "::notice::@subsneaker/dexterous@$version is already on npm, so it won't be published again."
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Trusted publishing needs npm 11.5.1 or newer.
+      - name: Check the npm version
+        run: |
+          if ! node -e '
+            const [major, minor, patch] = process.argv[1].split(".").map(Number);
+            process.exit(major > 11 || (major === 11 && (minor > 5 || (minor === 5 && patch >= 1))) ? 0 : 1);
+          ' "$(npm --version)"; then
+            npm install -g npm@11
+          fi
+          npm --version
+
+      # Scripts are skipped here and the build runs explicitly below. The only
+      # dependency with an install script is fsevents, which is macOS-only.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build
+        run: npm run build
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Smoke test
+        run: node scripts/smoke-test.mjs --port 8686
+
+      # `prepare` builds a clone on `npm install`. npm never runs it for
+      # registry installs, but it warns about it when someone installs the
+      # .tgz file directly, so the published package.json goes without it.
+      - name: Pack
+        id: pack
+        run: |
+          npm pkg delete scripts.prepare
+          tarball="$RUNNER_TEMP/$(npm pack --ignore-scripts --silent --pack-destination "$RUNNER_TEMP")"
+          tar -tzf "$tarball"
+          echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
+
+      # The exact file that gets published, installed the way users install it.
+      - name: Smoke test the packed package
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: |
+          npm install -g --prefix "$RUNNER_TEMP/global" "$TARBALL"
+          node scripts/smoke-test.mjs --port 8687 --bin "$RUNNER_TEMP/global/lib/node_modules/@subsneaker/dexterous/bin/dexterous.js"
+
+      # Prereleases (v1.2.0-rc.1) go to the "next" dist-tag, so people on
+      # "latest" (and the update check) only see finished releases.
+      - name: Publish
+        if: steps.version.outputs.published != 'true'
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: |
+          case "$GITHUB_REF_NAME" in
+            *-*) dist_tag=next ;;
+            *) dist_tag=latest ;;
+          esac
+          npm publish "$TARBALL" --access public --provenance --tag "$dist_tag" --ignore-scripts

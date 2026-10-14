@@ -8,7 +8,7 @@ DeXterous runs Samsung DeX from your Galaxy phone or tablet in a browser tab: on
 
 ![The DeXterous connect screen, with a Galaxy phone ready to start](docs/images/connect.png)
 
-New here? The [user guide](docs/GUIDE.md) walks through everything step by step.
+New here? The [user guide](docs/GUIDE.md) walks through everything step by step. The project site is at [subsneaker.github.io/DeXterous](https://subsneaker.github.io/DeXterous/).
 
 ## Highlights
 
@@ -19,7 +19,8 @@ New here? The [user guide](docs/GUIDE.md) walks through everything step by step.
 - **Mouse, keyboard and touch.** Hover, right-click menus, scrolling, multi-touch, IME and non-English text, and Mac-style ⌘ shortcuts.
 - **Shared clipboard.** Copy on one side, paste on the other, or keep the two clipboards separate.
 - **Lock-aware.** When the phone locks, DeXterous covers DeX, blocks input and mutes audio until you unlock it.
-- **Local by default.** It only listens on `localhost`. Access from other devices needs HTTPS and an access token. No telemetry.
+- **Guided setup.** The connect screen lists your phones with their One UI version and battery, checks your setup step by step, and can add a phone over Wi‑Fi.
+- **Local by default.** It only listens on `localhost`. Access from other devices needs HTTPS and an access token. No telemetry: the only thing DeXterous asks the internet is npm's registry, about once a day, for the latest version number. You can [turn that off](#updating).
 
 ## Requirements
 
@@ -38,29 +39,20 @@ New here? The [user guide](docs/GUIDE.md) walks through everything step by step.
 
 ## Install
 
-Pick one. The repository is private for now, so each option needs access to it: sign in with the GitHub CLI (`gh auth login`, and let it set up Git) or add an SSH key to your GitHub account.
-
-**1. From the latest release (recommended)**
-
-This installs the `dexterous` command:
+Once you have Node.js and adb (see [Requirements](#requirements)), install the `dexterous` command from npm:
 
 ```bash
-gh release download v0.1.0 -R SubSneaker/DeXterous -p '*.tgz'
-npm install -g ./subsneaker-dexterous-0.1.0.tgz
+npm install -g @subsneaker/dexterous
 dexterous
 ```
 
-You can also download the `.tgz` file from the [Releases page](https://github.com/SubSneaker/DeXterous/releases) in your browser. npm 11 may warn that `prepare: npm run build` isn't covered by `allowScripts`. Ignore it: the release tarball is already built, and nothing runs.
-
-**2. Run it from GitHub with npx (no install)**
+**Run it without installing:**
 
 ```bash
-npx github:SubSneaker/DeXterous
+npx @subsneaker/dexterous@latest
 ```
 
-The first run downloads and builds DeXterous (about half a minute). Later runs start from npm's cache.
-
-**3. From source**
+**From source:**
 
 ```bash
 git clone https://github.com/SubSneaker/DeXterous.git
@@ -71,20 +63,32 @@ npm start
 
 `npm install` builds everything. The first build downloads the scrcpy server (v5.0.1) from GitHub and checks its SHA-256. To also get the `dexterous` command, run `npm install -g .` in that folder. It links the command to the clone, so keep the folder.
 
-`npm install -g github:SubSneaker/DeXterous` does **not** work. npm prepares GitHub packages for global installs without their build tools. Use one of the options above.
+On Linux, if `npm install -g` fails with `EACCES`, see [the guide](docs/GUIDE.md#linux).
 
 To uninstall: `npm uninstall -g @subsneaker/dexterous`. The [guide](docs/GUIDE.md#updating-and-uninstalling) explains how to remove the rest.
+
+## Updating
+
+DeXterous looks for a new version about once a day: when it starts, if the last check is more than a day old, and again while it runs. When there is one, it prints a line in the terminal, and the DeXterous page shows a banner with a *What's new* link.
+
+- **Installed with npm:** click *Update now* in the banner on the DeXterous page, or stop DeXterous and run `dexterous update`. The page can do it while DeX isn't running: DeXterous installs the update, restarts in the same terminal and reloads the page.
+- **With npx:** `npx @subsneaker/dexterous@latest` always starts the newest version.
+- **From source:** `git pull`, then `npm install`.
+
+`dexterous update --check` only checks. If npm needs `sudo` on your computer, DeXterous can't update itself; run `sudo npm install -g @subsneaker/dexterous@latest` instead. What's new in each version is in the [changelog](CHANGELOG.md).
+
+The check sends nothing about you or your phone: it asks npm's registry for the latest version number of `@subsneaker/dexterous`, and remembers the answer for a day. To turn it off, start DeXterous with `--no-update-check`, or set `DEXTEROUS_NO_UPDATE_CHECK=1`. It's also off when `$CI` is set and when DeXterous runs from a clone of the repository. See [SECURITY.md](SECURITY.md#update-checks-and-self-updates) for the details.
 
 ## Quick start
 
 1. **Turn on USB debugging.** On the phone, open *Settings › About phone › Software information* and tap *Build number* 7 times. Then turn on *Settings › Developer options › USB debugging*.
 2. **Run `dexterous`.** It starts a small local server (the relay) and opens **http://localhost:8686** in your browser. Keep the terminal open while you use DeX.
-3. **Plug the phone in** with a USB cable and unlock it. When it asks *Allow USB debugging?*, tick *Always allow from this computer* and tap *Allow*.
-4. **Pick your phone** in the list and click **Start DeX**.
+3. **Plug the phone in** with a USB cable and unlock it. When it asks *Allow USB debugging?*, tick *Always allow from this computer* (the phone's own wording) and tap *Allow*.
+4. **Pick your phone** under *Your phone* and click **Start DeX**. The card shows the phone's name, One UI version and battery, and says *Ready* once the phone has allowed your computer. If something is missing, the *Before you start* list below says what to do next.
 5. **Unlock the phone** if DeXterous says it's locked. DeX appears in the tab.
 6. **Press Ctrl+Alt+/** (⌃⌥/ on a Mac) to see all shortcuts and commands. Press Ctrl+C in the terminal to stop DeXterous.
 
-Prefer Wi‑Fi? Connect the phone with `adb connect` first, and it shows up in the list too. See [Connect over Wi‑Fi](docs/GUIDE.md#connect-over-wi-fi-optional).
+Prefer Wi‑Fi? Open *Add a phone over Wi‑Fi* on the connect screen and enter the address from the phone's *Wireless debugging* screen. See [Connect over Wi‑Fi](docs/GUIDE.md#connect-over-wi-fi).
 
 ## Using it
 
@@ -123,13 +127,13 @@ Move the mouse to the top edge of the window. The dock has Back, Home, Recent ap
 
 ### Clipboard
 
-With *Share the clipboard with this computer* on (the default), there's one clipboard: anything you copy in DeX lands on your computer's clipboard, and ⌘V / Ctrl+V pastes your computer's clipboard into DeX. Turn it off to keep two separate clipboards; ⌘V / Ctrl+V then pastes the phone's own clipboard. You can switch it mid-session in the shortcuts panel.
+With *Share the clipboard with this device* on (the default), there's one clipboard: anything you copy in DeX lands on the clipboard of the device you're using, and ⌘V / Ctrl+V pastes that device's clipboard into DeX. Turn it off to keep two separate clipboards; ⌘V / Ctrl+V then pastes the phone's own clipboard. You can switch it mid-session in the shortcuts panel.
 
 ### When the phone locks
 
 By default, when the phone locks (side key, *Lock phone* or Ctrl+Alt+L), DeXterous covers the desktop, ignores input, mutes the phone's audio and holds back clipboard copies until you unlock the phone. While it can't tell whether the phone is locked, it shows *Checking your phone…* and stays covered.
 
-To keep working without unlocking, turn on *Keep DeX usable while the phone is locked*. You can only switch it on while the phone is unlocked. This is a convenience, not a security boundary: anyone who can use this computer's adb can control the phone anyway, so lock your computer too.
+To keep working without unlocking, turn on *Keep DeX usable while the phone is locked*. You can only switch it on while the phone is unlocked. This is a convenience, not a security boundary: anyone who can use your computer's adb can control the phone anyway, so lock your computer too.
 
 ### Staying awake and disconnecting
 
@@ -140,14 +144,25 @@ To keep working without unlocking, turn on *Keep DeX usable while the phone is l
 
 The *Display & input* section on the connect screen. Your browser remembers these. Most take effect the next time you click **Start DeX**; the clipboard, ⌘ and lock settings can also be changed mid-session in the shortcuts panel.
 
+**Picture quality** sets sharpness, codec, bitrate and frame rate in one go:
+
+| Preset | Sharpness | Codec | Bitrate | Frame rate |
+|---|---|---|---|---|
+| **Best (USB)**, the default | 2× | H.265 (H.264 if your browser can't decode H.265) | 24 Mbps | 60 fps |
+| **Balanced (Wi‑Fi)** | 1.5× | H.264 | 8 Mbps | 60 fps |
+| **Light** | 1× | H.264 | 4 Mbps | 30 fps |
+| **Custom** | your choice | your choice | your choice | your choice |
+
+If you pick a phone that's on Wi‑Fi while *Best* (or a custom mix above 8 Mbps) is selected, DeXterous suggests *Balanced*: click *Use Balanced* or *Keep mine*. Choosing *Custom*, or changing any of the four settings below, makes your own mix.
+
 | Setting | What it does |
 |---|---|
-| Sharpness | Virtual display pixels per browser pixel. *Retina (2×)* is crisp on HiDPI screens; *Fast (1×)* is lightest on the phone and the network. The default matches your screen. |
+| Sharpness | Under *Custom*. Virtual display pixels per browser pixel: *Retina (2×)*, *Balanced (1.5×)* or *Fast (1×)*. 2× is crisp on HiDPI screens; 1× is lightest on the phone and the network. |
+| Video codec | Under *Custom*. H.264 works everywhere. H.265 is sharper at the same bitrate in Chrome and Safari. AV1 needs a recent phone. Codecs your browser can't decode are greyed out. |
+| Bitrate / Frame rate | Under *Custom*. 4, 8, 16 or 24 Mbps, and 30, 60 or 120 fps. Lower the bitrate for Wi‑Fi. |
 | DeX text size | Scales DeX's UI by setting the virtual display's DPI. |
-| Video codec | H.264 works everywhere. H.265 is sharper at the same bitrate in Chrome and Safari. AV1 needs a recent phone. Codecs your browser can't decode are greyed out. |
-| Bitrate / Frame rate | 4–24 Mbps (default 16) and 30, 60 or 120 fps (default 60). Lower the bitrate for Wi‑Fi. |
 | Play phone audio here | Sends the phone's audio to the browser. The phone's speaker goes quiet unless *Keep audio on the phone too* is on (Android 13+). |
-| Share the clipboard with this computer | One clipboard for both (default), or two separate ones. |
+| Share the clipboard with this device | One clipboard for both (default), or two separate ones. |
 | Use ⌘ as Ctrl | Mac only, on by default. Left ⌘ acts as Ctrl; right ⌘ stays DeX's ⊞ key. |
 | Show the Android on-screen keyboard | Shows Android's keyboard on the DeX screen when a text field is focused. Off by default. |
 | Move open apps to the phone on disconnect | On by default. When off, apps open on DeX are closed when you disconnect. |
@@ -157,7 +172,7 @@ The *Display & input* section on the connect screen. Your browser remembers thes
 
 | Mode | How to start | Works in | Notes |
 |---|---|---|---|
-| **Through this computer** (default) | `dexterous` | Any modern browser on this computer | Uses the computer's adb server, so the phone can be on USB *or* Wi‑Fi adb. A desktop `scrcpy` can keep running alongside; turn its audio off (`scrcpy --no-audio`) or you'll hear everything twice. |
+| **Through DeXterous** (default) | `dexterous` | Any modern browser on your computer | Uses the computer's adb server, so the phone can be on USB *or* Wi‑Fi adb. A desktop `scrcpy` can keep running alongside; turn its audio off (`scrcpy --no-audio`) or you'll hear everything twice. |
 | **From other devices on your network** (iPad, laptop…) | `dexterous --lan` | Any modern browser on your LAN | Serves HTTPS with a self-signed certificate and requires an access token. Open the printed `https://<ip>:8686/#token=…` link and accept the certificate warning once. The computer's firewall must allow incoming connections; on a Mac, *Block all incoming connections* must be off. Safari and iPad may refuse the self-signed certificate for the live connection; if so, use `--cert`/`--key` with a certificate from mkcert or `tailscale cert`. |
 | **USB, browser only** | Open the app, choose *USB, browser only* | Chrome, Edge (WebUSB) | The browser talks to the phone directly over USB, with no relay. The built `dist/` folder can be hosted on any HTTPS static host, even under a sub-path. The computer's own adb server must not be holding the phone: run `adb kill-server` first. |
 
@@ -167,6 +182,7 @@ Details for each mode are in the [guide](docs/GUIDE.md).
 
 ```text
 dexterous [options]
+dexterous update [--check]  install the latest version (--check: only check)
 npm start -- [options]      (from source)
 ```
 
@@ -182,6 +198,7 @@ npm start -- [options]      (from source)
 | `--require-token` | off (on with `--lan`) | Require the access token on localhost too. |
 | `--dist <dir>` | the package's built app | Serve the web app from another directory. |
 | `--no-open` | | Don't open the browser on start. It isn't opened anyway when `$CI` is set, when the output isn't a terminal, or on Linux without a graphical display. |
+| `--no-update-check` | | Don't check npm's registry for new versions. See [Updating](#updating). |
 | `-v, --verbose` | | Log every tunnel connection. |
 | `-V, --version` | | Print the version. |
 | `-h, --help` | | Show the help. |
@@ -193,8 +210,10 @@ npm start -- [options]      (from source)
 | `ANDROID_ADB_SERVER_PORT` | adb server port on 127.0.0.1. |
 | `DEXTEROUS_TOKEN` | A fixed access token to use instead of the generated one (at least 16 random characters). |
 | `DEXTEROUS_HOME` | Directory for DeXterous's state files, instead of the default below. |
+| `DEXTEROUS_NO_UPDATE_CHECK` | Set to `1` to turn off update checks, like `--no-update-check`. |
+| `DEXTEROUS_UPDATE_REGISTRY` | The npm registry to check for updates, if you use a mirror. Default: `https://registry.npmjs.org`. |
 
-DeXterous keeps its state in a per-user directory: `token` (the access token), `cert.pem` and `key.pem` (the self-signed certificate and its private key). Keep them private. Delete `token` to rotate the token.
+DeXterous keeps its state in a per-user directory: `token` (the access token), `cert.pem` and `key.pem` (the self-signed certificate and its private key). Keep them private. Delete `token` to rotate the token. `update-check.json` remembers the last update check, and `update.log` holds npm's output from the last update installed from the page.
 
 | OS | State directory |
 |---|---|
@@ -204,16 +223,18 @@ DeXterous keeps its state in a per-user directory: `token` (the access token), `
 
 ## Troubleshooting
 
-- **`dexterous: command not found`:** npm's global folder isn't on your `PATH`. `npm prefix -g` shows where it is (the command lives in its `bin` folder on macOS and Linux). Or run it with `npx github:SubSneaker/DeXterous`.
-- **No phone in the list:** unlock the phone, check that USB debugging is on, and run `adb devices`. Tap *Allow* on the phone if it asks.
-- **"The relay can't reach adb":** install Android platform-tools (see [Requirements](#requirements)), then restart `dexterous`.
+- **`dexterous: command not found`:** npm's global folder isn't on your `PATH`. `npm prefix -g` shows where it is (the command lives in its `bin` folder on macOS and Linux). Or run it with `npx @subsneaker/dexterous@latest`.
+- **No phone in the list:** the *Before you start* list on the connect screen shows which step is missing. Unlock the phone, check that USB debugging is on, and run `adb devices`. Tap *Allow* on the phone if it asks.
+- **A phone card says *Tap Allow on your phone*:** unlock it and tap *Allow* on the *Allow USB debugging?* prompt.
+- **A phone card says *needs One UI 8+* or *not a Galaxy*:** DeX in a browser needs a Galaxy on One UI 8 or newer. Update the phone in *Settings › Software update*.
+- **"DeXterous can talk to adb" isn't ticked, or "The relay couldn't talk to adb":** install Android platform-tools (see [Requirements](#requirements)), then restart `dexterous`.
 - **"Port 8686 is already in use":** another DeXterous is probably running. Stop it, or pick another port with `--port`.
 - **"Your phone is locked" / "Your phone is asleep" / "Checking your phone…":** unlock the phone (*Wake phone screen* turns its screen on first). To skip this in future, turn on *Keep DeX usable while the phone is locked* while the phone is unlocked.
 - **Frozen desktop with that setting on:** some phones still pause DeX when their screen goes fully off. Press Ctrl+Alt+W to wake the phone.
 - **Video codec greyed out:** this browser can't decode it. H.264 works everywhere.
 - **"The phone refused to create a virtual display":** the phone is on One UI 7 or older.
 - **WebUSB says the device is busy:** another adb program is holding the phone. Run `adb kill-server`, or use relay mode.
-- **Choppy over Wi‑Fi:** lower *Bitrate* to 4–8 Mbps and *Sharpness* to Balanced or Fast. USB is always smoothest.
+- **Choppy over Wi‑Fi:** pick *Balanced (Wi‑Fi)* or *Light* under *Picture quality*. USB is always smoothest.
 - **Text is too big or too small:** change *DeX text size*, then start again.
 - **Audio plays twice, slightly out of sync:** a desktop `scrcpy` is also forwarding audio. Run it with `--no-audio`.
 - **Other devices can't connect in `--lan` mode:** check the computer's firewall (see [Connection modes](#connection-modes)).
@@ -225,7 +246,7 @@ More answers are in the guide's [troubleshooting and FAQ](docs/GUIDE.md#troubles
 Tested on a Galaxy Z Fold8 (One UI 9, Android 17) with Chrome on macOS:
 
 - **Tested:** connecting through the relay over USB and Wi‑Fi, DeX on the virtual display, hardware video decoding, resizing the window, audio arriving in the browser, disconnecting and reconnecting, phone-side cleanup, lock and sleep detection, and the access-token checks.
-- **Not yet verified on a device:** what typing, clicks, touch and clipboard actually do inside DeX (the phone was locked during testing), browser-only USB mode, LAN mode from another device (including an iPad), Safari and Firefox, and the packaged global install on Windows and Linux. CI builds and smoke-tests DeXterous on macOS, Windows and Linux.
+- **Not yet verified on a device:** what typing, clicks, touch and clipboard actually do inside DeX (the phone was locked during testing), browser-only USB mode, LAN mode from another device (including an iPad), Safari and Firefox, and the npm install on Windows and Linux. CI builds DeXterous, installs the npm package and smoke-tests it on macOS, Windows and Linux.
 
 ## Known limitations
 
@@ -239,7 +260,7 @@ These come from how scrcpy injects input.
 ## How it works
 
 ```text
- Galaxy phone (One UI 8+)            This computer                  Browser tab
+ Galaxy phone (One UI 8+)            Your computer                  Browser tab
 ┌──────────────────────────┐        ┌───────────────────┐        ┌────────────────────────────┐
 │ DeX on a virtual display │ USB or │ adb server        │   WS   │ Tango: ADB + scrcpy client │
 │ scrcpy server (no root)  │◀──────▶│ DeXterous relay   │◀──────▶│ WebCodecs video, audio     │
@@ -271,18 +292,18 @@ npm run dev         # terminal 2: Vite dev server with hot reload
 
 | Folder | Contents |
 |---|---|
-| `bin/` | The `dexterous` command. |
-| `server/` | The relay: HTTP(S) server, WebSocket-to-adb tunnel, access checks, certificates. |
+| `bin/` | The `dexterous` command, which starts the relay and restarts it after an update. |
+| `server/` | The relay: HTTP(S) server, WebSocket-to-adb tunnel, access checks, certificates, update checks. |
 | `src/` | The web app: UI controller, scrcpy session, input, transports, settings and styles. |
 | `public/` | Static files copied into the build. The scrcpy server and its license are downloaded here at build time. |
 | `docs/` | The user guide. |
 | `scripts/` | Build helpers and the smoke test. |
 
-CI runs on GitHub Actions (Linux with Node 22 and 24, macOS and Windows with Node 22): type-check, build and a smoke test. [CONTRIBUTING.md](CONTRIBUTING.md) has the architecture map and coding rules.
+CI runs on GitHub Actions (Linux with Node 22 and 24, macOS and Windows with Node 22): type-check, build, and smoke tests of the build and of the packed npm package. Pushing a version tag publishes the package to npm. [CONTRIBUTING.md](CONTRIBUTING.md) has the architecture map, the coding rules and the release steps.
 
 ## Security
 
-The relay can run any adb command on your phone, so treat its address and token like a password. By default it only listens on `127.0.0.1` and rejects pages from other origins and DNS-rebinding attempts. `--lan` mode adds HTTPS and requires the access token. Never expose DeXterous to the internet. See [SECURITY.md](SECURITY.md) for the threat model and how to report a vulnerability.
+The relay can run any adb command on your phone, so treat its address and token like a password. By default it only listens on `127.0.0.1` and rejects pages from other origins and DNS-rebinding attempts. `--lan` mode adds HTTPS and requires the access token. Installing an update from the page only works from the computer DeXterous runs on, never from another device. Never expose DeXterous to the internet. See [SECURITY.md](SECURITY.md) for the threat model and how to report a vulnerability.
 
 ## Contributing
 

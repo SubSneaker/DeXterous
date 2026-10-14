@@ -46,7 +46,7 @@ export interface InputControllerHooks {
    * Return true to forward the paste shortcut (Ctrl+V, Ctrl+Shift+V,
    * Shift+Insert; ⌘V on Apple platforms) to the phone as ordinary key events,
    * so DeX pastes the phone's own clipboard, instead of letting the browser
-   * paste the computer's clipboard.
+   * paste this device's clipboard.
    */
   preferPhonePaste?: () => boolean;
 }
@@ -755,7 +755,7 @@ export class InputController {
       return;
     }
     // Normally let the browser run its paste shortcut so it fires a `paste`
-    // event with the computer's clipboard (forwarding it would paste the
+    // event with this device's clipboard (forwarding it would paste the
     // phone's). With `preferPhonePaste` it is forwarded as ordinary keys.
     if (isPasteShortcut(event, this.#macLike) && !this.#hooks.preferPhonePaste?.()) {
       return;

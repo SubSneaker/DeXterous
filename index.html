@@ -25,12 +25,30 @@
         </div>
       </header>
 
+      <aside class="update" id="update-banner" aria-label="Update available" hidden>
+        <div class="update-body">
+          <p class="update-title" id="update-title"></p>
+          <p class="update-detail" id="update-detail" role="status" aria-live="polite" hidden></p>
+          <div class="update-command" id="update-command" hidden>
+            <code id="update-command-text"></code>
+            <button type="button" class="button-secondary" id="update-copy">Copy</button>
+          </div>
+        </div>
+        <div class="update-actions">
+          <a class="link" id="update-notes" href="https://github.com/SubSneaker/DeXterous/releases" target="_blank" rel="noopener noreferrer">What’s new</a>
+          <button type="button" class="button-secondary" id="update-install" hidden>Update now</button>
+          <button type="button" class="icon-button icon-button-quiet" id="update-dismiss" aria-label="Dismiss" title="Dismiss">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          </button>
+        </div>
+      </aside>
+
       <section class="card" aria-labelledby="connect-title">
         <h2 id="connect-title">Connect your phone</h2>
 
         <div class="methods" id="methods" role="tablist" aria-label="Connection method">
           <button type="button" role="tab" class="method" id="tab-relay" aria-controls="panel-relay" aria-selected="true">
-            <span class="method-name">Through this computer</span>
+            <span class="method-name">Through DeXterous</span>
             <span class="method-detail">USB or Wi‑Fi, any browser</span>
           </button>
           <button type="button" role="tab" class="method" id="tab-webusb" aria-controls="panel-webusb" aria-selected="false">
@@ -40,77 +58,138 @@
         </div>
 
         <div class="panel" id="panel-relay" role="tabpanel" aria-labelledby="tab-relay">
-          <label class="field-label" for="relay-device">Phone</label>
-          <div class="device-row">
-            <select id="relay-device" class="select"></select>
+          <div class="panel-head">
+            <span class="field-label" id="relay-label">Your phone</span>
             <button type="button" class="icon-button" id="relay-refresh" aria-label="Refresh phone list" title="Refresh phone list">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 4v5h-5" /></svg>
             </button>
           </div>
+          <div class="phones" id="relay-devices" role="radiogroup" aria-labelledby="relay-label" hidden></div>
+          <p class="phones-empty" id="relay-empty"></p>
           <p class="hint" id="relay-hint"></p>
+
+          <details class="wifi" id="wifi-add">
+            <summary>Add a phone over Wi‑Fi</summary>
+            <form class="wifi-form" id="wifi-form" novalidate>
+              <p class="wifi-help">
+                Your phone and the computer running DeXterous need to be on the same Wi‑Fi. On the phone, open
+                Settings › Developer options › Wireless debugging and turn it on.
+              </p>
+              <label class="field">
+                <span class="field-label">Phone address</span>
+                <input class="input" id="wifi-address" name="address" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="192.168.1.20:37215" aria-describedby="wifi-address-help" />
+                <span class="field-help" id="wifi-address-help">Shown on the Wireless debugging screen, next to “IP address &amp; port”.</span>
+              </label>
+              <details class="wifi-pair" id="wifi-pair">
+                <summary>First time pairing this phone?</summary>
+                <p class="wifi-help">
+                  Tap <em>Pair device with pairing code</em> on the phone. It shows a pairing address and a
+                  6-digit code. Enter both, and keep that window open until it works.
+                </p>
+                <div class="wifi-pair-fields">
+                  <label class="field">
+                    <span class="field-label">Pairing address</span>
+                    <input class="input" id="wifi-pair-address" name="pairAddress" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="192.168.1.20:41555" />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">Pairing code</span>
+                    <input class="input input-code" id="wifi-pair-code" name="pairCode" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="123456" />
+                  </label>
+                </div>
+              </details>
+              <div class="wifi-actions">
+                <button type="submit" class="button-secondary" id="wifi-submit">Connect</button>
+                <p class="form-status" id="wifi-status" role="status" aria-live="polite"></p>
+              </div>
+            </form>
+          </details>
         </div>
 
         <div class="panel" id="panel-webusb" role="tabpanel" aria-labelledby="tab-webusb" hidden>
-          <label class="field-label" for="webusb-device">Phone</label>
-          <div class="device-row">
-            <select id="webusb-device" class="select"></select>
+          <div class="panel-head">
+            <span class="field-label" id="webusb-label">Your phone</span>
             <button type="button" class="button-secondary" id="webusb-pick">Add phone…</button>
           </div>
+          <div class="phones" id="webusb-devices" role="radiogroup" aria-labelledby="webusb-label" hidden></div>
+          <p class="phones-empty" id="webusb-empty"></p>
           <p class="hint" id="webusb-hint"></p>
         </div>
+
+        <p class="suggestion" id="suggestion" hidden>
+          <span id="suggestion-text">This phone is on Wi‑Fi. Balanced picture quality usually works best.</span>
+          <span class="suggestion-actions">
+            <button type="button" class="link-button" id="suggestion-accept">Use Balanced</button>
+            <button type="button" class="link-button link-button-quiet" id="suggestion-dismiss">Keep mine</button>
+          </span>
+        </p>
 
         <button type="button" class="button-primary" id="start">Start DeX</button>
         <p class="status" id="status" role="status" aria-live="polite"></p>
 
         <details class="settings">
           <summary>Display &amp; input</summary>
-          <form class="settings-grid" id="settings-form">
-            <label class="field">
-              <span class="field-label">Sharpness</span>
-              <select name="resolutionScale" class="select">
-                <option value="2">Retina (2×)</option>
-                <option value="1.5">Balanced (1.5×)</option>
-                <option value="1">Fast (1×)</option>
-              </select>
-            </label>
-            <label class="field">
-              <span class="field-label">DeX text size</span>
-              <select name="uiZoom" class="select">
-                <option value="0.8">Small</option>
-                <option value="1">Default</option>
-                <option value="1.15">Large</option>
-                <option value="1.3">Larger</option>
-              </select>
-            </label>
-            <label class="field">
-              <span class="field-label">Video codec</span>
-              <select name="videoCodec" class="select">
-                <option value="h264">H.264 (most compatible)</option>
-                <option value="h265">H.265 (sharper, Chrome/Safari)</option>
-                <option value="av1">AV1 (newest phones)</option>
-              </select>
-            </label>
-            <label class="field">
-              <span class="field-label">Bitrate</span>
-              <select name="videoBitRate" class="select">
-                <option value="4">4 Mbps (Wi‑Fi)</option>
-                <option value="8">8 Mbps</option>
-                <option value="16">16 Mbps</option>
-                <option value="24">24 Mbps (USB)</option>
-              </select>
-            </label>
-            <label class="field">
-              <span class="field-label">Frame rate</span>
-              <select name="maxFps" class="select">
-                <option value="30">30 fps</option>
-                <option value="60">60 fps</option>
-                <option value="120">120 fps</option>
-              </select>
-            </label>
+          <form class="settings-form" id="settings-form">
+            <div class="quality">
+              <span class="field-label" id="quality-label">Picture quality</span>
+              <div class="presets" id="presets" role="radiogroup" aria-labelledby="quality-label"></div>
+              <p class="preset-summary" id="preset-summary"></p>
+            </div>
+
+            <details class="custom" id="custom-settings">
+              <summary>Custom</summary>
+              <div class="settings-grid">
+                <label class="field">
+                  <span class="field-label">Sharpness</span>
+                  <select name="resolutionScale" class="select">
+                    <option value="2">Retina (2×)</option>
+                    <option value="1.5">Balanced (1.5×)</option>
+                    <option value="1">Fast (1×)</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-label">Video codec</span>
+                  <select name="videoCodec" class="select">
+                    <option value="h264">H.264 (most compatible)</option>
+                    <option value="h265">H.265 (sharper, Chrome/Safari)</option>
+                    <option value="av1">AV1 (newest phones)</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-label">Bitrate</span>
+                  <select name="videoBitRate" class="select">
+                    <option value="4">4 Mbps (Wi‑Fi)</option>
+                    <option value="8">8 Mbps</option>
+                    <option value="16">16 Mbps</option>
+                    <option value="24">24 Mbps (USB)</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-label">Frame rate</span>
+                  <select name="maxFps" class="select">
+                    <option value="30">30 fps</option>
+                    <option value="60">60 fps</option>
+                    <option value="120">120 fps</option>
+                  </select>
+                </label>
+              </div>
+            </details>
+
+            <div class="settings-grid">
+              <label class="field">
+                <span class="field-label">DeX text size</span>
+                <select name="uiZoom" class="select">
+                  <option value="0.8">Small</option>
+                  <option value="1">Default</option>
+                  <option value="1.15">Large</option>
+                  <option value="1.3">Larger</option>
+                </select>
+              </label>
+            </div>
+
             <div class="toggles">
               <label class="toggle"><input type="checkbox" name="audio" /> <span>Play phone audio here</span></label>
               <label class="toggle"><input type="checkbox" name="audioDup" /> <span>Keep audio on the phone too</span></label>
-              <label class="toggle"><input type="checkbox" name="clipboardSync" /> <span>Share the clipboard with this computer</span></label>
+              <label class="toggle"><input type="checkbox" name="clipboardSync" /> <span>Share the clipboard with this device</span></label>
               <label class="toggle" id="setting-command-as-ctrl"><input type="checkbox" name="commandAsCtrl" /> <span>Use ⌘ as Ctrl (Mac shortcuts)</span></label>
               <label class="toggle"><input type="checkbox" name="showAndroidKeyboard" /> <span>Show the Android on-screen keyboard</span></label>
               <label class="toggle"><input type="checkbox" name="keepAppsOnDisconnect" /> <span>Move open apps to the phone on disconnect</span></label>
@@ -120,14 +199,21 @@
         </details>
       </section>
 
-      <section class="requirements" aria-label="Before you start">
-        <h3>Before you start</h3>
-        <ol>
-          <li>A Galaxy phone or tablet with <strong>One UI 8 or newer</strong>.</li>
-          <li><strong>USB debugging</strong> on: Settings › About phone › Software information › tap <em>Build number</em> 7 times, then Developer options › USB debugging.</li>
-          <li>Plug the phone in and tap <em>Allow</em> when it asks.</li>
-        </ol>
-      </section>
+      <details class="checklist" id="checklist" open>
+        <summary>
+          <span class="checklist-title">Before you start</span>
+          <span class="checklist-count" id="checklist-count"></span>
+        </summary>
+        <ol class="steps" id="checklist-steps"></ol>
+      </details>
+
+      <footer class="footer">
+        <span id="footer-version">DeXterous</span>
+        <nav class="footer-links" aria-label="Links">
+          <a href="https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md" target="_blank" rel="noopener noreferrer">Guide</a>
+          <a href="https://subsneaker.github.io/DeXterous/" target="_blank" rel="noopener noreferrer">Project site</a>
+        </nav>
+      </footer>
     </main>
 
     <!-- DeX session -->
@@ -238,7 +324,7 @@
           <form class="guide-toggles" id="guide-settings-form">
             <label class="toggle" id="guide-command-as-ctrl"><input type="checkbox" name="commandAsCtrl" /> <span>Use ⌘ as Ctrl (right ⌘ stays DeX's ⊞ key)</span></label>
             <label class="toggle"><input type="checkbox" name="allowWhileLocked" /> <span>Keep DeX usable while the phone is locked</span></label>
-            <label class="toggle"><input type="checkbox" name="clipboardSync" /> <span>Share the clipboard with this computer</span></label>
+            <label class="toggle"><input type="checkbox" name="clipboardSync" /> <span>Share the clipboard with this device</span></label>
           </form>
         </section>
 
@@ -250,7 +336,7 @@
             <div><dt><kbd class="meta-key"></kbd> <kbd>D</kbd></dt><dd>Show the desktop</dd></div>
             <div><dt><kbd>Alt</kbd> <kbd>Tab</kbd></dt><dd>Switch apps (in full screen)</dd></div>
             <div><dt><kbd>Alt</kbd> <kbd>F4</kbd></dt><dd>Close the window</dd></div>
-            <div><dt><kbd class="paste-key"></kbd></dt><dd>Paste (from this computer when the clipboard is shared)</dd></div>
+            <div><dt><kbd class="paste-key"></kbd></dt><dd>Paste (from this device when the clipboard is shared)</dd></div>
           </dl>
           <p class="guide-note">DeX shortcuts can vary between One UI versions.</p>
         </section>

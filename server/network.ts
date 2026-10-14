@@ -48,7 +48,7 @@ export function formatHost(host: string): string {
   return net.isIPv6(host) ? `[${host}]` : host;
 }
 
-/** True for addresses that are only reachable from this machine. */
+/** True for addresses that are only reachable from the computer running DeXterous. */
 export function isLoopbackAddress(host: string): boolean {
   const value = host.toLowerCase().replace(/^\[(.*)\]$/, "$1");
   if (value === "localhost") return true;
@@ -68,7 +68,7 @@ export function isWildcardAddress(host: string): boolean {
 }
 
 /**
- * Non-internal IPv4 addresses of this machine (Wi-Fi, Ethernet, VPNs such as
+ * Non-internal IPv4 addresses of the computer running DeXterous (Wi-Fi, Ethernet, VPNs such as
  * Tailscale...). With `includeLinkLocal: false`, 169.254.x.x self-assigned
  * addresses are skipped since they are rarely what the user wants to open.
  */

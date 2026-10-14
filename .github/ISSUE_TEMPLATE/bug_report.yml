@@ -23,10 +23,11 @@ body:
     attributes:
       label: How did you install it?
       options:
-        - Release tarball (npm install -g ./subsneaker-dexterous-*.tgz)
-        - npx
-        - Release tarball
-        - From source
+        - npm (npm install -g @subsneaker/dexterous)
+        - npx (npx @subsneaker/dexterous@latest)
+        - From source (a clone of the repository)
+        - Browser-only app on the project site
+        - Release tarball (0.1.0)
     validations:
       required: true
 
@@ -61,8 +62,8 @@ body:
     attributes:
       label: Connection mode
       options:
-        - Through this computer (relay), phone on USB
-        - Through this computer (relay), phone on Wi-Fi adb
+        - Through DeXterous (relay), phone on USB
+        - Through DeXterous (relay), phone on Wi-Fi adb
         - From another device on the network (--lan)
         - USB, browser only (WebUSB)
     validations:

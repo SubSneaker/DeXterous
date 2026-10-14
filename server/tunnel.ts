@@ -3,7 +3,8 @@
 // Each WebSocket on /adb gets its own fresh TCP connection to the adb server,
 // and bytes are copied verbatim in both directions as binary frames. The
 // browser speaks the adb server ("smart socket") protocol itself; the relay
-// never parses it.
+// never parses it. It only peeks at the service name of the first request,
+// to tell the connect screen's device list from a DeX session (busyCount).
 //
 // Close codes the browser can see (the relay never forwards adb data on
 // anything but a successfully opened tunnel):
@@ -11,6 +12,7 @@
 //   1001  the relay is shutting down (sent by relay.ts too)
 //   1003  a text frame was received (only binary frames are accepted)
 //   1011  the adb server is unreachable or the connection failed
+//   1012  the relay is updating itself and will be back shortly (relay.ts)
 //   1013  too many open tunnels, try again later (relay.ts)
 //   4401  missing or invalid access token (relay.ts)
 import net from "node:net";
@@ -38,6 +40,12 @@ interface Tunnel {
    * received meanwhile, so the heartbeat must not count them as missing.
    */
   wsPaused: boolean;
+  /**
+   * What the first adb request asked for: a device list subscription
+   * (`host:track-devices`, kept open by the connect screen) or anything else.
+   * Unknown until the browser's first message.
+   */
+  purpose: "unknown" | "track-devices" | "other";
 }
 
 export class TunnelManager {
@@ -66,7 +74,7 @@ export class TunnelManager {
       tcp.destroy(error);
     }, ADB_CONNECT_TIMEOUT_MS);
 
-    const tunnel: Tunnel = { id, ws, tcp, alive: true, wsPaused: false };
+    const tunnel: Tunnel = { id, ws, tcp, alive: true, wsPaused: false, purpose: "unknown" };
     this.#tunnels.add(tunnel);
     log.debug(`tunnel #${id} opened from ${peer} to adb ${target.host}:${target.port}`);
 
@@ -101,6 +109,7 @@ export class TunnelManager {
       }
       if (tcp.destroyed) return;
       const chunk = toBuffer(data);
+      if (tunnel.purpose === "unknown") tunnel.purpose = isTrackDevicesRequest(chunk) ? "track-devices" : "other";
       bytesToAdb += chunk.length;
       if (!tcp.write(chunk) && !tunnel.wsPaused) {
         tunnel.wsPaused = true;
@@ -194,6 +203,17 @@ export class TunnelManager {
     }
   }
 
+  /**
+   * Open tunnels other than device list subscriptions: while there are any,
+   * a DeX session (or another adb command) is probably running. Tunnels that
+   * haven't sent their request yet count too.
+   */
+  get busyCount(): number {
+    let count = 0;
+    for (const tunnel of this.#tunnels) if (tunnel.purpose !== "track-devices") count++;
+    return count;
+  }
+
   /** Closes every tunnel, e.g. on shutdown. */
   closeAll(code: number, reason: string): void {
     for (const tunnel of this.#tunnels) {
@@ -203,6 +223,15 @@ export class TunnelManager {
       setTimeout(() => tunnel.ws.terminate(), 500).unref();
     }
   }
+}
+
+/**
+ * The browser's first message on a tunnel is an adb server request: four hex
+ * digits of length, then the service name. This only peeks at the name; the
+ * bytes are forwarded unchanged.
+ */
+function isTrackDevicesRequest(chunk: Buffer): boolean {
+  return chunk.length >= 22 && chunk.toString("latin1", 4, 22) === "host:track-devices";
 }
 
 function toBuffer(data: RawData): Buffer {

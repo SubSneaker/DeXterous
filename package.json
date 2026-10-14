@@ -1,7 +1,6 @@
 {
   "name": "@subsneaker/dexterous",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.2.0",
   "description": "Run Samsung DeX from your Galaxy phone in any web browser.",
   "type": "module",
   "scripts": {
@@ -44,7 +43,7 @@
     "type": "git",
     "url": "git+https://github.com/SubSneaker/DeXterous.git"
   },
-  "homepage": "https://github.com/SubSneaker/DeXterous#readme",
+  "homepage": "https://subsneaker.github.io/DeXterous/",
   "bugs": "https://github.com/SubSneaker/DeXterous/issues",
   "keywords": [
     "samsung",
@@ -56,6 +55,9 @@
     "desktop",
     "remote-desktop"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "dexterous": "bin/dexterous.js"
   },

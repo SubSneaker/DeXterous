@@ -20,6 +20,15 @@ export function defaultSettings(): DexSettings {
   };
 }
 
+/** Whether the user has ever saved settings here (false on a first visit). */
+export function hasSavedSettings(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
 export function loadSettings(): DexSettings {
   const defaults = defaultSettings();
   try {

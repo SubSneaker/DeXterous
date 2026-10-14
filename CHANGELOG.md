@@ -3,6 +3,33 @@
 All notable changes to DeXterous are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-10-14
+
+### Added
+
+- DeXterous is on npm as `@subsneaker/dexterous`. Install it with `npm install -g @subsneaker/dexterous`, or run it with `npx @subsneaker/dexterous@latest`.
+- Update checks. DeXterous asks npm's registry for the latest version about once a day, and prints a line in the terminal when there's a new one. The check sends nothing about you; turn it off with `--no-update-check` or `DEXTEROUS_NO_UPDATE_CHECK=1`. It's off when `$CI` is set and when running from a clone.
+- `dexterous update` installs the latest version, and `dexterous update --check` only checks. Copies run through npx or from a clone get told what to run instead.
+- The relay's `/api/info` reports update details, and `POST /api/update` lets the DeXterous page install an update and restart the relay. It only works from the computer DeXterous runs on, while DeX isn't running. npm runs in the background, so stopping DeXterous mid-update waits for it to finish, and a version that needs a newer Node.js is refused.
+- `dexterous` restarts the relay in the same terminal after an update.
+- A publish workflow: pushing a version tag publishes the package to npm with trusted publishing and provenance.
+- The connect screen shows an update banner when a new version is out, with a *What's new* link and either *Update now* or the command to run, with a *Copy* button.
+- Phone cards on the connect screen: each phone shows its name, model code, One UI version, battery, a *USB* or *Wi‑Fi* badge and whether it's ready. Phones on One UI 7 or older, or that aren't Galaxy phones, get a warning. DeXterous remembers the phone you used last. The arrow keys move between phones and Enter starts DeX.
+- *Before you start*, a live setup checklist: DeXterous running, adb reachable, phone found, USB debugging allowed, One UI 8 or newer. The first missing step says how to fix it, and the list folds up to *All set* when everything is ready.
+- Picture quality presets in *Display & input*: *Best (USB)*, *Balanced (Wi‑Fi)*, *Light* and *Custom*. *Best* is the default on a first visit. On a Wi‑Fi phone, DeXterous suggests *Balanced*.
+- *Add a phone over Wi‑Fi* on the connect screen: enter the phone's address, and the first time, its pairing address and 6-digit code. No need for `adb pair` and `adb connect` in a terminal (they still work).
+- A footer on the connect screen with the version and links to the guide and the project site.
+- A project site at https://subsneaker.github.io/DeXterous/, published from `site/` with GitHub Pages, with a copy of the browser-only app at https://subsneaker.github.io/DeXterous/app/.
+
+### Changed
+
+- The connect screen's phone drop-down is now a list of phone cards, and *Sharpness*, *Video codec*, *Bitrate* and *Frame rate* moved under *Picture quality › Custom*.
+- CI also packs the npm package, installs it globally into a temporary folder and smoke-tests that copy.
+
+### Removed
+
+- Installing from the GitHub release tarball and running `npx github:SubSneaker/DeXterous` are no longer the documented ways to install. Use npm.
+
 ## [0.1.0] - 2026-10-14
 
 First release.
@@ -11,7 +38,7 @@ First release.
 
 - Samsung DeX in any browser, running on a scrcpy 5.0.1 virtual display that resizes with the window. Works on One UI 8 and newer, without root.
 - An installable `dexterous` command. It starts the relay and opens your browser (`--no-open` to skip that), and `--version` prints the version. Install it from the release tarball, run it from GitHub with `npx`, or link a clone with `npm install -g .`.
-- Relay mode (`dexterous`): a local Node server that tunnels the browser to the computer's adb server. It accepts only same-origin pages on localhost and blocks DNS rebinding. It starts the adb server if none is running.
+- Relay mode (`dexterous`): a local Node server that tunnels the browser to the adb server on the computer running it. It accepts only same-origin pages on localhost and blocks DNS rebinding. It starts the adb server if none is running.
 - LAN mode (`dexterous --lan`): HTTPS with a self-signed certificate plus a required access token, for using DeX from other devices. Bring your own certificate with `--cert`/`--key`, and put DeXterous behind a reverse proxy with `--allow-origin`.
 - A per-user state directory for the access token and certificate (`~/Library/Application Support/DeXterous`, `%APPDATA%\DeXterous` or `~/.config/dexterous`), overridable with `DEXTEROUS_HOME`. `DEXTEROUS_TOKEN` sets a fixed token.
 - Browser-only USB mode (WebUSB) for Chrome and Edge. The built app also works from any HTTPS static host, even under a sub-path.
@@ -33,4 +60,5 @@ First release.
 - Typing non-ASCII text goes through the phone's clipboard.
 - Browser-reserved shortcuts (⌘W, ⌘T, ⌘Q, Alt+Tab) only reach DeX in full screen in Chrome or Edge.
 
+[0.2.0]: https://github.com/SubSneaker/DeXterous/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SubSneaker/DeXterous/releases/tag/v0.1.0

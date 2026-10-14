@@ -7,14 +7,14 @@
 | 0.1.x | Yes |
 | Older | No |
 
-Security fixes are released as new patch versions. Update with the same command you installed with (see the [guide](docs/GUIDE.md#updating-and-uninstalling)).
+Security fixes are released as new patch versions. DeXterous tells you when one is out; update with `dexterous update`, or as the [guide](docs/GUIDE.md#updating) explains for npx and source installs.
 
 ## Reporting a vulnerability
 
 Please report vulnerabilities **privately**:
 
-- **Once the repository is public:** use GitHub's private vulnerability reporting: **[Report a vulnerability](https://github.com/SubSneaker/DeXterous/security/advisories/new)** (the *Security* tab of the repository, then *Report a vulnerability*).
-- **While the repository is private** (GitHub doesn't offer private reporting there), contact the maintainer, [@SubSneaker](https://github.com/SubSneaker), directly on GitHub and ask for a private channel before sharing any details.
+- Use GitHub's private vulnerability reporting: **[Report a vulnerability](https://github.com/SubSneaker/DeXterous/security/advisories/new)** (the *Security* tab of the repository, then *Report a vulnerability*).
+- If that doesn't work for you, contact the maintainer, [@SubSneaker](https://github.com/SubSneaker), on GitHub and ask for a private channel before sharing any details.
 
 Don't open a public issue, discussion or pull request for a vulnerability. Please include:
 
@@ -35,11 +35,11 @@ DeXterous's relay connects the browser to the computer's adb server. **Whoever c
 
 ### Defaults
 
-- **Loopback only.** By default the relay binds to `127.0.0.1`, so only programs on this computer can reach it.
+- **Loopback only.** By default the relay binds to `127.0.0.1`, so only programs on the computer running DeXterous can reach it.
 - **Host check (DNS rebinding).** In loopback mode, every request must name a loopback host (`localhost`, `127.0.0.1`, `[::1]`) or an explicitly allowed origin. This stops a hostile website from pointing its own domain at `127.0.0.1` and talking to the relay as if it were same-origin.
 - **Origin check (cross-site WebSocket hijacking).** Browsers always send an `Origin` header on WebSocket upgrades, and pages can't forge it. The tunnel only accepts upgrades whose origin matches the relay's own address, or one passed with `--allow-origin`. Other websites open in your browser can't connect.
 - **Framing blocked.** Responses carry `Content-Security-Policy: frame-ancestors 'none'` and `X-Content-Type-Options: nosniff`, so other sites can't embed the app to trick you into clicking.
-- **No token on loopback.** On `localhost`, the relay trusts same-origin pages without a token. Any program running as any user on this computer could reach the adb server directly anyway, since adb's own server has no authentication. On a shared computer, use `--require-token`.
+- **No token on loopback.** On `localhost`, the relay trusts same-origin pages without a token. Any program running as any user on that computer could reach the adb server directly anyway, since adb's own server has no authentication. On a shared computer, use `--require-token`.
 
 ### LAN mode
 
@@ -61,11 +61,28 @@ The relay also caps open tunnels and connections, and logs rejected tunnel attem
 
 When the phone locks, DeXterous covers DeX, blocks input, mutes audio and holds back clipboard copies, and it fails closed when it can't read the lock state. The *Keep DeX usable while the phone is locked* switch can only be turned on while the phone is unlocked.
 
-This protects against casual use of an unattended browser tab. It does **not** protect the phone from anyone who can use this computer's adb, or who has your DeXterous link and token: they can control the phone directly. Lock your computer when you leave it.
+This protects against casual use of an unattended browser tab. It does **not** protect the phone from anyone who can use the adb on the computer running DeXterous, or who has your DeXterous link and token: they can control the phone directly. Lock your computer when you leave it.
 
 ### Browser-only USB mode
 
 In WebUSB mode there's no relay. The browser generates its own adb key, stores it in the site's storage (IndexedDB), and the phone asks you to authorize it. Whoever controls the page you load controls what it does with your phone after you approve it, so only use a copy of the app you host yourself or trust. You can revoke all authorized keys on the phone with *Developer options › Revoke USB debugging authorizations*.
+
+### Update checks and self-updates
+
+**The check.** About once a day (when it starts, if the last check is more than a day old, and again while it runs), DeXterous sends one HTTPS request to the npm registry (`https://registry.npmjs.org/-/package/@subsneaker%2fdexterous/dist-tags`) to learn the latest version number. The request carries no version, ID, token or cookie, and nothing about your computer or phone. The registry sees your IP address, as with any request. The answer is saved in `update-check.json` in the state directory. After a failed attempt (for example, offline), the next start tries again an hour later at the earliest. Only a well-formed version number is accepted from the answer. Turn the check off with `--no-update-check` or `DEXTEROUS_NO_UPDATE_CHECK=1`. It's also off when `$CI` is set and when DeXterous runs from a clone. `DEXTEROUS_UPDATE_REGISTRY` points it at another registry, such as a company mirror; use an `https://` address there.
+
+**Installing an update** runs `npm install -g @subsneaker/dexterous@latest` on your computer, with your own npm and its settings, into the folder the running copy was installed in. npm is told to refuse a version that needs a newer Node.js (`--engine-strict`). From the page, npm runs in the background with its output in `update.log`, and stopping DeXterous waits for it to finish. That's the same as running it yourself, but it can be started from the DeXterous page (`POST /api/update`), so the relay only accepts that request when all of these hold:
+
+- it comes from the computer running DeXterous (a loopback address). Other devices are refused, even in `--lan` mode;
+- it comes from the DeXterous page itself, opened on `localhost`, `127.0.0.1` or `[::1]`: the `Origin` header must match the relay's own address. Other websites, pages behind a reverse proxy (`--allow-origin`) and DNS-rebinding tricks are refused;
+- if the relay requires the access token, the request carries it (`Authorization: Bearer …`);
+- no DeX session is open, since the relay restarts afterwards.
+
+The request takes no parameters. It can't choose a version, a package or a command: it can only install the latest `@subsneaker/dexterous`, and only when the last check found a version newer than the running one. When DeXterous can tell that npm would need administrator rights, it doesn't try, and tells you the command to run yourself. While an update installs, new connections to the phone are refused. Other devices are never offered the option.
+
+One way around the loopback rule remains: a port forward from another machine (for example `ssh -L`) arrives from loopback. Setting one up already takes a shell on the computer running DeXterous.
+
+**Where the package comes from.** Releases are published to npm by a GitHub Actions workflow in this repository, using npm trusted publishing: no npm token is stored anywhere, and each version it publishes carries a provenance statement that links it to the commit and the workflow run that built it. The package page on [npmjs.com](https://www.npmjs.com/package/@subsneaker/dexterous) shows the provenance of each version. `npm audit signatures` checks signatures and provenance too, but only for packages installed in a project, not global ones.
 
 ### On the phone
 

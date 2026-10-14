@@ -8,7 +8,7 @@
 //   node server/relay.ts [--lan] [--port 8686] ...   (from a clone, unbuilt)
 //
 // `npm run build` compiles this file to build/server/relay.js, which is what
-// bin/dexterous.js runs.
+// bin/dexterous.js runs (and starts again after a self-update, see update.ts).
 import fs from "node:fs";
 import http, { STATUS_CODES } from "node:http";
 import https from "node:https";
@@ -49,6 +49,8 @@ import {
   checkHost,
   checkTunnelOrigin,
   checkTunnelToken,
+  checkUpdateRequest,
+  isLocalRequest,
   createAccessPolicy,
   loadOrCreateToken,
   parseHostHeader,
@@ -56,6 +58,14 @@ import {
 } from "./security.ts";
 import { createStaticHandler } from "./static.ts";
 import { TunnelManager } from "./tunnel.ts";
+import {
+  RESTART_EXIT_CODE,
+  SUPERVISOR_ENV,
+  UpdateManager,
+  classifyInstall,
+  runUpdateCommand,
+  updateCheckBlocker,
+} from "./update.ts";
 
 /** The installed package (or the clone): holds package.json and dist/. */
 const PACKAGE_ROOT = findPackageRoot(import.meta.dirname);
@@ -63,6 +73,7 @@ const PACKAGE_ROOT = findPackageRoot(import.meta.dirname);
 const DATA_DIR = resolveStateDir();
 const TUNNEL_PATH = "/adb";
 const INFO_PATH = "/api/info";
+const UPDATE_PATH = "/api/update";
 /** Generous: a DeX session uses a handful of adb sockets at a time. */
 const MAX_TUNNELS = 256;
 /** Caps sockets per listener so a LAN client cannot exhaust file descriptors. */
@@ -70,11 +81,29 @@ const MAX_CONNECTIONS = 1024;
 /** Large enough for any adb sync/push chunk the browser may send. */
 const MAX_FRAME_BYTES = 64 * 1024 * 1024;
 const HEARTBEAT_INTERVAL_MS = 30_000;
+/** A signal this soon after the first one is the same Ctrl+C, seen twice. */
+const DUPLICATE_SIGNAL_MS = 500;
 
 async function main(): Promise<void> {
+  // Started by bin/dexterous.js, which restarts the relay after an update
+  // and passes Ctrl+C (and other stop signals) on through the IPC channel.
+  const supervised = process.env[SUPERVISOR_ENV] === "1" && typeof process.send === "function";
+  delete process.env[SUPERVISOR_ENV];
+  if (supervised) listenToSupervisor();
+
+  const argv = process.argv.slice(2);
+  if (argv[0] === "update") {
+    process.exitCode = await runUpdateCommand(argv.slice(1), {
+      current: readPackageVersion(),
+      packageRoot: PACKAGE_ROOT,
+      moduleFile: import.meta.filename,
+    });
+    return;
+  }
+
   let options: RelayOptions | "help" | "version";
   try {
-    options = parseOptions(process.argv.slice(2), process.env, PACKAGE_ROOT);
+    options = parseOptions(argv, process.env, PACKAGE_ROOT);
   } catch (error) {
     if (error instanceof UsageError) {
       log.error(error.message);
@@ -131,11 +160,30 @@ async function main(): Promise<void> {
     }
   }
 
+  const updateBlocker = updateCheckBlocker(
+    options.updateCheck,
+    process.env,
+    classifyInstall(PACKAGE_ROOT, import.meta.filename).kind,
+  );
+  let restart = (): void => {};
+  const updater =
+    updateBlocker === undefined
+      ? new UpdateManager({
+          current: readPackageVersion(),
+          stateDir: DATA_DIR,
+          packageRoot: PACKAGE_ROOT,
+          moduleFile: import.meta.filename,
+          supervised,
+          restart: () => restart(),
+        })
+      : undefined;
+  if (updateBlocker) log.debug(`Not checking for updates: ${updateBlocker}.`);
+
   const [adbStatus, firewallBlocksAll] = await Promise.all([
     ensureAdbServer(options.adb, options.autoStartAdb),
     options.lan ? isMacFirewallBlockingAll() : Promise.resolve(false),
   ]);
-  const relay = createRelay(options, policy, tls);
+  const relay = createRelay(options, policy, tls, updater);
 
   try {
     await listen(relay.listener, options.port, options.host);
@@ -158,7 +206,13 @@ async function main(): Promise<void> {
         "Turn that off in System Settings > Network > Firewall > Options.",
     );
   }
-  installShutdownHandlers(relay);
+  const shutdown = installShutdownHandlers(relay);
+  restart = () => {
+    // Unless Ctrl+C got there first.
+    if (!relay.isShuttingDown()) shutdown("Restarting with the new version...", RESTART_EXIT_CODE);
+  };
+  // In the background: the result is printed whenever it arrives.
+  updater?.start();
 }
 
 interface Relay {
@@ -168,11 +222,17 @@ interface Relay {
   httpServers: http.Server[];
   tunnels: TunnelManager;
   heartbeat: NodeJS.Timeout;
+  updater: UpdateManager | undefined;
   isShuttingDown(): boolean;
   beginShutdown(): void;
 }
 
-function createRelay(options: RelayOptions, policy: AccessPolicy, tls: TlsMaterial | undefined): Relay {
+function createRelay(
+  options: RelayOptions,
+  policy: AccessPolicy,
+  tls: TlsMaterial | undefined,
+  updater: UpdateManager | undefined,
+): Relay {
   const version = readPackageVersion();
   const serveStatic = createStaticHandler(options.distDir);
   const tunnels = new TunnelManager(options.adb);
@@ -209,10 +269,19 @@ function createRelay(options: RelayOptions, policy: AccessPolicy, tls: TlsMateri
         sendText(res, 405, "Method not allowed.", { Allow: "GET, HEAD" });
         return;
       }
+      // Only a page on the computer running DeXterous can install updates (see
+      // checkUpdateRequest), so other devices never see the option.
+      const update = updater?.info();
+      if (update && !isLocalRequest(req)) update.canSelfUpdate = false;
       void isAdbServerReachable(options.adb).then((adbReachable) => {
-        // Never include the token itself.
-        sendJson(res, 200, { relay: true, version, adbReachable, tokenRequired: policy.tokenRequired });
+        // Never include the token itself. `update` is left out when update
+        // checks are off.
+        sendJson(res, 200, { relay: true, version, adbReachable, tokenRequired: policy.tokenRequired, update });
       });
+      return;
+    }
+    if (url.pathname === UPDATE_PATH) {
+      handleUpdateRequest(req, res);
       return;
     }
     if (url.pathname.startsWith("/api/")) {
@@ -232,6 +301,50 @@ function createRelay(options: RelayOptions, policy: AccessPolicy, tls: TlsMateri
       if (!res.headersSent) sendText(res, 500, "Internal server error.");
       else res.destroy();
     });
+  };
+
+  // POST /api/update: install the latest version, then restart (update.ts).
+  // No body or parameters: it can only ever install the latest DeXterous.
+  const handleUpdateRequest = (req: http.IncomingMessage, res: http.ServerResponse): void => {
+    if (req.method !== "POST") {
+      sendText(res, 405, "Method not allowed.", { Allow: "POST" });
+      return;
+    }
+    req.resume(); // discard any body
+    const verdict = checkUpdateRequest(req, policy);
+    if (!verdict.ok) {
+      sendJson(res, verdict.status, { error: verdict.reason });
+      return;
+    }
+    if (!updater) {
+      sendJson(res, 400, { error: "Update checks are turned off for this copy of DeXterous." });
+      return;
+    }
+    if (updater.state === "installing" || updater.state === "restarting") {
+      sendJson(res, 202, { state: updater.state });
+      return;
+    }
+    if (shuttingDown) {
+      sendJson(res, 409, { error: "DeXterous is shutting down." });
+      return;
+    }
+    if (tunnels.busyCount > 0) {
+      sendJson(res, 409, {
+        error: "DeXterous is connected to your phone. Disconnect first, then update: DeXterous restarts afterwards.",
+      });
+      return;
+    }
+    const info = updater.info();
+    if (!info.canSelfUpdate) {
+      sendJson(res, 400, { error: `DeXterous can't update itself here. Run \`${info.command}\` in a terminal instead.` });
+      return;
+    }
+    if (!info.available) {
+      sendJson(res, 400, { error: "There's no new version to install." });
+      return;
+    }
+    updater.install();
+    sendJson(res, 202, { state: "installing" });
   };
 
   const rejections = new RejectionLogger();
@@ -266,6 +379,8 @@ function createRelay(options: RelayOptions, policy: AccessPolicy, tls: TlsMateri
       refusal = { code: 4401, reason: tokenProblem };
     } else if (shuttingDown) {
       refusal = { code: 1001, reason: "The relay is shutting down." };
+    } else if (updater?.state === "installing" || updater?.state === "restarting") {
+      refusal = { code: 1012, reason: "DeXterous is updating. Try again in a moment." };
     } else if (tunnels.size >= MAX_TUNNELS) {
       refusal = { code: 1013, reason: "Too many open connections. Try again later." };
     }
@@ -330,6 +445,7 @@ function createRelay(options: RelayOptions, policy: AccessPolicy, tls: TlsMateri
     httpServers,
     tunnels,
     heartbeat,
+    updater,
     isShuttingDown: () => shuttingDown,
     beginShutdown: () => {
       shuttingDown = true;
@@ -411,31 +527,83 @@ function describeListenError(error: unknown, options: RelayOptions): string {
     return `Port ${options.port} is already in use (is another relay running?). Stop it or pick another port with --port.`;
   }
   if (code === "EACCES") return `Not allowed to listen on ${where}. Try a port above 1024 with --port.`;
-  if (code === "EADDRNOTAVAIL") return `${options.host} is not an address of this machine (--host).`;
+  if (code === "EADDRNOTAVAIL") return `${options.host} is not a network address of the computer running DeXterous (--host).`;
   return `Cannot listen on ${where}: ${error instanceof Error ? error.message : String(error)}`;
 }
 
-function installShutdownHandlers(relay: Relay): void {
-  const shutdown = (signal: string): void => {
-    if (relay.isShuttingDown()) {
-      log.info("Forcing exit.");
-      process.exit(1);
+/** What a stop request from bin/dexterous.js does; replaced once the relay runs. */
+let onSupervisorStop = (signal: string): void => {
+  // Still starting up, or a short command such as `dexterous update`.
+  process.exit(signal === "SIGINT" ? 130 : 143);
+};
+
+/**
+ * Listens for stop requests from bin/dexterous.js (it got a signal), and
+ * stops if bin/dexterous.js goes away (e.g. killed), rather than keep running
+ * unseen. The channel must not keep short commands (--help, update...) alive.
+ */
+function listenToSupervisor(): void {
+  process.on("message", (message: unknown) => {
+    if (typeof message === "object" && message !== null && "stop" in message) {
+      onSupervisorStop(String((message as { stop: unknown }).stop));
     }
+  });
+  process.on("disconnect", () => onSupervisorStop("disconnect"));
+  process.channel?.unref();
+}
+
+/**
+ * Stops on SIGINT/SIGTERM/SIGHUP and on stop requests from bin/dexterous.js.
+ * Returns the function that stops the relay with a message and an exit code.
+ * While an update installs, a stop waits for npm to finish (stopping it
+ * halfway could break the install); a second Ctrl+C forces the exit.
+ */
+function installShutdownHandlers(relay: Relay): (message: string, exitCode?: number) => void {
+  let startedAt = 0;
+  let waitingForUpdate = false;
+  const stop = (message: string, exitCode: number): void => {
     relay.beginShutdown();
-    log.info(`\n${signal} received, shutting down...`);
+    process.exitCode = exitCode;
+    log.info(message);
     clearInterval(relay.heartbeat);
-    relay.tunnels.closeAll(1001, "Relay shutting down");
+    relay.updater?.stop();
+    if (exitCode === RESTART_EXIT_CODE) relay.tunnels.closeAll(1012, "DeXterous is restarting after an update");
+    else relay.tunnels.closeAll(1001, "Relay shutting down");
     relay.listener.close();
     for (const server of relay.httpServers) {
       server.close();
       server.closeAllConnections();
     }
     // Exit as soon as everything is closed, or after a short grace period.
-    setTimeout(() => process.exit(0), 1000).unref();
+    setTimeout(() => process.exit(exitCode), 1000).unref();
   };
-  process.on("SIGINT", () => shutdown("SIGINT"));
-  process.on("SIGTERM", () => shutdown("SIGTERM"));
-  if (process.platform !== "win32") process.on("SIGHUP", () => shutdown("SIGHUP"));
+  const shutdown = (message: string, exitCode = 0): void => {
+    if (relay.isShuttingDown() || waitingForUpdate) {
+      // Ctrl+C reaches the relay both from the terminal and from the
+      // supervisor; only a later one means "hurry up".
+      if (Date.now() - startedAt < DUPLICATE_SIGNAL_MS) return;
+      log.info("Forcing exit.");
+      process.exit(1);
+    }
+    startedAt = Date.now();
+    const updater = relay.updater;
+    if (exitCode !== RESTART_EXIT_CODE && updater?.state === "installing") {
+      waitingForUpdate = true;
+      log.info(`${message}\nFinishing the update first. Press Ctrl+C again to stop right away.`);
+      void updater.finishInstall().then(() => stop("Stopped.", 0));
+      return;
+    }
+    stop(message, exitCode);
+  };
+  const onSignal = (signal: string): void => {
+    if (signal === "disconnect") shutdown("DeXterous's launcher stopped, shutting down...");
+    else shutdown(`\n${signal} received, shutting down...`);
+  };
+  process.on("SIGINT", () => onSignal("SIGINT"));
+  process.on("SIGTERM", () => onSignal("SIGTERM"));
+  if (process.platform !== "win32") process.on("SIGHUP", () => onSignal("SIGHUP"));
+  onSupervisorStop = onSignal;
+  return shutdown;
 }
 
 /**
@@ -474,7 +642,7 @@ function isDefaultLoopback(host: string): boolean {
 }
 
 /**
- * The URL to open on this computer: localhost unless bound to one specific
+ * The URL to open on the computer running DeXterous: localhost unless bound to one specific
  * address, or unless a custom LAN certificate does not cover localhost (it
  * only works under its own names, like the banner's links).
  */
@@ -505,10 +673,10 @@ function printBanner(
       for (const host of hosts) lines.push(link(host));
       lines.push("");
     } else {
-      lines.push(paint("yellow", "  No network address found: is this computer connected to Wi-Fi or Ethernet?"), "");
+      lines.push(paint("yellow", "  No network address found: is the computer connected to Wi-Fi or Ethernet?"), "");
     }
     if (isWildcardAddress(options.host)) {
-      lines.push("  On this computer:", link("localhost"), "");
+      lines.push("  On the computer running DeXterous:", link("localhost"), "");
     }
     if (tls?.source !== "custom") {
       lines.push(

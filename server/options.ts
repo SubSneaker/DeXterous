@@ -34,6 +34,12 @@ export interface RelayOptions {
   distDir: string;
   /** Open the app in the default browser once listening (unless --no-open). */
   open: boolean;
+  /**
+   * Check the npm registry for new versions (unless --no-update-check).
+   * update.ts also turns checks off for $CI, DEXTEROUS_NO_UPDATE_CHECK and
+   * copies running from a clone.
+   */
+  updateCheck: boolean;
 }
 
 /** A user error in the command line; printed without a stack trace. */
@@ -41,7 +47,7 @@ export class UsageError extends Error {
   override name = "UsageError";
 }
 
-/** The --help text. `stateDir` is this machine's state directory. */
+/** The --help text. `stateDir` is the state directory in use. */
 export function formatUsage(stateDir: string): string {
   const defaultDirs = STATE_DIR_DESCRIPTIONS.map(([platform, dir]) => `  ${platform.padEnd(26)}${dir}`).join("\n");
   return `DeXterous: run Samsung DeX from your Galaxy phone in any web browser.
@@ -49,6 +55,7 @@ This relay serves the DeXterous app and tunnels it to your local adb server.
 
 Usage:
   dexterous [options]
+  dexterous update [--check]  Install the latest version (--check: only check)
   npm start -- [options]
 
 Options:
@@ -75,6 +82,9 @@ Options:
       --no-open             Don't open the app in your browser at startup (it is
                             not opened anyway when $CI is set, when the output is
                             not a terminal, or on Linux without a graphical display)
+      --no-update-check     Don't check for new versions. DeXterous otherwise asks
+                            the npm registry about once a day (not when $CI is set,
+                            or when it runs from a clone of the repository)
   -v, --verbose             Log every tunnel connection
   -V, --version             Print the version and exit
   -h, --help                Show this help
@@ -85,14 +95,19 @@ Environment:
   ANDROID_ADB_SERVER_PORT   adb server port on 127.0.0.1
   DEXTEROUS_TOKEN           Use this access token instead of the generated one
   DEXTEROUS_HOME            Folder for the files below, instead of the default
+  DEXTEROUS_NO_UPDATE_CHECK Set to 1 to turn off update checks (like --no-update-check)
+  DEXTEROUS_UPDATE_REGISTRY npm registry to check for updates
+                            (default: https://registry.npmjs.org)
 
 Files (created on first use, keep them private):
   token                     Access token (also used in the #token=... link)
   cert.pem                  Self-signed certificate for --lan / --https
   key.pem                   Its private key
+  update-check.json         When the last update check ran, and its result
+  update.log                npm's output from the last update installed from the page
 They are kept in $DEXTEROUS_HOME if set, otherwise in a per-user folder:
 ${defaultDirs}
-On this computer: ${stateDir}
+In use now: ${stateDir}
 `;
 }
 
@@ -124,6 +139,7 @@ export function parseOptions(
         "require-token": { type: "boolean" },
         dist: { type: "string" },
         "no-open": { type: "boolean" },
+        "no-update-check": { type: "boolean" },
         verbose: { type: "boolean", short: "v" },
         version: { type: "boolean", short: "V" },
         help: { type: "boolean", short: "h" },
@@ -184,6 +200,7 @@ export function parseOptions(
     verbose: values.verbose === true,
     distDir: path.resolve(values.dist ?? path.join(packageRoot, "dist")),
     open: values["no-open"] !== true,
+    updateCheck: values["no-update-check"] !== true,
   };
 }
 

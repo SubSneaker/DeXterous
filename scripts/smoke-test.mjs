@@ -3,10 +3,13 @@
 //   node scripts/smoke-test.mjs [--port 8686] [--bin path/to/dexterous.js]
 //
 // Starts `node bin/dexterous.js --no-open --port <port>`, waits for
-// /api/info to answer, checks that the app and the scrcpy server are served,
-// then stops the relay. No phone is needed: /api/info just reports whether
-// an adb server is reachable. Exits non-zero on failure, including when the
-// port is already taken (so another running relay can't make it pass).
+// /api/info to answer, checks that the app and the scrcpy server are served
+// and that /api/update refuses requests that don't come from the app, then
+// stops the relay. No phone is needed: /api/info just reports whether an adb
+// server is reachable. Update checks are off ($CI is set), so nothing is
+// installed and the registry isn't contacted. Exits non-zero on failure,
+// including when the port is already taken (so another running relay can't
+// make it pass).
 import { spawn } from "node:child_process";
 import net from "node:net";
 import path from "node:path";
@@ -48,6 +51,22 @@ try {
   check(info.relay === true, "/api/info should report relay: true");
   check(typeof info.version === "string" && info.version !== "0.0.0", "/api/info should report the package version");
   check(typeof info.adbReachable === "boolean", "/api/info should report adbReachable");
+  check(!("update" in info), "/api/info should leave out `update` when update checks are off");
+
+  // POST /api/update: only the app's own page on the computer running DeXterous may ask.
+  const updateStatus = async (method, headers = {}) =>
+    (await fetch(`${base}/api/update`, { method, headers, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) })).status;
+  check((await updateStatus("GET")) === 405, "GET /api/update should be refused with 405");
+  check((await updateStatus("POST")) === 403, "POST /api/update without Origin should be refused with 403");
+  check(
+    (await updateStatus("POST", { Origin: "http://evil.example" })) === 403,
+    "POST /api/update from another origin should be refused with 403",
+  );
+  check(
+    (await updateStatus("POST", { Origin: base })) === 400,
+    "POST /api/update from the app should get 400 while update checks are off",
+  );
+  console.log("/api/update: refuses other origins");
 
   const page = await get("/");
   const html = Buffer.from(page.body).toString("utf8");

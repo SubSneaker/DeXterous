@@ -11,9 +11,13 @@
 //     explicit --allow-origin) stops cross-site WebSocket hijacking.
 //  3. Token check (LAN mode, or --require-token): a random secret shown in the
 //     startup banner, so other people on the network cannot connect.
+//
+// POST /api/update (install the latest DeXterous with npm, then restart) is
+// stricter still: see checkUpdateRequest.
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import path from "node:path";
+import { isLoopbackAddress } from "./network.ts";
 import { ensurePrivateDir, readOptionalFile, restrictMode, writePrivateFile } from "./storage.ts";
 
 /** Hostnames accepted in the Host header when bound to loopback only. */
@@ -94,6 +98,46 @@ export function checkTunnelToken(url: URL, policy: AccessPolicy): string | undef
   return undefined;
 }
 
+/**
+ * Checks for POST /api/update, which makes the computer running DeXterous download and run
+ * new code. Only a page on that computer may ask, even in LAN mode:
+ *  - the connection comes from a loopback address (not from another device);
+ *  - the page is same-origin with the relay under a loopback name, so pages
+ *    served through a reverse proxy (--allow-origin) don't qualify, and
+ *    cross-site form posts and DNS rebinding fail;
+ *  - when the relay requires a token, the request carries
+ *    `Authorization: Bearer <token>`.
+ * The Host check (checkHost) has already run.
+ */
+export function checkUpdateRequest(req: IncomingMessage, policy: AccessPolicy): Verdict {
+  const remote = req.socket.remoteAddress;
+  if (!remote || !isLoopbackAddress(remote)) {
+    return { ok: false, status: 403, reason: "Updates can only be started on the computer running DeXterous." };
+  }
+  const originHeader = req.headers.origin;
+  const origin = originHeader === undefined ? undefined : normalizeOrigin(originHeader);
+  if (!origin || !isLoopbackAddress(new URL(origin).hostname) || !isSameOrigin(origin, req)) {
+    return { ok: false, status: 403, reason: "Updates can only be started from a DeXterous page open on the computer running DeXterous." };
+  }
+  if (policy.tokenRequired) {
+    const match = /^Bearer\s+(\S+)\s*$/i.exec(req.headers.authorization ?? "");
+    if (!match || !tokensEqual(match[1], policy.token)) {
+      return { ok: false, status: 401, reason: "This relay requires an access token. Open the link printed by the relay." };
+    }
+  }
+  return ALLOW;
+}
+
+/**
+ * True when the request comes from the computer running DeXterous and names the relay by a
+ * loopback name: the only requests that may start an update.
+ */
+export function isLocalRequest(req: IncomingMessage): boolean {
+  const remote = req.socket.remoteAddress;
+  const host = parseHostHeader(req.headers.host);
+  return remote !== undefined && isLoopbackAddress(remote) && host !== undefined && isLoopbackAddress(host.hostname);
+}
+
 function checkOrigin(req: IncomingMessage, policy: AccessPolicy): Verdict {
   const originHeader = req.headers.origin;
   if (!originHeader) return { ok: false, status: 403, reason: "Missing Origin header." };
@@ -103,21 +147,27 @@ function checkOrigin(req: IncomingMessage, policy: AccessPolicy): Verdict {
     return { ok: false, status: 403, reason: `Origin "${originHeader}" is not allowed.` };
   }
   if (policy.allowedOrigins.has(origin)) return ALLOW;
-
-  // Same-origin check: the page's host[:port] must equal the Host it is
-  // connecting to. Ports are compared after applying the origin scheme's
-  // default so "Host: example.com" matches "https://example.com".
-  const host = parseHostHeader(req.headers.host);
-  const originUrl = new URL(origin);
-  const defaultPort = originUrl.protocol === "https:" ? "443" : "80";
-  const sameOrigin =
-    host !== undefined &&
-    originUrl.hostname === host.hostname &&
-    (originUrl.port || defaultPort) === (host.port || defaultPort);
-  if (!sameOrigin) {
+  if (!isSameOrigin(origin, req)) {
     return { ok: false, status: 403, reason: `Origin "${originHeader}" is not allowed.` };
   }
   return ALLOW;
+}
+
+/**
+ * Same-origin check: the page's host[:port] must equal the Host it is
+ * connecting to. Ports are compared after applying the origin scheme's
+ * default so "Host: example.com" matches "https://example.com". `origin`
+ * is normalized (see normalizeOrigin).
+ */
+function isSameOrigin(origin: string, req: IncomingMessage): boolean {
+  const host = parseHostHeader(req.headers.host);
+  const originUrl = new URL(origin);
+  const defaultPort = originUrl.protocol === "https:" ? "443" : "80";
+  return (
+    host !== undefined &&
+    originUrl.hostname === host.hostname &&
+    (originUrl.port || defaultPort) === (host.port || defaultPort)
+  );
 }
 
 /**

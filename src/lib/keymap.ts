@@ -290,7 +290,7 @@ export interface ShortcutKeyInfo {
  * Whether this keydown is the browser's own paste shortcut (Ctrl+V,
  * Ctrl+Shift+V or Shift+Insert; ⌘V on Apple platforms). Those keydowns must
  * reach the browser untouched so it fires a `paste` event carrying the
- * computer's clipboard.
+ * this device's clipboard.
  */
 export function isPasteShortcut(event: ShortcutKeyInfo, macLike: boolean): boolean {
   if (event.altKey) {

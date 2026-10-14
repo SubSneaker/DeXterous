@@ -16,7 +16,7 @@ DeXterous is released under the [MIT License](LICENSE), © 2026 SubSneaker. It i
 - **Project:** [scrcpy](https://github.com/Genymobile/scrcpy) by Genymobile and Romain Vimont
 - **Version:** 5.0.1 (the server binary only, unmodified)
 - **License:** Apache License 2.0
-- **Where it is:** `scrcpy-server.jar` in the built app (`dist/`). It's downloaded from scrcpy's GitHub releases at build time (and checked against its SHA-256), served by the relay or the static host, and pushed to the phone at `/data/local/tmp/dexterous-server.jar` each time you connect.
+- **Where it is:** `scrcpy-server.jar` in the built app (`dist/`). It's downloaded from scrcpy's GitHub releases at build time (and checked against its SHA-256), so the npm package ships it ready to use. It's served by the relay or the static host, and pushed to the phone at `/data/local/tmp/dexterous-server.jar` each time you connect.
 - **License file:** shipped next to the binary as `dist/scrcpy-server.LICENSE.txt`.
 
 ```text

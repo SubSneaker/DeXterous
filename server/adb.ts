@@ -43,7 +43,7 @@ export interface AdbStartupStatus {
  */
 export async function ensureAdbServer(server: HostPort, allowStart: boolean): Promise<AdbStartupStatus> {
   if (await isAdbServerReachable(server)) return { reachable: true, attemptedStart: false };
-  // Starting a server only makes sense on this machine.
+  // Starting a server only makes sense on the computer running DeXterous.
   if (!allowStart || !isLoopbackAddress(server.host)) return { reachable: false, attemptedStart: false };
 
   const adbPath = findAdbExecutable();

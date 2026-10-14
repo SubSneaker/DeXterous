@@ -31,11 +31,20 @@ export type TransportKind = "relay" | "webusb";
 /** A phone the user can pick from the connect screen. */
 export interface DeviceChoice {
   kind: TransportKind;
-  /** Stable id used for the <select> value. */
+  /** Stable id for the phone card, built from the serial. */
   id: string;
   /** Human label, e.g. "SM-F976Q · USB". */
   label: string;
   serial: string;
+  /** Model code (or the best name the transport knows), e.g. "SM-F976Q". */
+  model: string;
+  /** Reached over Wi‑Fi rather than a cable. */
+  wireless: boolean;
+  /**
+   * Relay: the adb state is "device", so the phone has allowed the computer running DeXterous.
+   * WebUSB: always true here; the browser asks the phone when connecting.
+   */
+  ready: boolean;
   /** For relay devices: the adb server transport id. */
   transportId?: bigint;
   /** For WebUSB devices: whatever the transport needs to reconnect. */
@@ -57,8 +66,8 @@ export interface DexSettings {
   /** Keep the phone's own screen usable for audio (duplicate instead of redirect). */
   audioDup: boolean;
   /**
-   * Share one clipboard with the computer: phone copies reach the computer and
-   * Ctrl/⌘V pastes the computer's clipboard. Off: the clipboards are separate.
+   * Share one clipboard with this device: phone copies reach this device and
+   * Ctrl/⌘V pastes this device's clipboard. Off: the clipboards are separate.
    */
   clipboardSync: boolean;
   /** Show the Android on-screen keyboard on the DeX display. */
