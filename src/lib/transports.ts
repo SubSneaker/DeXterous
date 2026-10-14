@@ -106,9 +106,22 @@ export class RelayTransport {
    * Pairs with a phone using Android's "Wireless debugging" pairing code
    * (`adb pair`). Goes through the adb server's host services, which the relay
    * passes along untouched.
+   *
+   * adb answers `host:pair` with OKAY and then a line of text, also when
+   * pairing failed ("Failed: Wrong password or connection was dropped.").
+   * Tango's `wireless.pair` ignores that text and reports success, so this
+   * reads it and rejects with it unless it says "Successfully paired".
    */
   async pair(address: string, code: string): Promise<void> {
-    await this.client.wireless.pair(address, code);
+    const connection = await this.client.createConnection(`host:pair:${code}:${address}`);
+    try {
+      const answer = (await connection.readString()).trim();
+      if (!/^Successfully paired/i.test(answer)) {
+        throw new Error(answer || "adb didn't say whether pairing worked.");
+      }
+    } finally {
+      await connection.dispose();
+    }
   }
 
   /** `adb connect`. An "already connected" answer counts as success. */

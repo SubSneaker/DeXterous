@@ -3,6 +3,23 @@
 All notable changes to DeXterous are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+## [0.2.1] - 2026-10-14
+
+### Fixed
+
+- *Update now* no longer says a DeX session is open when none is. The relay counted the connect screen's own short adb commands, such as reading a phone's details, as a session. Now only a DeX session that is starting or running blocks an update. If the page still gets that answer, it asks once more after a moment before showing it.
+- A wrong Wi‑Fi pairing code is reported as a wrong code. adb's "Failed: Wrong password" answer was taken for success, so the form went on to connect and said the phone hadn't accepted the connection.
+- Other pairing errors are no longer reported as a wrong code just because adb's message contains the word "code". A bad pairing address gets its own hint, and anything else shows adb's own message.
+
+### Changed
+
+- Phone cards show the name the phone has in *Settings › About phone*. Many Samsung phones have no marketing name, so their cards showed a model code like `SM-S938B`. The model code is still shown on the second line.
+- *Start DeX* is greyed out, with a short note, while an update installs and while DeXterous restarts afterwards.
+- The README and the user guide no longer say what has and hasn't been tested. The guide's *Using it from an iPad or another computer* section is now *Use it from another device*.
+- The project site serves its own fonts instead of loading them from Google Fonts.
+
 ## [0.2.0] - 2026-10-14
 
 ### Added
@@ -60,5 +77,7 @@ First release.
 - Typing non-ASCII text goes through the phone's clipboard.
 - Browser-reserved shortcuts (⌘W, ⌘T, ⌘Q, Alt+Tab) only reach DeX in full screen in Chrome or Edge.
 
+[Unreleased]: https://github.com/SubSneaker/DeXterous/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/SubSneaker/DeXterous/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/SubSneaker/DeXterous/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SubSneaker/DeXterous/releases/tag/v0.1.0

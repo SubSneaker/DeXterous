@@ -328,9 +328,9 @@ function createRelay(
       sendJson(res, 409, { error: "DeXterous is shutting down." });
       return;
     }
-    if (tunnels.busyCount > 0) {
+    if (tunnels.dexTunnelCount > 0) {
       sendJson(res, 409, {
-        error: "DeXterous is connected to your phone. Disconnect first, then update: DeXterous restarts afterwards.",
+        error: "A DeX session is open. Disconnect it first, then update: DeXterous restarts afterwards.",
       });
       return;
     }

@@ -3,8 +3,9 @@
 // Each WebSocket on /adb gets its own fresh TCP connection to the adb server,
 // and bytes are copied verbatim in both directions as binary frames. The
 // browser speaks the adb server ("smart socket") protocol itself; the relay
-// never parses it. It only peeks at the service name of the first request,
-// to tell the connect screen's device list from a DeX session (busyCount).
+// never parses it. It only peeks at the first one or two requests, to tell a
+// DeX session apart from the connect screen's short adb commands
+// (dexTunnelCount).
 //
 // Close codes the browser can see (the relay never forwards adb data on
 // anything but a successfully opened tunnel):
@@ -40,13 +41,22 @@ interface Tunnel {
    * received meanwhile, so the heartbeat must not count them as missing.
    */
   wsPaused: boolean;
-  /**
-   * What the first adb request asked for: a device list subscription
-   * (`host:track-devices`, kept open by the connect screen) or anything else.
-   * Unknown until the browser's first message.
-   */
-  purpose: "unknown" | "track-devices" | "other";
+  /** What the tunnel is for. "unknown" until its requests have been seen. */
+  purpose: TunnelPurpose;
+  /** The browser's first bytes, kept only until `purpose` is known. */
+  head: Buffer;
 }
+
+/**
+ * - "dex": part of a DeX session (pushing the scrcpy server, the server
+ *   itself, or its video, audio and control sockets).
+ * - "other": anything else, e.g. the connect screen's device list, phone
+ *   details or Wi-Fi pairing.
+ */
+export type TunnelPurpose = "unknown" | "dex" | "other";
+
+/** Give up classifying a tunnel whose requests don't fit in this many bytes. */
+const MAX_HEAD_BYTES = 4 + 0xffff + 4 + 0xffff;
 
 export class TunnelManager {
   readonly #target: HostPort;
@@ -74,7 +84,7 @@ export class TunnelManager {
       tcp.destroy(error);
     }, ADB_CONNECT_TIMEOUT_MS);
 
-    const tunnel: Tunnel = { id, ws, tcp, alive: true, wsPaused: false, purpose: "unknown" };
+    const tunnel: Tunnel = { id, ws, tcp, alive: true, wsPaused: false, purpose: "unknown", head: Buffer.alloc(0) };
     this.#tunnels.add(tunnel);
     log.debug(`tunnel #${id} opened from ${peer} to adb ${target.host}:${target.port}`);
 
@@ -109,7 +119,7 @@ export class TunnelManager {
       }
       if (tcp.destroyed) return;
       const chunk = toBuffer(data);
-      if (tunnel.purpose === "unknown") tunnel.purpose = isTrackDevicesRequest(chunk) ? "track-devices" : "other";
+      if (tunnel.purpose === "unknown") peekAtRequests(tunnel, chunk);
       bytesToAdb += chunk.length;
       if (!tcp.write(chunk) && !tunnel.wsPaused) {
         tunnel.wsPaused = true;
@@ -204,13 +214,14 @@ export class TunnelManager {
   }
 
   /**
-   * Open tunnels other than device list subscriptions: while there are any,
-   * a DeX session (or another adb command) is probably running. Tunnels that
-   * haven't sent their request yet count too.
+   * Open tunnels that belong to a DeX session. While there are any, a session
+   * is starting or running, and restarting the relay would end it. The
+   * connect screen's own adb commands (device list, phone details, pairing)
+   * don't count, so they never block an update.
    */
-  get busyCount(): number {
+  get dexTunnelCount(): number {
     let count = 0;
-    for (const tunnel of this.#tunnels) if (tunnel.purpose !== "track-devices") count++;
+    for (const tunnel of this.#tunnels) if (tunnel.purpose === "dex") count++;
     return count;
   }
 
@@ -225,13 +236,55 @@ export class TunnelManager {
   }
 }
 
+/** Adds the browser's next bytes to `tunnel.head` until the tunnel's purpose is known. */
+function peekAtRequests(tunnel: Tunnel, chunk: Buffer): void {
+  tunnel.head = tunnel.head.length === 0 ? chunk : Buffer.concat([tunnel.head, chunk]);
+  let purpose = classifyTunnel(tunnel.head);
+  if (purpose === "unknown" && tunnel.head.length > MAX_HEAD_BYTES) purpose = "other";
+  if (purpose === "unknown") return;
+  tunnel.purpose = purpose;
+  tunnel.head = Buffer.alloc(0);
+  if (purpose === "dex") log.debug(`tunnel #${tunnel.id} is part of a DeX session`);
+}
+
 /**
- * The browser's first message on a tunnel is an adb server request: four hex
- * digits of length, then the service name. This only peeks at the name; the
- * bytes are forwarded unchanged.
+ * Reads the start of what the browser sent on a tunnel and says what the
+ * tunnel is for, or "unknown" until enough bytes have arrived. Only peeks:
+ * the bytes are forwarded unchanged.
+ *
+ * Each adb server request is four hex digits of length, then the service name.
+ * A command for a phone starts with a request that picks the phone
+ * (`host:transport-id:<id>`, `host:tport:…` or `host:transport…`), and once
+ * adb has answered OKAY, a second request on the same connection names the
+ * service on the phone. A DeX session uses these services:
+ *
+ * - `sync:` to push the scrcpy server (nothing else in DeXterous uses it),
+ * - `exec:` or `shell:…` running `com.genymobile.scrcpy.Server`,
+ * - `localabstract:scrcpy_<id>` for its video, audio and control sockets.
  */
-function isTrackDevicesRequest(chunk: Buffer): boolean {
-  return chunk.length >= 22 && chunk.toString("latin1", 4, 22) === "host:track-devices";
+export function classifyTunnel(head: Buffer): TunnelPurpose {
+  const first = readRequest(head, 0);
+  if (!first) return "unknown";
+  if (!/^host:(transport|tport:)/.test(first.service)) return "other";
+  const second = readRequest(head, first.end);
+  if (!second) return "unknown";
+  return isDexService(second.service) ? "dex" : "other";
+}
+
+function isDexService(service: string): boolean {
+  if (service === "sync:" || service.startsWith("localabstract:scrcpy")) return true;
+  return /^(exec|shell)[:,]/.test(service) && service.includes("com.genymobile.scrcpy.Server");
+}
+
+/** One length-prefixed request at `offset`, or undefined if it isn't all there yet. */
+function readRequest(buffer: Buffer, offset: number): { service: string; end: number } | undefined {
+  if (buffer.length < offset + 4) return undefined;
+  const digits = buffer.toString("latin1", offset, offset + 4);
+  // Not an adb request: report it as one nobody recognises.
+  if (!/^[0-9a-fA-F]{4}$/.test(digits)) return { service: "", end: buffer.length };
+  const end = offset + 4 + Number.parseInt(digits, 16);
+  if (buffer.length < end) return undefined;
+  return { service: buffer.toString("latin1", offset + 4, end), end };
 }
 
 function toBuffer(data: RawData): Buffer {

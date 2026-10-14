@@ -15,7 +15,7 @@ For a shorter overview, see the [README](../README.md) or the [project site](htt
 - [Shortcuts and the commands panel](#shortcuts-and-the-commands-panel)
 - [Settings explained](#settings-explained)
 - [The lock guard](#the-lock-guard)
-- [Using it from an iPad or another computer](#using-it-from-an-ipad-or-another-computer)
+- [Use it from another device](#use-it-from-another-device)
 - [Browser-only USB mode](#browser-only-usb-mode)
 - [Command-line reference](#command-line-reference)
 - [Updating and uninstalling](#updating-and-uninstalling)
@@ -24,12 +24,12 @@ For a shorter overview, see the [README](../README.md) or the [project site](htt
 
 ## What you need
 
-- **A Galaxy phone or tablet on One UI 8 or newer.** DeX can only run on a virtual display from One UI 8 on. DeXterous has been tested on a Galaxy Z Fold8 with One UI 9 (Android 17). To check your version, open *Settings › About phone › Software information*.
+- **A Galaxy phone or tablet on One UI 8 or newer.** DeX can only run on a virtual display from One UI 8 on. To check your version, open *Settings › About phone › Software information*.
 - **A USB cable**, the easiest and smoothest way to connect. Wi‑Fi works too, with or without a cable for the first connection (see [Connect over Wi-Fi](#connect-over-wi-fi)).
 - **A computer** running macOS, Windows or Linux, with:
   - **Node.js 22.18 or newer**, to run DeXterous.
   - **Android platform-tools** (`adb`), which DeXterous uses to talk to the phone.
-- **A browser with WebCodecs:** Chrome, Edge, Opera, Safari 17+ or Firefox 130+. Browser-only USB mode needs Chrome or Edge. So far DeXterous has only been tested in Chrome on macOS; the others should work but haven't been tried yet.
+- **A browser with WebCodecs:** Chrome, Edge, Opera, Safari 17+ or Firefox 130+. Browser-only USB mode needs Chrome or Edge.
 
 You don't need root, and you don't install anything on the phone.
 
@@ -128,7 +128,7 @@ The first prints DeXterous's version. The second should list your phone once it'
 
    If adb isn't running yet, DeXterous starts it for you. Use `dexterous --no-open` if you'd rather open the browser yourself. DeXterous doesn't open one when there's no graphical display, for example over SSH.
 2. **Plug the phone in and unlock it.** The phone asks *Allow USB debugging?* and shows your computer's key fingerprint. Tick *Always allow from this computer* (that's the phone's own wording, and it means your computer) and tap *Allow*. Until you do, the phone's card says *Tap Allow on your phone*.
-3. **Pick the phone** under *Connect your phone › Through DeXterous › Your phone*. Each phone gets a card with its name, model code, One UI version, battery level and a *USB* or *Wi‑Fi* badge. *Ready* means you can start. The list updates by itself when phones come and go; the refresh button next to it forces an update. With the keyboard, the arrow keys move between phones and Enter starts DeX. Next time, DeXterous selects the phone you used last.
+3. **Pick the phone** under *Connect your phone › Through DeXterous › Your phone*. Each phone gets a card with its name, model code, One UI version, battery level and a *USB* or *Wi‑Fi* badge. The name is the one set in *Settings › About phone*; the model code (like `SM-S938B`) is shown below it. *Ready* means you can start. The list updates by itself when phones come and go; the refresh button next to it forces an update. With the keyboard, the arrow keys move between phones and Enter starts DeX. Next time, DeXterous selects the phone you used last.
 4. **Check the settings** (optional). Open *Display & input* to choose the picture quality or change text size, audio and more. The default, *Best (USB)*, is meant for a cable. See [Settings explained](#settings-explained).
 5. **Click Start DeX.** DeXterous pushes the scrcpy server to the phone, starts it, and waits for the first frame. This takes a few seconds. *Cancel* stops it at any point.
 6. **Unlock the phone** if DeXterous shows *Your phone is locked*. DeX appears as soon as the phone is unlocked.
@@ -364,9 +364,9 @@ While DeXterous is connected, it keeps the phone awake: over USB the screen stay
 
 The phone only locks when you lock it: with the side key, Ctrl+Alt+L, or the lock button in the dock. When you disconnect, the phone's normal screen timeout applies again.
 
-## Using it from an iPad or another computer
+## Use it from another device
 
-The phone stays plugged into one computer, which runs DeXterous. Other devices on the same network open DeX in their browser.
+The phone stays plugged into one computer, which runs DeXterous. Any device on the same network, such as a tablet or another computer, can then open DeX in its browser.
 
 ### Start in LAN mode
 
@@ -407,22 +407,22 @@ Other devices can only connect if the computer's firewall lets them in.
 - **Windows:** when Windows Defender Firewall asks about Node.js, allow it on *Private networks*, and make sure your network is set to *Private*.
 - **Linux:** open the port if you run a firewall, e.g. `sudo ufw allow 8686/tcp`.
 
-### Safari, iPad and trusted certificates
+### Safari and trusted certificates
 
-Safari, and every browser on iPad and iPhone, may load the page with a self-signed certificate but then refuse the live connection to the phone. The fix is a certificate the device trusts. Two ways:
+Safari, and every browser on an iPhone or iPad, may load the page with a self-signed certificate but then refuse the live connection to the phone. The fix is a certificate the device trusts. Two ways:
 
 **mkcert** (a local certificate authority)
 
 1. Install [mkcert](https://github.com/FiloSottile/mkcert) on the computer and run `mkcert -install`.
 2. Create a certificate for the computer's name and IP address, e.g. `mkcert my-mac.local 192.168.1.20`. This writes `my-mac.local+1.pem` and `my-mac.local+1-key.pem`.
 3. Start DeXterous with it: `dexterous --lan --cert my-mac.local+1.pem --key my-mac.local+1-key.pem`.
-4. On the iPad, trust mkcert's root certificate: send `rootCA.pem` from the folder `mkcert -CAROOT` prints (AirDrop works), install it in *Settings › General › VPN & Device Management*, then turn on full trust in *Settings › General › About › Certificate Trust Settings*.
+4. On the other device, trust mkcert's root certificate, `rootCA.pem` from the folder `mkcert -CAROOT` prints. On an iPhone or iPad, send the file to it (AirDrop works), install it in *Settings › General › VPN & Device Management*, then turn on full trust in *Settings › General › About › Certificate Trust Settings*.
 
 **Tailscale** (if both devices are on your tailnet)
 
 1. Run `tailscale cert <machine>.<tailnet>.ts.net` on the computer. It writes a `.crt` and a `.key` file for that name.
 2. Start DeXterous with them: `dexterous --lan --cert <machine>.<tailnet>.ts.net.crt --key <machine>.<tailnet>.ts.net.key`.
-3. Open `https://<machine>.<tailnet>.ts.net:8686/#token=…` on the iPad. DeXterous prints the link with the certificate's name.
+3. Open `https://<machine>.<tailnet>.ts.net:8686/#token=…` on the other device. DeXterous prints the link with the certificate's name.
 
 With your own certificate, DeXterous skips the self-signed one and prints links for the names in your certificate.
 
@@ -459,7 +459,7 @@ You can also use the *USB, browser only* tab on the page `dexterous` serves, as 
 3. Click **Add phone…** and pick your phone in the browser's USB dialog. The browser remembers it for next time.
 4. Click **Start DeX**. The phone asks *Allow USB debugging?* again, this time for the browser's own key. Tick *Always allow* and tap *Allow*.
 
-The browser keeps its adb key in the site's storage. If you clear the site's data, the phone asks again. Browser-only USB mode hasn't been verified on a device yet; if the browser can't open the phone, use relay mode.
+The browser keeps its adb key in the site's storage. If you clear the site's data, the phone asks again. If the browser can't open the phone, use relay mode.
 
 ## Command-line reference
 
@@ -566,7 +566,7 @@ The check is off when:
    - remove the scrcpy server file: `adb shell rm /data/local/tmp/dexterous-server.jar`,
    - revoke the computer's access in *Developer options › Revoke USB debugging authorizations*,
    - turn off *USB debugging*, or *Developer options* altogether.
-5. If you installed mkcert's root certificate only for DeXterous, remove it with `mkcert -uninstall` (and from your iPad's profiles).
+5. If you installed mkcert's root certificate only for DeXterous, remove it with `mkcert -uninstall`, and from any other device you installed it on.
 
 ## Troubleshooting
 
@@ -580,8 +580,8 @@ The check is off when:
 
 ### Installing updates
 
-- **The page says a DeX session is open:** disconnect first, in every tab. DeXterous restarts after an update, which would end the session.
-- **"DeXterous is updating":** an update is installing, so DeXterous doesn't start new sessions. Wait for the page to reload with the new version, then start DeX again.
+- **The page says a DeX session is open:** disconnect first, in every tab and on every device. DeXterous restarts after an update, which would end the session.
+- **"DeXterous is updating":** an update is installing, so DeXterous doesn't start new sessions, and *Start DeX* is greyed out. Wait for the page to reload with the new version, then start DeX.
 - **"DeXterous can't update itself here":** npm needs administrator rights, or DeXterous wasn't installed with `npm install -g`. Run the command the message shows in a terminal.
 - **The update failed:** the terminal running DeXterous shows the end of npm's error message, and `update.log` in the [state directory](#files-and-the-state-directory) has all of it. Or run `npm install -g @subsneaker/dexterous@latest` yourself to see the whole story. If it says "EACCES" or "EPERM", see the `EACCES` tip under [Linux](#linux). Your current version keeps running either way.
 - **"The new version needs a newer Node.js":** install a current Node.js (see [Install DeXterous](#install-dexterous)), then update again.
@@ -595,10 +595,10 @@ The check is off when:
 - **"Invalid access token":** the token changed. Open the new link.
 - **"Couldn't reach DeXterous on your computer. Is it still running?":** the terminal running DeXterous was closed or stopped. Start it again and reload the page.
 - **Other devices can't connect in LAN mode:** check the [firewall](#firewall). Make sure both devices are on the same network, and that the link uses an address of the computer on that network.
-- **Safari or iPad loads the page, but connecting fails:** use a [trusted certificate](#safari-ipad-and-trusted-certificates).
+- **Safari loads the page, but connecting fails:** use a [trusted certificate](#safari-and-trusted-certificates).
 - **"The phone refused to create a virtual display":** the phone is on One UI 7 or older. DeX on a virtual display needs One UI 8.
 - **A phone card says *needs One UI 8+* or *not a Galaxy*:** see [If your phone isn't supported](#if-your-phone-isnt-supported).
-- **"That pairing code didn't work":** pairing codes only work while the pairing window is open on the phone. Tap *Pair device with pairing code* again and enter the new code.
+- **"That pairing code didn't work":** check the 6-digit code and the pairing address in the pairing window. Codes only work while that window is open on the phone. If it closed, tap *Pair device with pairing code* again and enter the new code and address.
 - **"Couldn't reach" a Wi‑Fi phone:** check the address and port on the phone's *Wireless debugging* screen (the port changes when Wireless debugging is turned off and on), and that both devices are on the same Wi‑Fi.
 - **"The phone hasn't accepted this connection":** pair it first, under *First time pairing this phone?*.
 - **WebUSB says another program is using the phone:** run `adb kill-server`, quit other adb tools, or use relay mode.
@@ -626,7 +626,7 @@ The check is off when:
 ## FAQ
 
 **Can I use it with a Pixel or another Android phone?**
-No. DeX is Samsung's. DeXterous can still connect to other Android phones, but you'll only get Android's own desktop mode, if the phone has one, and that isn't tested or supported.
+No. DeX is Samsung's. DeXterous can still connect to other Android phones, but you'll only get Android's own desktop mode, if the phone has one, and that isn't supported.
 
 **Does it work on One UI 7 or older?**
 No. Running DeX on a virtual display needs One UI 8 or newer. Older versions show a plain launcher or refuse to create the display.
@@ -653,10 +653,10 @@ Yes. DeXterous uses its own file name on the phone, so the two don't get in each
 Almost nothing, and no telemetry. Everything runs on your computer and your phone. About once a day, DeXterous asks npm's registry for the latest version number; the request carries nothing about you (see [About the update check](#about-the-update-check)), and `--no-update-check` turns it off. Otherwise, only installing and updating need the internet.
 
 **Can I use it over the internet, away from home?**
-Don't expose DeXterous to the internet. Use a private network such as Tailscale or WireGuard instead, ideally with a [trusted certificate](#safari-ipad-and-trusted-certificates).
+Don't expose DeXterous to the internet. Use a private network such as Tailscale or WireGuard instead, ideally with a [trusted certificate](#safari-and-trusted-certificates).
 
 **Does it work with a Galaxy Tab?**
-It should, if the tablet runs One UI 8 or newer. So far it has only been tested on a Galaxy Z Fold8.
+Yes, if the tablet runs One UI 8 or newer. Everything this guide says about phones applies to tablets too.
 
 **Is this Samsung DeX for PC?**
 No. Samsung discontinued those apps. DeXterous is an independent, unofficial project that runs the DeX already built into your phone.

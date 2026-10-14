@@ -7,6 +7,8 @@ const POLL_MS = 1500;
 const GIVE_UP_MS = 3 * 60 * 1000;
 /** Polls that report "idle" after we started, before we decide nothing happened. */
 const IDLE_POLLS_BEFORE_GIVING_UP = 4;
+/** After a "DeX session is open" answer, ask once more after this long. */
+const CONFLICT_RETRY_MS = 1500;
 
 export interface UpdateBannerElements {
   root: HTMLElement;
@@ -21,6 +23,16 @@ export interface UpdateBannerElements {
 }
 
 type View = "hidden" | "available" | "manual" | "busy" | "failed";
+
+/** The JSON body of `POST /api/update`'s answer. */
+interface UpdateResponse {
+  state?: unknown;
+  error?: unknown;
+}
+
+function isShuttingDown(body: UpdateResponse | undefined): boolean {
+  return typeof body?.error === "string" && /shutting down/i.test(body.error);
+}
 
 /**
  * The "a new version is out" banner on the connect screen. It follows the
@@ -41,10 +53,14 @@ export class UpdateBanner {
   #forceManual = false;
   #message = "";
   #copyTimer = 0;
+  readonly #onUpdatingChange: () => void;
+  #wasUpdating = false;
 
-  constructor(elements: UpdateBannerElements, token: string | undefined) {
+  /** `onUpdatingChange` runs whenever `updating` turns true or false. */
+  constructor(elements: UpdateBannerElements, token: string | undefined, onUpdatingChange: () => void = () => {}) {
     this.#el = elements;
     this.#token = token;
+    this.#onUpdatingChange = onUpdatingChange;
     elements.install.addEventListener("click", () => void this.#install());
     elements.dismiss.addEventListener("click", () => this.#dismiss());
     elements.copy.addEventListener("click", () => void this.#copy());
@@ -60,6 +76,12 @@ export class UpdateBanner {
       this.#startPolling();
     }
     this.#render();
+  }
+
+  /** An update is installing, or DeXterous is restarting after one. */
+  get updating(): boolean {
+    const state = this.#info?.state;
+    return state === "installing" || state === "restarting";
   }
 
   #view(): View {
@@ -83,6 +105,10 @@ export class UpdateBanner {
   }
 
   #render() {
+    if (this.updating !== this.#wasUpdating) {
+      this.#wasUpdating = this.updating;
+      this.#onUpdatingChange();
+    }
     const info = this.#info;
     const view = this.#view();
     const el = this.#el;
@@ -129,23 +155,22 @@ export class UpdateBanner {
     this.#forceManual = false;
     this.#el.install.disabled = true;
     try {
-      const response = await fetch("/api/update", {
-        method: "POST",
-        cache: "no-store",
-        headers: this.#token ? { Authorization: `Bearer ${this.#token}` } : {},
-      });
+      let response = await this.#requestUpdate();
+      if (response.status === 409 && !isShuttingDown(response.body)) {
+        // A session that is just ending can still hold its connections for a
+        // moment, so ask once more before saying one is open.
+        await new Promise((resolve) => window.setTimeout(resolve, CONFLICT_RETRY_MS));
+        response = await this.#requestUpdate();
+      }
       if (response.status === 202) {
         // "installing", or "restarting" when an update started elsewhere is already done.
-        const body = (await response.json().catch(() => undefined)) as { state?: unknown } | undefined;
-        this.#info = { ...info, state: body?.state === "restarting" ? "restarting" : "installing" };
+        this.#info = { ...info, state: response.body?.state === "restarting" ? "restarting" : "installing" };
         this.#startPolling();
       } else if (response.status === 409) {
         // A DeX session is open (or DeXterous is shutting down); the relay says which.
-        const body = (await response.json().catch(() => undefined)) as { error?: unknown } | undefined;
-        this.#message =
-          typeof body?.error === "string" && /shutting down/i.test(body.error)
-            ? body.error
-            : "A DeX session is open, maybe in another tab. Disconnect it, then try again.";
+        this.#message = isShuttingDown(response.body)
+          ? String(response.body?.error)
+          : "A DeX session is open, maybe in another tab. Disconnect it, then try again.";
       } else if (response.status === 400) {
         this.#message = "DeXterous can't update itself right now.";
         this.#forceManual = true;
@@ -161,6 +186,16 @@ export class UpdateBanner {
       this.#el.install.disabled = false;
     }
     this.#render();
+  }
+
+  async #requestUpdate(): Promise<{ status: number; body: UpdateResponse | undefined }> {
+    const response = await fetch("/api/update", {
+      method: "POST",
+      cache: "no-store",
+      headers: this.#token ? { Authorization: `Bearer ${this.#token}` } : {},
+    });
+    const body = (await response.json().catch(() => undefined)) as UpdateResponse | undefined;
+    return { status: response.status, body };
   }
 
   #startPolling() {

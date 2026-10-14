@@ -19,16 +19,15 @@
   <meta property="og:image" content="https://subsneaker.github.io/DeXterous/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="A phone floating above a ring of computers that each show a DeX-style desktop, on a red-orange background.">
+  <meta property="og:image:alt" content="A phone floating above a ring of computers that each show a DeX desktop, on a red-orange background.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="DeXterous: DeX for your Galaxy, anytime and anywhere">
   <meta name="twitter:description" content="Plug in your Galaxy phone, run one command, and DeX opens in a browser tab.">
   <meta name="twitter:image" content="https://subsneaker.github.io/DeXterous/img/og.png">
-  <meta name="twitter:image:alt" content="A phone floating above a ring of computers that each show a DeX-style desktop, on a red-orange background.">
+  <meta name="twitter:image:alt" content="A phone floating above a ring of computers that each show a DeX desktop, on a red-orange background.">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&amp;family=Figtree:wght@400..700&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+  <link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css">
 
   <script>document.documentElement.classList.add("js");</script>
@@ -106,7 +105,7 @@
         <div class="hero-stage" data-hero-stage>
           <picture>
             <source srcset="img/hero-dark.webp" media="(prefers-color-scheme: dark)">
-            <img class="hero-poster" src="img/hero-light.webp" width="1500" height="1125" alt="A phone floating above a ring of computers: a laptop, a monitor, a tablet and a wide monitor. Each screen shows a DeX-style desktop with windows and a taskbar." decoding="async" fetchpriority="high">
+            <img class="hero-poster" src="img/hero-light.webp" width="1500" height="1125" alt="A phone floating above a ring of computers: a laptop, a monitor, a tablet and a wide monitor. Each screen shows a DeX desktop in a browser tab." decoding="async" fetchpriority="high">
           </picture>
           <canvas class="hero-canvas" data-hero-canvas aria-hidden="true"></canvas>
           <p class="visually-hidden" role="status" data-hero-announce></p>
@@ -212,7 +211,7 @@
         </ol>
 
         <ul class="also">
-          <li>Open it from any device on your network with <code>dexterous --lan</code> (<a href="https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md#using-it-from-an-ipad-or-another-computer">guide</a>).</li>
+          <li>Open it from any device on your network with <code>dexterous --lan</code> (<a href="https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md#use-it-from-another-device">guide</a>).</li>
           <li>No Node.js? Try the <a href="app/">browser-only version</a> in Chrome or Edge, over USB.</li>
         </ul>
       </div>
@@ -365,6 +364,7 @@
       </nav>
       <p class="legal">Free and open source under the <a href="https://github.com/SubSneaker/DeXterous/blob/main/LICENSE">MIT License</a>. © 2026 SubSneaker.</p>
       <p class="legal">DeXterous is an independent project, not affiliated with or endorsed by Samsung. Samsung, Galaxy and DeX are trademarks of Samsung Electronics.</p>
+      <p class="legal">Image credits: DeX desktop photo by Maurizio Pesce (<a href="https://commons.wikimedia.org/wiki/File:Samsung_DeX_dock_with_S8,_plugged_into_monitor.jpg">source</a>), <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, cropped and straightened.</p>
     </div>
   </footer>
 

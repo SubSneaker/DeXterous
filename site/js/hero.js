@@ -1,6 +1,8 @@
 // Hero: a generic Galaxy-style phone floating in the middle, with a ring of generic devices
 // (laptop, monitor, tablet, wide monitor) slowly orbiting it. Each screen shows a DeX-style
-// desktop. Everything on the screens is drawn here, as original artwork.
+// desktop: a browser tab drawn here, holding a real photo of a DeX desktop (img/dex-desktop.webp,
+// Maurizio Pesce, CC BY 2.0, credited in the page footer). If the photo can't load, the tab
+// holds a drawn DeX-style desktop instead. The phone's home screen is drawn here too.
 //
 // Behavior:
 //  - Loads Three.js lazily, only when WebGL works and the hero is near the viewport.
@@ -12,6 +14,7 @@
 // (backdrop, floor, track, shadows, light tints) come from --scene-* custom properties in CSS.
 
 const THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js";
+const DESKTOP_PHOTO_URL = new URL("../img/dex-desktop.webp", import.meta.url).href;
 
 const stage = document.querySelector("[data-hero-stage]");
 const canvas = document.querySelector("[data-hero-canvas]");
@@ -160,8 +163,27 @@ function drawAppIcon(ctx, x, y, s, color, glyph) {
   }
 }
 
-// A browser window showing the DeX-style desktop, drawn at W x H.
-function drawDesktopArt(W, H, tone) {
+// Resolves to a decoded image, or null when it can't load.
+function loadImage(url) {
+  const img = new Image();
+  img.decoding = "async";
+  img.src = url;
+  return img.decode().then(() => img, () => null);
+}
+
+// Draws `img` to cover the box, cropping what doesn't fit. ax/ay (0..1) pick which part stays.
+function drawCover(ctx, img, x, y, w, h, ax, ay) {
+  const s = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  const sw = w / s;
+  const sh = h / s;
+  const sx = (img.naturalWidth - sw) * ax;
+  const sy = (img.naturalHeight - sh) * ay;
+  ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+}
+
+// A browser window showing DeX, drawn at W x H. With `photo` the tab holds the real desktop
+// photo (cropped to fit, keeping its taskbar); without it, a drawn DeX-style desktop.
+function drawDesktopArt(W, H, tone, photo) {
   const c = makeCanvas(W, H);
   const ctx = c.getContext("2d");
 
@@ -202,6 +224,10 @@ function drawDesktopArt(W, H, tone) {
   ctx.stroke();
 
   // Desktop
+  if (photo) {
+    drawCover(ctx, photo, 0, chromeH, W, H - chromeH, 0.5, 1);
+    return c;
+  }
   const tbH = 84;
   drawWallpaper(ctx, 0, chromeH, W, H - chromeH, tone);
 
@@ -348,7 +374,7 @@ function drawDesktopArt(W, H, tone) {
   ctx.fillStyle = "#ffffff";
   ctx.font = "600 26px system-ui, -apple-system, Segoe UI, sans-serif";
   ctx.textAlign = "right";
-  ctx.fillText("9:41", W - 30, H - tbH + 32);
+  ctx.fillText("10:08", W - 30, H - tbH + 32);
   ctx.font = "500 18px system-ui, -apple-system, Segoe UI, sans-serif";
   ctx.fillStyle = "rgba(255,255,255,0.75)";
   ctx.fillText("Tue 14 Oct", W - 30, H - tbH + 58);
@@ -386,7 +412,7 @@ function drawPhoneArt() {
   ctx.fillStyle = "#ffffff";
   ctx.font = "600 30px system-ui, -apple-system, Segoe UI, sans-serif";
   ctx.textBaseline = "middle";
-  ctx.fillText("9:41", 54, 62);
+  ctx.fillText("10:08", 54, 62);
   ctx.textAlign = "right";
   ctx.fillText("5G", W - 54, 62);
   ctx.textAlign = "left";
@@ -398,7 +424,7 @@ function drawPhoneArt() {
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
   ctx.font = "300 190px system-ui, -apple-system, Segoe UI, sans-serif";
-  ctx.fillText("9:41", W / 2, 260);
+  ctx.fillText("10:08", W / 2, 260);
   ctx.font = "500 36px system-ui, -apple-system, Segoe UI, sans-serif";
   ctx.fillText("Tuesday, 14 October", W / 2, 380);
   ctx.textAlign = "left";
@@ -529,7 +555,8 @@ function stageBackground() {
 }
 
 async function startHero() {
-  const THREE = await import(THREE_URL);
+  // The desktop photo loads alongside Three.js; if it fails, the screens use the drawn desktop.
+  const [THREE, photo] = await Promise.all([import(THREE_URL), loadImage(DESKTOP_PHOTO_URL)]);
 
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -664,7 +691,7 @@ async function startHero() {
       const hinge = new THREE.Group();
       hinge.position.set(0, 0.08, -0.8);
       hinge.rotation.x = -0.3;
-      const lid = display(2.66, 1.66, 0.12, 0.06, mats.silver, 0.09, drawDesktopArt(1600, 1000, tones.dusk));
+      const lid = display(2.66, 1.66, 0.12, 0.06, mats.silver, 0.09, drawDesktopArt(1600, 1000, tones.dusk, photo));
       lid.position.y = 0.95;
       hinge.add(lid);
       const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2.5, 14), mats.steel);
@@ -681,7 +708,7 @@ async function startHero() {
       const neck = box(0.22, 0.85, 0.08, mats.graphite);
       neck.position.set(0, 0.45, -0.1);
       g.add(neck);
-      const d = display(2.7, 1.52, 0.07, 0.09, mats.black, 0.07, drawDesktopArt(1600, 900, tones.sea));
+      const d = display(2.7, 1.52, 0.07, 0.09, mats.black, 0.07, drawDesktopArt(1600, 900, tones.sea, photo));
       d.position.set(0, 1.0 + 0.8, 0);
       d.rotation.x = -0.04;
       g.add(d);
@@ -694,7 +721,7 @@ async function startHero() {
       const neck = box(0.5, 0.6, 0.07, mats.graphite);
       neck.position.set(0, 0.34, -0.12);
       g.add(neck);
-      const d = display(2.4, 1.8, 0.1, 0.05, mats.silver, 0.17, drawDesktopArt(1600, 1200, tones.peach));
+      const d = display(2.4, 1.8, 0.1, 0.05, mats.silver, 0.17, drawDesktopArt(1600, 1200, tones.peach, photo));
       d.position.set(0, 0.62 + 1.0, 0);
       d.rotation.x = -0.12;
       g.add(d);
@@ -707,7 +734,7 @@ async function startHero() {
       const neck = box(0.2, 0.6, 0.08, mats.graphite);
       neck.position.set(0, 0.34, -0.1);
       g.add(neck);
-      const d = display(3.3, 1.4, 0.06, 0.09, mats.black, 0.06, drawDesktopArt(1920, 820, tones.plum));
+      const d = display(3.3, 1.4, 0.06, 0.09, mats.black, 0.06, drawDesktopArt(1920, 820, tones.plum, photo));
       d.position.set(0, 0.62 + 0.76, 0);
       d.rotation.x = -0.04;
       g.add(d);

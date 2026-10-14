@@ -5,7 +5,10 @@ import { ConcatStringStream, TextDecoderStream } from "@yume-chan/stream-extra";
 export const MIN_ONE_UI = 80000;
 
 export interface PhoneDetails {
-  /** Marketing name ("Galaxy S25 Ultra"), or the model code when the phone has none. */
+  /**
+   * The name the owner gave the phone ("Dana's Fold"), else its marketing name
+   * ("Galaxy S25 Ultra"), else the model code.
+   */
   name: string;
   /** Model code, e.g. "SM-S938B". */
   model: string;
@@ -18,10 +21,13 @@ export interface PhoneDetails {
 }
 
 /**
- * One light shell command: four properties and the battery state.
- * Every line is `key=value`, except the battery lines.
+ * One light shell command: the phone's name from *Settings › About phone*,
+ * four properties and the battery state. Every line is `key=value`, except
+ * the battery lines. Samsung phones often have no `ro.product.marketname`,
+ * so the name the owner sees on the phone is the better label.
  */
 const DETAILS_COMMAND =
+  'echo "device_name=$(settings get global device_name 2>/dev/null)"; ' +
   "for p in ro.product.marketname ro.product.model ro.product.manufacturer ro.build.version.oneui; do " +
   'echo "$p=$(getprop $p)"; done; ' +
   "dumpsys battery | grep -E '^ *(level|status):'";
@@ -76,12 +82,14 @@ export function parseDetails(output: string): PhoneDetails {
     }
   }
   const model = values.get("ro.product.model") ?? "";
+  // `settings get` prints "null" for a setting that was never set.
+  const deviceName = values.get("device_name");
   const oneUi = Number.parseInt(values.get("ro.build.version.oneui") ?? "", 10);
   const battery = Number.parseInt(values.get("level") ?? "", 10);
   // `dumpsys battery` status: 2 = charging, 5 = full (still plugged in).
   const status = values.get("status");
   return {
-    name: values.get("ro.product.marketname") || model || "Phone",
+    name: (deviceName !== "null" && deviceName) || values.get("ro.product.marketname") || model || "Phone",
     model,
     manufacturer: values.get("ro.product.manufacturer") ?? "",
     oneUi: Number.isFinite(oneUi) && oneUi > 0 ? oneUi : undefined,

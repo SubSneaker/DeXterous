@@ -1,8 +1,8 @@
 # DeXterous
 
-**Your Galaxy desktop, in any browser.**
+**Run Samsung DeX from your Galaxy phone in a browser tab.**
 
-DeXterous runs Samsung DeX from your Galaxy phone or tablet in a browser tab: on a Mac, a Windows PC, a Linux box or even an iPad. Samsung discontinued its DeX apps for Windows and Mac; DeXterous brings DeX back to your computer without them. It doesn't mirror your phone screen. It gives the phone a second, *virtual* monitor sized to your browser window, and DeX runs on it. You get a real desktop with resizable windows, a taskbar, right-click menus, your keyboard and the phone's audio, and the phone stays usable at the same time. No root, and no app to install on the phone.
+DeXterous runs Samsung DeX from your Galaxy phone or tablet in a browser tab, on a Mac, a Windows PC or a Linux computer, or on any device on your network. Samsung discontinued its DeX apps for Windows and Mac; DeXterous brings DeX back to your computer without them. It doesn't mirror your phone screen. It gives the phone a second, *virtual* monitor sized to your browser window, and DeX runs on it. You get a full desktop with resizable windows, a taskbar, right-click menus, your keyboard and the phone's audio, and the phone stays usable at the same time. No root, and no app to install on the phone.
 
 > DeXterous is an independent project. It is not affiliated with or endorsed by Samsung. "Samsung", "Galaxy" and "DeX" are trademarks of Samsung Electronics.
 
@@ -12,19 +12,19 @@ New here? The [user guide](docs/GUIDE.md) walks through everything step by step.
 
 ## Highlights
 
-- **A real desktop, not a mirror.** DeX runs on its own virtual display that follows the size of your browser window. Your phone keeps working as a phone.
-- **Any modern browser.** It's built on standard web APIs (WebCodecs, WebSockets), so Chrome, Edge, Safari and Firefox on macOS, Windows and Linux, or another device on your network such as an iPad, should all work. So far it has been tested in Chrome on macOS.
+- **DeX on its own display.** DeX runs on a virtual display that follows the size of your browser window. Your phone keeps working as a phone.
+- **Any modern browser.** It uses standard web APIs (WebCodecs, WebSockets), so it runs in current versions of Chrome, Edge, Safari and Firefox, on your computer or on a tablet or another computer on your network.
 - **Smooth video.** Hardware decoding with WebCodecs (H.264, H.265 or AV1) at up to 120 fps.
 - **Sound.** Phone audio plays in the browser, with a mute button.
 - **Mouse, keyboard and touch.** Hover, right-click menus, scrolling, multi-touch, IME and non-English text, and Mac-style ⌘ shortcuts.
 - **Shared clipboard.** Copy on one side, paste on the other, or keep the two clipboards separate.
 - **Lock-aware.** When the phone locks, DeXterous covers DeX, blocks input and mutes audio until you unlock it.
-- **Guided setup.** The connect screen lists your phones with their One UI version and battery, checks your setup step by step, and can add a phone over Wi‑Fi.
+- **Guided setup.** The connect screen lists your phones by name, with their One UI version and battery, checks your setup step by step, and can add a phone over Wi‑Fi.
 - **Local by default.** It only listens on `localhost`. Access from other devices needs HTTPS and an access token. No telemetry: the only thing DeXterous asks the internet is npm's registry, about once a day, for the latest version number. You can [turn that off](#updating).
 
 ## Requirements
 
-- **A Galaxy phone or tablet on One UI 8 or newer.** Since One UI 8, DeX can run on a virtual display. Older versions only show a plain launcher. Tested on a Galaxy Z Fold8 (One UI 9, Android 17).
+- **A Galaxy phone or tablet on One UI 8 or newer.** Since One UI 8, DeX can run on a virtual display. Older versions only show a plain launcher.
 - **USB debugging** turned on. See [Quick start](#quick-start).
 - **Node.js 22.18 or newer** on the computer the phone connects to.
 - **Android platform-tools** (`adb`) for the default relay mode:
@@ -71,7 +71,7 @@ To uninstall: `npm uninstall -g @subsneaker/dexterous`. The [guide](docs/GUIDE.m
 
 DeXterous looks for a new version about once a day: when it starts, if the last check is more than a day old, and again while it runs. When there is one, it prints a line in the terminal, and the DeXterous page shows a banner with a *What's new* link.
 
-- **Installed with npm:** click *Update now* in the banner on the DeXterous page, or stop DeXterous and run `dexterous update`. The page can do it while DeX isn't running: DeXterous installs the update, restarts in the same terminal and reloads the page.
+- **Installed with npm:** click *Update now* in the banner on the DeXterous page, or stop DeXterous and run `dexterous update`. The page can do it while DeX isn't running: DeXterous installs the update, restarts in the same terminal and reloads the page. *Start DeX* is greyed out until it's back.
 - **With npx:** `npx @subsneaker/dexterous@latest` always starts the newest version.
 - **From source:** `git pull`, then `npm install`.
 
@@ -84,7 +84,7 @@ The check sends nothing about you or your phone: it asks npm's registry for the 
 1. **Turn on USB debugging.** On the phone, open *Settings › About phone › Software information* and tap *Build number* 7 times. Then turn on *Settings › Developer options › USB debugging*.
 2. **Run `dexterous`.** It starts a small local server (the relay) and opens **http://localhost:8686** in your browser. Keep the terminal open while you use DeX.
 3. **Plug the phone in** with a USB cable and unlock it. When it asks *Allow USB debugging?*, tick *Always allow from this computer* (the phone's own wording) and tap *Allow*.
-4. **Pick your phone** under *Your phone* and click **Start DeX**. The card shows the phone's name, One UI version and battery, and says *Ready* once the phone has allowed your computer. If something is missing, the *Before you start* list below says what to do next.
+4. **Pick your phone** under *Your phone* and click **Start DeX**. The card shows the phone's name (the one in *Settings › About phone*), its model code, One UI version and battery, and says *Ready* once the phone has allowed your computer. If something is missing, the *Before you start* list below says what to do next.
 5. **Unlock the phone** if DeXterous says it's locked. DeX appears in the tab.
 6. **Press Ctrl+Alt+/** (⌃⌥/ on a Mac) to see all shortcuts and commands. Press Ctrl+C in the terminal to stop DeXterous.
 
@@ -173,7 +173,7 @@ If you pick a phone that's on Wi‑Fi while *Best* (or a custom mix above 8 Mbps
 | Mode | How to start | Works in | Notes |
 |---|---|---|---|
 | **Through DeXterous** (default) | `dexterous` | Any modern browser on your computer | Uses the computer's adb server, so the phone can be on USB *or* Wi‑Fi adb. A desktop `scrcpy` can keep running alongside; turn its audio off (`scrcpy --no-audio`) or you'll hear everything twice. |
-| **From other devices on your network** (iPad, laptop…) | `dexterous --lan` | Any modern browser on your LAN | Serves HTTPS with a self-signed certificate and requires an access token. Open the printed `https://<ip>:8686/#token=…` link and accept the certificate warning once. The computer's firewall must allow incoming connections; on a Mac, *Block all incoming connections* must be off. Safari and iPad may refuse the self-signed certificate for the live connection; if so, use `--cert`/`--key` with a certificate from mkcert or `tailscale cert`. |
+| **From other devices on your network** (a tablet, another computer…) | `dexterous --lan` | Any modern browser on your LAN | Serves HTTPS with a self-signed certificate and requires an access token. Open the printed `https://<ip>:8686/#token=…` link and accept the certificate warning once. The computer's firewall must allow incoming connections; on a Mac, *Block all incoming connections* must be off. Some browsers, Safari in particular, may refuse the self-signed certificate for the live connection; if so, use `--cert`/`--key` with a certificate from mkcert or `tailscale cert`. |
 | **USB, browser only** | Open the app, choose *USB, browser only* | Chrome, Edge (WebUSB) | The browser talks to the phone directly over USB, with no relay. The built `dist/` folder can be hosted on any HTTPS static host, even under a sub-path. The computer's own adb server must not be holding the phone: run `adb kill-server` first. |
 
 Details for each mode are in the [guide](docs/GUIDE.md).
@@ -240,13 +240,6 @@ DeXterous keeps its state in a per-user directory: `token` (the access token), `
 - **Other devices can't connect in `--lan` mode:** check the computer's firewall (see [Connection modes](#connection-modes)).
 
 More answers are in the guide's [troubleshooting and FAQ](docs/GUIDE.md#troubleshooting).
-
-## What's been tested
-
-Tested on a Galaxy Z Fold8 (One UI 9, Android 17) with Chrome on macOS:
-
-- **Tested:** connecting through the relay over USB and Wi‑Fi, DeX on the virtual display, hardware video decoding, resizing the window, audio arriving in the browser, disconnecting and reconnecting, phone-side cleanup, lock and sleep detection, and the access-token checks.
-- **Not yet verified on a device:** what typing, clicks, touch and clipboard actually do inside DeX (the phone was locked during testing), browser-only USB mode, LAN mode from another device (including an iPad), Safari and Firefox, and the npm install on Windows and Linux. CI builds DeXterous, installs the npm package and smoke-tests it on macOS, Windows and Linux.
 
 ## Known limitations
 

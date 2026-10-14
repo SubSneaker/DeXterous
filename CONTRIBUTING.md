@@ -68,7 +68,7 @@ All ADB and scrcpy logic runs in the browser, using [Tango](https://github.com/y
 | `index.html` | All markup: the connect screen, the session view, the dock, the lock screen and the shortcuts panel. |
 | `src/main.ts` | The UI controller: connect screen, session lifecycle, dock and panel commands, the `SHORTCUTS` map, the lock guard, clipboard hand-off, full screen and stats. |
 | `src/lib/device-list.ts` | The phone cards on the connect screen, as a keyboard-friendly radio group. |
-| `src/lib/phone-info.ts` | Reads a phone's name, model, One UI version and battery with one adb shell command. |
+| `src/lib/phone-info.ts` | Reads a phone's name (the one set in *Settings › About phone*), model, One UI version and battery with one adb shell command. |
 | `src/lib/checklist.ts` | The *Before you start* checklist: which setup step is done, and the fix for the first one that isn't. |
 | `src/lib/presets.ts` | The picture quality presets (*Best*, *Balanced*, *Light*) and matching saved settings to them. |
 | `src/lib/wireless-form.ts` | *Add a phone over Wi‑Fi*: address checks, pairing and connecting, and readable errors. |
@@ -94,7 +94,7 @@ All ADB and scrcpy logic runs in the browser, using [Tango](https://github.com/y
 | `server/open.ts` | Opens the app in the default browser, unless `--no-open` or there's no display. |
 | `server/security.ts` | Host, Origin and token checks (including the stricter ones for `/api/update`), and token storage. |
 | `server/update.ts` | Update checks against the npm registry, how this copy was installed, `dexterous update`, and installing an update for `/api/update`. |
-| `server/tunnel.ts` | The WebSocket-to-TCP byte tunnel to the adb server, with backpressure and heartbeats. |
+| `server/tunnel.ts` | The WebSocket-to-TCP byte tunnel to the adb server, with backpressure and heartbeats. It peeks at each tunnel's first adb requests to tell a DeX session from the connect screen's short commands, so `/api/update` only waits for a session. |
 | `server/adb.ts` | Finds the adb executable and starts the adb server if nothing is listening. |
 | `server/cert.ts` | Self-signed and user-supplied TLS certificates. |
 | `server/static.ts` | Serves the built app. |
@@ -151,7 +151,7 @@ Before you open one:
 ```text
 feat(input): forward mouse side buttons as Back and Forward
 fix(relay): refuse tunnels while shutting down
-docs: explain mkcert setup for iPad
+docs: explain the mkcert setup for trusted certificates
 ```
 
 Common types: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`. Useful scopes: `session`, `input`, `ui`, `relay`, `cli`, `docs`.

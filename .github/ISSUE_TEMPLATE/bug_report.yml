@@ -35,8 +35,8 @@ body:
     id: phone
     attributes:
       label: Phone or tablet model
-      description: "Settings › About phone, e.g. Galaxy Z Fold8 (SM-F976Q)."
-      placeholder: "Galaxy Z Fold8"
+      description: "The model name and model number from Settings › About phone."
+      placeholder: "Galaxy S25 Ultra (SM-S938B)"
     validations:
       required: true
 

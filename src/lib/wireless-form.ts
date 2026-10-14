@@ -39,12 +39,26 @@ export function parseCode(value: string): string | undefined {
   return /^\d{6}$/.test(text) ? text : undefined;
 }
 
-/** Turns what adb said into something a person can act on. */
+/**
+ * Turns what adb said into something a person can act on. adb's own answers
+ * to `host:pair` (from `adb_wifi_pair_device`) are:
+ *
+ * - "Failed: Wrong password or connection was dropped." when the code is wrong,
+ *   the pairing window closed, or nothing answered at the pairing address,
+ * - "Failed to parse address for pairing: …" and "Invalid port while parsing
+ *   address […]" for a bad address,
+ * - "Failed: Unable to start pairing client." and "Failed: unable to create
+ *   pairing client." when adb couldn't start pairing at all.
+ */
 export function describePairError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
-  if (/password|wrong|code/i.test(message)) {
-    return "That pairing code didn't work. Check the 6-digit code, and keep the pairing window open on the phone.";
+  if (/^Failed: Wrong password or connection was dropped/i.test(message)) {
+    return "That pairing code didn't work. Check the 6-digit code and the pairing address, and keep the pairing window open on the phone.";
   }
+  if (/^(Failed to parse address for pairing|Invalid port while parsing address)/i.test(message)) {
+    return "Check the pairing address. It's in the pairing window on the phone, like 192.168.1.20:41555.";
+  }
+  // The relay's and DeXterous's own messages are already readable.
   if (/relay|adb|DeXterous/i.test(message) && !/^Failed/i.test(message)) {
     return message;
   }

@@ -69,6 +69,7 @@ const ui = {
   suggestionAccept: $<HTMLButtonElement>("suggestion-accept"),
   suggestionDismiss: $<HTMLButtonElement>("suggestion-dismiss"),
   start: $<HTMLButtonElement>("start"),
+  startHint: $("start-hint"),
   status: $("status"),
   settingsForm: $<HTMLFormElement>("settings-form"),
   presets: $("presets"),
@@ -197,7 +198,14 @@ function selectMethod(next: TransportKind) {
 }
 
 function updateStartButton() {
-  ui.start.disabled = starting !== undefined || !currentChoice()?.ready || !WebCodecsVideoDecoder.isSupported;
+  // The relay refuses new sessions while it updates, and restarts afterwards.
+  const updating = updateBanner?.updating === true;
+  ui.start.disabled =
+    starting !== undefined || updating || !currentChoice()?.ready || !WebCodecsVideoDecoder.isSupported;
+  const hint = updating ? "DeXterous is updating. You can start DeX when it's done." : "";
+  if (ui.startHint.textContent !== hint) {
+    ui.startHint.textContent = hint;
+  }
 }
 
 function startFromKeyboard() {
@@ -632,6 +640,7 @@ async function initConnectScreen() {
         dismiss: $<HTMLButtonElement>("update-dismiss"),
       },
       relayToken,
+      updateStartButton,
     );
     updateBanner.apply(relayInfo);
     selectMethod("relay");
@@ -698,7 +707,7 @@ function initialDisplay(): { request: DisplayRequest; scale: number } {
 
 async function startDex() {
   const choice = currentChoice();
-  if (!choice || starting) {
+  if (!choice || starting || updateBanner?.updating) {
     return;
   }
   settings = readForm(ui.settingsForm, settings);
