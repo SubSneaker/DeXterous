@@ -74,6 +74,7 @@ All ADB and scrcpy logic runs in the browser, using [Tango](https://github.com/y
 | `src/lib/wireless-form.ts` | *Add a phone over Wi‑Fi*: address checks, pairing and connecting, and readable errors. |
 | `src/lib/update-banner.ts` | The update banner: follows `/api/info`, calls `POST /api/update` and waits for the relay to come back. |
 | `src/lib/storage.ts` | `localStorage` helpers that never throw. |
+| `src/lib/preferences.ts` | The theme (System / Light / Dark) and Animations switches on the connect screen. |
 | `src/lib/dex-session.ts` | One DeX session: pushes the scrcpy server, starts it with the virtual display options (`new_display`, `flex_display`, `vd_destroy_content`), runs the video decoder, audio and clipboard streams, watches the phone's lock state and sends phone commands (wake, lock, screen power). |
 | `src/lib/input.ts` | Turns DOM pointer, wheel, keyboard, IME and paste events into scrcpy control messages. Tracks held keys, buttons and touches so nothing stays stuck on the phone. |
 | `src/lib/keymap.ts` | Pure keyboard helpers: DOM codes to Android key codes, meta state, ⌘-as-Ctrl, the Ctrl+Alt app chord, paste detection and platform detection. |

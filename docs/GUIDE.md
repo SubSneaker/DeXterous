@@ -147,6 +147,12 @@ Below the connect card, *Before you start* checks your setup as you go:
 
 Each step gets a tick when it's done. The first step that isn't done shows what to do about it. When everything is ready, the list folds up and says *All set*; click it to open it again. If DeXterous can't read the phone's One UI version, that step is left unchecked and doesn't hold you up. In *USB, browser only* mode the list is shorter: whether this browser can use USB, and whether you've added a phone.
 
+### Theme, Animations and help
+
+At the top right of the connect screen, the first control sets the colour theme: *System* follows your device, or pick *Light* or *Dark*. The *Animations* switch turns the connect screen's motion on or off; with it off, the dock in a session also appears without sliding. It starts off if your device is set to reduce motion. Your browser remembers both. The session view is always dark.
+
+The *Project site* link sits under the name. *Help*, below the checklist, links to sections of this guide, and the shortcuts panel has a short *Help* row too. These links open in a new tab.
+
 ### If your phone isn't supported
 
 A phone card warns you with *needs One UI 8+* (a Galaxy on One UI 7 or older) or *not a Galaxy*. You can still try: you'll get Android's own desktop, if the phone has one, or a basic launcher. Update a Galaxy in *Settings › Software update*.
@@ -289,7 +295,7 @@ These belong to DeX itself and can vary between One UI versions. ⊞ is the righ
 
 ### The dock
 
-Move the mouse to the top edge of the window to show the dock. On a touch screen, tap the ⌄ handle in the top-right corner. From left to right: Back, Home, Recent apps, show keyboard, mute, lock phone, full screen, the shortcuts panel (?) and disconnect. Turning the phone's own screen off and the connection stats are in the panel.
+Move the mouse to the top middle of the DeX screen and hold it there for a moment, or slide it off the top edge, to show the dock. It hides again when you move away. It doesn't open while you drag, so dragging a window to the top still works. On a touch screen, tap the ⌄ handle in the top-right corner. From left to right: Back, Home, Recent apps, show keyboard, mute, lock phone, full screen, the shortcuts panel (?) and disconnect. Turning the phone's own screen off and the connection stats are in the panel.
 
 ## Settings explained
 
@@ -450,16 +456,16 @@ The web app is a static site, so any HTTPS host can serve it, even under a sub-p
 
 Only use a copy you host yourself or trust: whoever controls the page controls what it does with your phone once you approve it.
 
-You can also use the *USB, browser only* tab on the page `dexterous` serves, as long as the computer's adb server isn't running.
+This mode is for computers that aren't running DeXterous. Where `dexterous` runs, its adb server already holds the phone, so use *Through DeXterous* there: it works over USB too.
 
 ### Connecting
 
-1. **Free the phone.** Only one program can use the phone's USB debugging interface at a time. Run `adb kill-server`, and quit Android Studio, scrcpy and any other adb tools.
+1. **Free the phone.** Only one program can use the phone's USB debugging interface at a time. Close Android Studio, scrcpy and any other adb tools. If adb is still running, run `adb kill-server`.
 2. Open the page and choose the **USB, browser only** tab.
 3. Click **Add phone…** and pick your phone in the browser's USB dialog. The browser remembers it for next time.
 4. Click **Start DeX**. The phone asks *Allow USB debugging?* again, this time for the browser's own key. Tick *Always allow* and tap *Allow*.
 
-The browser keeps its adb key in the site's storage. If you clear the site's data, the phone asks again. If the browser can't open the phone, use relay mode.
+The browser keeps its adb key in the site's storage. If you clear the site's data, the phone asks again. If the browser can't open the phone, install DeXterous and use *Through DeXterous*.
 
 ## Command-line reference
 
@@ -601,7 +607,7 @@ The check is off when:
 - **"That pairing code didn't work":** check the 6-digit code and the pairing address in the pairing window. Codes only work while that window is open on the phone. If it closed, tap *Pair device with pairing code* again and enter the new code and address.
 - **"Couldn't reach" a Wi‑Fi phone:** check the address and port on the phone's *Wireless debugging* screen (the port changes when Wireless debugging is turned off and on), and that both devices are on the same Wi‑Fi.
 - **"The phone hasn't accepted this connection":** pair it first, under *First time pairing this phone?*.
-- **WebUSB says another program is using the phone:** run `adb kill-server`, quit other adb tools, or use relay mode.
+- **Browser-only mode says adb is using the phone:** only one program can use the phone's USB connection at a time, and where DeXterous runs, its adb server usually has it. Close the programs that use adb, or click *Use Through DeXterous* to start DeX through DeXterous instead (it works over USB too). Running `adb kill-server` also works, but it stops scrcpy and other adb tools, and DeXterous's own mode needs adb.
 
 ### While using DeX
 

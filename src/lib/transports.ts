@@ -196,6 +196,11 @@ export async function requestWebUsbDevice(): Promise<DeviceChoice | undefined> {
   return device ? toChoice(device) : undefined;
 }
 
+/** Another program, usually the computer's adb server, already holds the phone's USB interface. */
+export class UsbBusyError extends Error {
+  override name = "UsbBusyError";
+}
+
 let credentialManager: AdbWebCryptoCredentialManager | undefined;
 
 export async function connectWebUsb(
@@ -212,9 +217,9 @@ export async function connectWebUsb(
     connection = await device.connect();
   } catch (error) {
     if (error instanceof AdbDaemonWebUsbDevice.DeviceBusyError) {
-      throw new Error(
-        "Another program on this device is using the phone (usually the adb server). " +
-          "Stop it (`adb kill-server`) or use relay mode instead.",
+      throw new UsbBusyError(
+        "Another program on your computer is using the phone, usually adb. " +
+          "Close it, or run `adb kill-server`, then try again.",
       );
     }
     throw error;

@@ -9,7 +9,9 @@
 //  - Until then (and without JS or WebGL) the pre-rendered poster image stays visible.
 //  - Caps the pixel ratio, pauses when offscreen or in a background tab.
 //  - Drag, click a device, or use the arrow buttons to turn the ring.
-//  - With prefers-reduced-motion it renders one still frame and never orbits on its own.
+//  - With animations off (data-motion="off" on <html>, set from the page's Animations switch or
+//    from prefers-reduced-motion) it renders one still frame and never orbits on its own.
+//    The arrow buttons still turn the ring, with instant moves.
 // No element styles are set from JS. The canvas is sized by CSS, and the scene's colours
 // (backdrop, floor, track, shadows, light tints) come from --scene-* custom properties in CSS.
 
@@ -30,7 +32,13 @@ function webglAvailable() {
   }
 }
 
+// data-motion on <html> is the single source of truth. The media query only covers a page
+// where the inline script that sets it did not run.
 const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+function motionOff() {
+  const value = document.documentElement.getAttribute("data-motion");
+  return value ? value === "off" : motionQuery.matches;
+}
 
 /* ------------------------------------------------------------------ */
 /* Artwork                                                             */
@@ -845,7 +853,7 @@ async function startHero() {
     idleAt: 0,
     front: 0,
   };
-  const reduced = () => motionQuery.matches;
+  const reduced = motionOff;
 
   const captionName = document.querySelector("[data-hero-name]");
   const controls = document.querySelector("[data-hero-controls]");
@@ -1025,7 +1033,6 @@ async function startHero() {
       pauseButton.setAttribute("aria-pressed", state.paused ? "true" : "false");
       pauseButton.setAttribute("aria-label", state.paused ? "Resume the slow turn" : "Pause the slow turn");
     });
-    motionQuery.addEventListener("change", () => { pauseButton.hidden = reduced(); });
   }
   if (controls) {
     controls.addEventListener("focusin", () => { state.focus = true; });
@@ -1043,7 +1050,17 @@ async function startHero() {
     state.pageVisible = !document.hidden;
     updateLoop();
   });
-  motionQuery.addEventListener("change", updateLoop);
+  // The animations switch (js/main.js) and the system setting both land here.
+  const onMotionChange = () => {
+    if (reduced() && state.mode === "snap") {
+      state.ang = state.target;
+      state.mode = "auto";
+    }
+    if (pauseButton) pauseButton.hidden = reduced();
+    updateLoop();
+  };
+  document.addEventListener("dexterous:motionchange", onMotionChange);
+  motionQuery.addEventListener("change", onMotionChange);
   // New colours show on the next frame while the loop runs; otherwise draw once.
   const recolour = () => { syncColors(); if (!state.raf) renderOnce(); };
   darkQuery.addEventListener("change", recolour);

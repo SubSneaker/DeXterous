@@ -1,4 +1,5 @@
 import { formatOneUi, MIN_ONE_UI, type PhoneDetails } from "./phone-info";
+import { motionEnabled } from "./preferences";
 import type { DeviceChoice } from "./types";
 
 /** What the page knows about a phone's details: still loading, read, or not readable. */
@@ -76,8 +77,8 @@ export class DeviceList {
     const live = new Set(devices.map((device) => device.id));
     for (const [id, card] of this.#cards) {
       if (!live.has(id)) {
-        card.remove();
         this.#cards.delete(id);
+        removeCard(card);
       }
     }
     devices.forEach((device, index) => {
@@ -87,13 +88,16 @@ export class DeviceList {
         this.#cards.set(device.id, card);
       }
       this.#fillCard(card, device, details.get(device.serial));
-      if (this.#root.children[index] !== card) {
-        this.#root.insertBefore(card, this.#root.children[index] ?? null);
+      // Cards on their way out don't count when placing the others.
+      const present = this.#root.querySelectorAll(":scope > .phone:not([data-leaving])");
+      if (present[index] !== card) {
+        this.#root.insertBefore(card, present[index] ?? null);
       }
     });
     this.#root.hidden = devices.length === 0;
     this.#syncSelection();
-    if (refocus && this.#root.contains(document.activeElement) === false) {
+    const focusKept = [...this.#cards.values()].some((card) => card.contains(document.activeElement));
+    if (refocus && !focusKept) {
       this.#focusCard(this.#selectedId);
     }
   }
@@ -225,11 +229,35 @@ export class DeviceList {
   }
 }
 
+/** The phone with this adb serial, if the list has it. */
+export function findPhoneBySerial<T extends { serial: string }>(devices: readonly T[], serial: string): T | undefined {
+  return devices.find((device) => device.serial === serial);
+}
+
 function setText(card: HTMLElement, selector: string, text: string) {
   const element = card.querySelector(selector);
   if (element && element.textContent !== text) {
     element.textContent = text;
   }
+}
+
+/** Fades a card out when animations are on (`.phone[data-leaving]` in styles.css), then removes it. */
+function removeCard(card: HTMLElement) {
+  if (!motionEnabled()) {
+    card.remove();
+    return;
+  }
+  card.dataset.leaving = "true";
+  card.inert = true;
+  card.removeAttribute("role");
+  const done = () => card.remove();
+  card.addEventListener("transitionend", (event) => {
+    if (event.target === card && event.propertyName === "opacity") {
+      done();
+    }
+  });
+  // In case the transition never runs (say, the list is hidden meanwhile).
+  window.setTimeout(done, 400);
 }
 
 function createCard(id: string): HTMLElement {

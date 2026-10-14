@@ -6,9 +6,10 @@
   <title>DeXterous: Samsung DeX on any computer</title>
   <meta name="description" content="Plug in your Galaxy phone, run one command, and DeX opens in a browser tab on any computer. Free and open source.">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#f0613f" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#8e2c1f" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#d02f14" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#861f12" media="(prefers-color-scheme: dark)">
   <script>try{var t=localStorage.getItem("dexterous-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+  <script>(function(){var m=null;try{m=localStorage.getItem("dexterous-motion")}catch(e){}if(m!=="on"&&m!=="off"){m="on";try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)m="off"}catch(e){}}document.documentElement.setAttribute("data-motion",m)})()</script>
   <link rel="canonical" href="https://subsneaker.github.io/DeXterous/">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
@@ -78,6 +79,10 @@
             <span class="visually-hidden">Dark</span>
           </button>
         </div>
+        <button class="motion" type="button" role="switch" aria-checked="true" aria-label="Animations" data-motion-switch hidden>
+          <span class="motion-label" aria-hidden="true">Animations</span>
+          <span class="motion-track" aria-hidden="true"></span>
+        </button>
       </div>
     </div>
   </header>

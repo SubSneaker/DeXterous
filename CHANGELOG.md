@@ -5,6 +5,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-10-15
+
+### Added
+
+- A *System*, *Light* and *Dark* theme switch and an *Animations* switch at the top right of the connect screen. Your browser remembers both, and the page shows the right theme from the first frame. *Animations* starts off when your device is set to reduce motion.
+- Motion on the connect screen, with *Animations* on: the page rises in, phone cards slide in and fade out as phones come and go, a ready phone's dot pulses a few times, checklist ticks pop in, the picture quality highlight slides, opened sections slide into place, *Start DeX* lifts on hover, and the loading screen fades in over the connect screen. A faint ring with a light going round it sits in the top band. A DeX session gets no new motion.
+- A *Project site* link under the name, and a *Help* section with links into the user guide: your first connection, Wi‑Fi, using it from another device, shortcuts, troubleshooting and updating. The shortcuts panel has a short *Help* row too.
+
+### Fixed
+
+- *Disconnect* in browser-only USB mode could leave the page stuck on an empty screen with the shortcuts panel open. The page now goes back to the connect screen right away and closes the connection to the phone in the background.
+
+### Changed
+
+- The *USB, browser only* tab now says it's for computers without DeXterous when DeXterous is running. If adb on your computer is already using the phone, the message says that plainly and offers *Use Through DeXterous*, instead of telling you to run `adb kill-server`. A start that fails right away no longer flashes the loading screen.
+- The session dock is easier to open: rest the mouse near the top middle of the DeX screen, or slide it off the top edge. It no longer needs the pointer on the very edge, and it stays shut while you drag.
+- The top band is a deeper red-orange with cream text, logo and controls, so text on it is easier to read. *Start DeX* and the *Connecting…* label use the same colours. The dark theme keeps its brick band.
+- The project site matches: cream text on the deeper red-orange band, and an *Animations* switch next to the theme switch that also stops the turning devices.
+- The loading spinner stops once DeX is on screen, instead of turning unseen behind it for the whole session.
+- With *Animations* off, or by default when your device is set to reduce motion, transitions are instant and spinners turn slowly.
+
 ## [0.2.1] - 2026-10-14
 
 ### Fixed
@@ -78,7 +99,8 @@ First release.
 - Typing non-ASCII text goes through the phone's clipboard.
 - Browser-reserved shortcuts (⌘W, ⌘T, ⌘Q, Alt+Tab) only reach DeX in full screen in Chrome or Edge.
 
-[Unreleased]: https://github.com/SubSneaker/DeXterous/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/SubSneaker/DeXterous/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/SubSneaker/DeXterous/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/SubSneaker/DeXterous/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/SubSneaker/DeXterous/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SubSneaker/DeXterous/releases/tag/v0.1.0

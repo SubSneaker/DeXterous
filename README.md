@@ -27,7 +27,7 @@ New here? The [user guide](docs/GUIDE.md) walks through everything step by step.
 - **A Galaxy phone or tablet on One UI 8 or newer.** Since One UI 8, DeX can run on a virtual display. Older versions only show a plain launcher.
 - **USB debugging** turned on. See [Quick start](#quick-start).
 - **Node.js 22.18 or newer** on the computer the phone connects to.
-- **Android platform-tools** (`adb`) for the default relay mode:
+- **Android platform-tools** (`adb`) for *Through DeXterous*, the default way to connect:
 
   | OS | Install adb with |
   |---|---|
@@ -123,7 +123,7 @@ The panel also lists DeX's own shortcuts: ⊞+/ (all DeX shortcuts), ⊞+← / �
 
 ### Controls dock
 
-Move the mouse to the top edge of the window. The dock has Back, Home, Recent apps, show keyboard, mute, lock phone, full screen, the shortcuts panel (?) and disconnect. On a touch screen, tap the ⌄ handle in the top-right corner.
+Move the mouse to the top middle of the DeX screen and hold it there for a moment, or slide it off the top edge. The dock has Back, Home, Recent apps, show keyboard, mute, lock phone, full screen, the shortcuts panel (?) and disconnect. On a touch screen, tap the ⌄ handle in the top-right corner.
 
 ### Clipboard
 
@@ -168,13 +168,15 @@ If you pick a phone that's on Wi‑Fi while *Best* (or a custom mix above 8 Mbps
 | Move open apps to the phone on disconnect | On by default. When off, apps open on DeX are closed when you disconnect. |
 | Keep DeX usable while the phone is locked | Off by default, so a locked phone also covers DeXterous. Can only be turned on while the phone is unlocked. |
 
+At the top right of the connect screen, choose a *System*, *Light* or *Dark* theme and turn *Animations* on or off (off by default when your device is set to reduce motion). The *Help* section below the setup checklist links to the [guide](docs/GUIDE.md).
+
 ## Connection modes
 
 | Mode | How to start | Works in | Notes |
 |---|---|---|---|
 | **Through DeXterous** (default) | `dexterous` | Any modern browser on your computer | Uses the computer's adb server, so the phone can be on USB *or* Wi‑Fi adb. A desktop `scrcpy` can keep running alongside; turn its audio off (`scrcpy --no-audio`) or you'll hear everything twice. |
 | **From other devices on your network** (a tablet, another computer…) | `dexterous --lan` | Any modern browser on your LAN | Serves HTTPS with a self-signed certificate and requires an access token. Open the printed `https://<ip>:8686/#token=…` link and accept the certificate warning once. The computer's firewall must allow incoming connections; on a Mac, *Block all incoming connections* must be off. Some browsers, Safari in particular, may refuse the self-signed certificate for the live connection; if so, use `--cert`/`--key` with a certificate from mkcert or `tailscale cert`. |
-| **USB, browser only** | Open the app, choose *USB, browser only* | Chrome, Edge (WebUSB) | The browser talks to the phone directly over USB, with no relay. The built `dist/` folder can be hosted on any HTTPS static host, even under a sub-path. The computer's own adb server must not be holding the phone: run `adb kill-server` first. |
+| **USB, browser only** | Open the app, choose *USB, browser only* | Chrome, Edge (WebUSB) | The browser talks to the phone directly over USB, with no relay. The built `dist/` folder can be hosted on any HTTPS static host, even under a sub-path. It's for computers without DeXterous: where DeXterous runs, its adb server holds the phone, so use *Through DeXterous* there. |
 
 Details for each mode are in the [guide](docs/GUIDE.md).
 
@@ -233,7 +235,7 @@ DeXterous keeps its state in a per-user directory: `token` (the access token), `
 - **Frozen desktop with that setting on:** some phones still pause DeX when their screen goes fully off. Press Ctrl+Alt+W to wake the phone.
 - **Video codec greyed out:** this browser can't decode it. H.264 works everywhere.
 - **"The phone refused to create a virtual display":** the phone is on One UI 7 or older.
-- **WebUSB says the device is busy:** another adb program is holding the phone. Run `adb kill-server`, or use relay mode.
+- **Browser-only mode says adb is using the phone:** only one program can use the phone's USB connection at a time. Where DeXterous runs, its adb server usually has it: close the programs that use adb, or click *Use Through DeXterous*, which works over USB too. On a computer without DeXterous, close the other program or run `adb kill-server`, then try again.
 - **Choppy over Wi‑Fi:** pick *Balanced (Wi‑Fi)* or *Light* under *Picture quality*. USB is always smoothest.
 - **Text is too big or too small:** change *DeX text size*, then start again.
 - **Audio plays twice, slightly out of sync:** a desktop `scrcpy` is also forwarding audio. Run it with `--no-audio`.

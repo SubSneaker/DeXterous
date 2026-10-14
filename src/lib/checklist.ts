@@ -143,7 +143,14 @@ export class Checklist {
       this.#el.root.open = !ready;
       this.#ready = ready;
     }
-    this.#el.list.replaceChildren(...steps.map(stepElement));
+    // Update the items in place, so a tick only animates when its step gets done.
+    const items = steps.map((step, index) => {
+      const item = this.#el.list.children[index];
+      return item instanceof HTMLLIElement ? fillStep(item, step) : fillStep(createStep(), step);
+    });
+    if (items.some((item, index) => this.#el.list.children[index] !== item) || this.#el.list.children.length !== items.length) {
+      this.#el.list.replaceChildren(...items);
+    }
   }
 }
 
@@ -155,10 +162,9 @@ const STATUS_TEXT: Record<StepStatus, string> = {
   pending: "Later: ",
 };
 
-function stepElement(step: Step): HTMLElement {
+function createStep(): HTMLLIElement {
   const item = document.createElement("li");
   item.className = "step";
-  item.dataset.status = step.status;
 
   const mark = document.createElement("span");
   mark.className = "step-mark";
@@ -168,27 +174,50 @@ function stepElement(step: Step): HTMLElement {
   body.className = "step-body";
   const hidden = document.createElement("span");
   hidden.className = "visually-hidden";
-  hidden.textContent = STATUS_TEXT[step.status];
   const label = document.createElement("span");
   label.className = "step-label";
-  label.textContent = step.label;
   body.append(hidden, label);
-  if (step.fix) {
-    const fix = document.createElement("p");
-    fix.className = "step-fix";
-    // `like this` becomes <code>.
-    step.fix.split("`").forEach((part, index) => {
-      if (index % 2 === 1) {
-        const code = document.createElement("code");
-        code.textContent = part;
-        fix.append(code);
-      } else {
-        fix.append(part);
-      }
-    });
-    body.append(fix);
-  }
 
   item.append(mark, body);
   return item;
+}
+
+function fillStep(item: HTMLLIElement, step: Step): HTMLLIElement {
+  if (item.dataset.status !== step.status) {
+    item.dataset.status = step.status;
+  }
+  const [hidden, label] = item.querySelectorAll<HTMLElement>(".step-body > span");
+  setText(hidden!, STATUS_TEXT[step.status]);
+  setText(label!, step.label);
+
+  const body = item.querySelector(".step-body")!;
+  let fix = body.querySelector<HTMLElement>(".step-fix");
+  if (!step.fix) {
+    fix?.remove();
+    return item;
+  }
+  if (fix?.dataset.text === step.fix) {
+    return item;
+  }
+  fix ??= body.appendChild(document.createElement("p"));
+  fix.className = "step-fix";
+  fix.dataset.text = step.fix;
+  // `like this` becomes <code>.
+  fix.replaceChildren(
+    ...step.fix.split("`").map((part, index) => {
+      if (index % 2 === 0) {
+        return part;
+      }
+      const code = document.createElement("code");
+      code.textContent = part;
+      return code;
+    }),
+  );
+  return item;
+}
+
+function setText(element: HTMLElement, text: string) {
+  if (element.textContent !== text) {
+    element.textContent = text;
+  }
 }

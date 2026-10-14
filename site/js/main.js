@@ -1,4 +1,4 @@
-// Page behavior: theme switch, tabs and copy buttons.
+// Page behavior: theme switch, animations switch, tabs and copy buttons.
 // All styling lives in css/style.css. This file only toggles attributes and classes.
 (function () {
   "use strict";
@@ -13,7 +13,7 @@
   // The choice is "system", "light" or "dark". "system" leaves data-theme off so the CSS
   // follows prefers-color-scheme. An inline script in <head> applies a saved choice before paint.
   var THEME_KEY = "dexterous-theme";
-  var THEME_COLOR = { light: "#f0613f", dark: "#8e2c1f" };
+  var THEME_COLOR = { light: "#d02f14", dark: "#861f12" };
   var root = document.documentElement;
   var switcher = document.querySelector("[data-theme-switch]");
 
@@ -89,6 +89,54 @@
     window.addEventListener("storage", function (e) {
       if (e.key === THEME_KEY || e.key === null) applyTheme(readTheme());
     });
+  }
+
+  // ---- Animations switch ----
+  // The one source of truth is data-motion="on|off" on <html>. The inline script in <head> sets it
+  // before paint: the saved choice, else "off" when the system asks for reduced motion, else "on".
+  // CSS and js/hero.js both read that attribute. This code keeps it in step with the switch.
+  var MOTION_KEY = "dexterous-motion";
+  var motionSwitch = document.querySelector("[data-motion-switch]");
+  var reduceQuery = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+
+  function savedMotion() {
+    try {
+      var saved = localStorage.getItem(MOTION_KEY);
+      if (saved === "on" || saved === "off") return saved;
+    } catch (e) { /* storage blocked: follow the system */ }
+    return null;
+  }
+  function saveMotion(value) {
+    try { localStorage.setItem(MOTION_KEY, value); } catch (e) { /* the choice lasts until the page closes */ }
+  }
+  function currentMotion() {
+    return savedMotion() || (reduceQuery && reduceQuery.matches ? "off" : "on");
+  }
+  function applyMotion(value) {
+    root.setAttribute("data-motion", value);
+    if (motionSwitch) motionSwitch.setAttribute("aria-checked", value === "on" ? "true" : "false");
+    // The 3D hero listens for this and starts or stops its turn.
+    document.dispatchEvent(new CustomEvent("dexterous:motionchange"));
+  }
+
+  if (motionSwitch) {
+    applyMotion(currentMotion());
+    motionSwitch.hidden = false;
+    motionSwitch.addEventListener("click", function () {
+      var next = root.getAttribute("data-motion") === "on" ? "off" : "on";
+      saveMotion(next);
+      applyMotion(next);
+    });
+    // Another tab changed the choice.
+    window.addEventListener("storage", function (e) {
+      if (e.key === MOTION_KEY || e.key === null) applyMotion(currentMotion());
+    });
+    // With nothing saved, the system setting decides and can change while the page is open.
+    if (reduceQuery) {
+      reduceQuery.addEventListener("change", function () {
+        if (!savedMotion()) applyMotion(currentMotion());
+      });
+    }
   }
 
   // ---- Tabs (hero install box and the OS picker) ----

@@ -16,6 +16,14 @@ export function writeStored(key: string, value: string): void {
   }
 }
 
+export function removeStored(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Nothing to forget.
+  }
+}
+
 export function hasStored(key: string): boolean {
   return readStored(key) !== undefined;
 }

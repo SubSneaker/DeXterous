@@ -43,9 +43,14 @@
   --font-display: "Archivo", "Arial Black", system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
-  /* Palette (shared with the site) */
+  /* Palette (shared with the site). --tomato here is the lighter accent for tints and the
+     spinner; the band is --tomato-deep, which the site calls --tomato. */
   --tomato: oklch(67% 0.2 32);
   --tomato-ink: oklch(50% 0.19 30);
+  /* Text on an orange fill always sits on this deeper tomato, in cream: 4.7:1. */
+  --tomato-deep: oklch(56% 0.2 32);
+  --tomato-deeper: oklch(51% 0.19 31);
+  --brick: oklch(41% 0.14 31);
   --butter: oklch(90% 0.13 92);
   --butter-deep: oklch(84% 0.14 85);
   --plum: oklch(30% 0.08 345);
@@ -54,7 +59,49 @@
   --ink: oklch(21% 0.035 345);
   --cream: oklch(97% 0.014 75);
 
-  /* Roles: light */
+  /* The selected toggle on the band: ink on butter (13:1), butter on the band (3.8:1 and 7:1). */
+  --band-pick-bg: var(--butter);
+  --band-pick-fg: var(--ink);
+  --band-hover: color-mix(in oklch, var(--ink) 22%, transparent);
+
+  --primary-bg: var(--tomato-deep);
+  --primary-hover: var(--tomato-deeper);
+  --primary-fg: var(--cream);
+
+  --radius: 24px;
+  --radius-medium: 16px;
+  --radius-small: 12px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* The session view is always dark: it frames a desktop. Plum-black, never navy. */
+  --dock-bg: oklch(19% 0.03 345 / 0.88);
+  --dock-solid: oklch(16% 0.025 345);
+  --dock-border: oklch(97% 0.014 75 / 0.12);
+  --dock-text: var(--cream);
+  --dock-muted: oklch(80% 0.025 345);
+  --dock-faint: oklch(70% 0.03 345);
+  --dock-hover: oklch(97% 0.014 75 / 0.12);
+  --dock-pressed: oklch(90% 0.13 92 / 0.24);
+  --dock-danger: oklch(67% 0.2 32 / 0.42);
+  --dock-danger-text: oklch(80% 0.12 35);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Role tokens. Light is the default. The theme switch sets data-theme on <html> ("light" or
+   "dark"), and an explicit choice always wins. Without data-theme the system setting decides,
+   through the media query. Keep both dark blocks identical. */
+
+:root,
+:root[data-theme="light"] {
   --bg: var(--paper);
   --surface: oklch(99.2% 0.006 75);
   --surface-sunken: oklch(94.6% 0.017 62);
@@ -64,12 +111,8 @@
   --link: var(--tomato-ink);
   --focus: var(--ink);
 
-  --band-bg: var(--tomato);
-  --band-fg: var(--ink);
-
-  --primary-bg: var(--tomato);
-  --primary-hover: oklch(71% 0.19 36);
-  --primary-fg: var(--ink);
+  --band-bg: var(--tomato-deep);
+  --band-fg: var(--cream);
 
   --selected-bg: color-mix(in oklch, var(--tomato) 9%, var(--surface));
   --selected-ring: var(--ink);
@@ -94,28 +137,46 @@
   --prompt: var(--butter);
 
   --shadow: 0 1px 2px oklch(30% 0.08 30 / 0.06), 0 18px 40px -18px oklch(30% 0.1 30 / 0.28);
+}
 
-  --radius: 24px;
-  --radius-medium: 16px;
-  --radius-small: 12px;
+:root[data-theme="dark"] {
+  --bg: oklch(17% 0.022 345);
+  --surface: oklch(21% 0.03 345);
+  --surface-sunken: oklch(25% 0.034 345);
+  --border: oklch(33% 0.035 345);
+  --text: var(--cream);
+  --text-muted: oklch(79% 0.025 345);
+  --link: oklch(79% 0.13 40);
+  --focus: var(--butter);
 
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --band-bg: var(--brick);
+  --band-fg: var(--cream);
 
-  /* The session view is always dark: it frames a desktop. Plum-black, never navy. */
-  --dock-bg: oklch(19% 0.03 345 / 0.88);
-  --dock-solid: oklch(16% 0.025 345);
-  --dock-border: oklch(97% 0.014 75 / 0.12);
-  --dock-text: var(--cream);
-  --dock-muted: oklch(80% 0.025 345);
-  --dock-faint: oklch(70% 0.03 345);
-  --dock-hover: oklch(97% 0.014 75 / 0.12);
-  --dock-pressed: oklch(90% 0.13 92 / 0.24);
-  --dock-danger: oklch(67% 0.2 32 / 0.42);
-  --dock-danger-text: oklch(80% 0.12 35);
+  --selected-bg: color-mix(in oklch, var(--brick) 30%, var(--surface));
+  --selected-ring: var(--cream);
+  --selected-icon: oklch(79% 0.13 40);
+  --check: oklch(72% 0.17 36);
+
+  --danger: oklch(77% 0.14 30);
+  --success: oklch(80% 0.14 150);
+  --success-bg: oklch(32% 0.06 150);
+  --warning: var(--butter);
+
+  --note-bg: color-mix(in oklch, oklch(36% 0.075 335) 55%, var(--surface));
+  --note-border: oklch(44% 0.08 335);
+
+  --update-bg: color-mix(in oklch, oklch(50% 0.12 72) 28%, var(--surface));
+  --update-fg: var(--cream);
+  --update-muted: oklch(86% 0.04 80);
+  --update-border: oklch(62% 0.12 80);
+
+  --code-bg: oklch(13% 0.02 345);
+
+  --shadow: 0 1px 2px oklch(0% 0 0 / 0.3), 0 24px 48px -20px oklch(5% 0.03 345 / 0.7);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: oklch(17% 0.022 345);
     --surface: oklch(21% 0.03 345);
     --surface-sunken: oklch(25% 0.034 345);
@@ -125,10 +186,10 @@
     --link: oklch(79% 0.13 40);
     --focus: var(--butter);
 
-    --band-bg: oklch(41% 0.14 31);
+    --band-bg: var(--brick);
     --band-fg: var(--cream);
 
-    --selected-bg: color-mix(in oklch, oklch(41% 0.14 31) 30%, var(--surface));
+    --selected-bg: color-mix(in oklch, var(--brick) 30%, var(--surface));
     --selected-ring: var(--cream);
     --selected-icon: oklch(79% 0.13 40);
     --check: oklch(72% 0.17 36);
@@ -224,21 +285,27 @@ svg {
   padding: 0 16px 48px;
 }
 
-/* The tomato band: the brand row's background bleeds to both edges of the window and up to the
-   top (border-image outset paints outside the box without adding scrollable overflow). The card
-   that follows overlaps its lower edge, like the product shot on the site's hero. */
-.brand {
+/* The tomato band: its background bleeds to both edges of the window and up to the top
+   (border-image outset paints outside the box without adding scrollable overflow). The card that
+   follows overlaps its lower edge, like the product shot on the site's hero. Everything on it is
+   cream: 4.7:1 on the light band, 8.7:1 on the dark one. */
+.band {
   --focus: var(--band-fg);
-  display: flex;
-  align-items: center;
-  gap: 16px;
   margin-bottom: -40px;
-  padding: max(40px, env(safe-area-inset-top)) 0 76px;
+  padding: max(14px, env(safe-area-inset-top)) 0 76px;
   color: var(--band-fg);
   border-image: linear-gradient(var(--band-bg), var(--band-bg)) fill 0 / 0 / 0 100vw;
 }
 
-.brand > div {
+.brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.brand-text {
   min-width: 0;
 }
 
@@ -268,10 +335,217 @@ svg {
 
 .brand-mark-phone {
   fill: currentColor;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.band-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 4px 0;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  color: inherit;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+}
+
+.band-link:hover {
+  text-decoration-thickness: 2.5px;
+}
+
+/* A small arrow on links that open the site or the guide in a new tab. */
+.link-arrow {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  stroke-width: 1.75;
+}
+
+/* A faint ring with a light going round it, echoing the ring of screens on the site's hero.
+   The only motion that keeps going: two transforms on a 10px dot, which the compositor runs.
+   The wrapper spans the window (the band has no position, so it's placed against the page) and
+   clips sideways, so the ring can run off the edge without making the page scroll. The band
+   starts at the top of the page, so the ring is placed from there. */
+.band-orbit {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 0;
+  overflow-x: clip;
+  pointer-events: none;
+}
+
+.band-orbit-path {
+  position: absolute;
+  top: 110px;
+  left: min(50% + 150px, 100% - 170px);
+  width: 400px;
+  height: 120px;
+  rotate: -8deg;
+}
+
+.band-orbit-ring {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid color-mix(in oklch, var(--band-fg) 32%, transparent);
+  border-radius: 50%;
+}
+
+.band-orbit-x,
+.band-orbit-y {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+.band-orbit-dot {
+  display: block;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  background: var(--band-fg);
+  border-radius: 50%;
+  box-shadow: 0 0 12px 2px color-mix(in oklch, var(--band-fg) 45%, transparent);
+}
+
+/* Where the light rests with animations off: front right. */
+.band-orbit-x {
+  transform: translateX(120px);
+}
+
+.band-orbit-y {
+  transform: translateY(48px);
+}
+
+/* Theme and Animations, top right, like the site's nav. Cream outlines and icons; the
+   selected option is butter with ink. */
+.prefs {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1.5px solid var(--band-fg);
+  border-radius: 999px;
+}
+
+.theme-opt {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 200ms var(--ease), color 200ms var(--ease);
+}
+
+.theme-opt:hover {
+  background: var(--band-hover);
+}
+
+/* The selection follows <html>'s attributes, which the inline script in index.html sets before
+   the first paint, so the right option shows straight away. preferences.ts keeps ARIA in step. */
+:root:not([data-theme]) .theme-opt[data-theme-value="system"],
+:root[data-theme="light"] .theme-opt[data-theme-value="light"],
+:root[data-theme="dark"] .theme-opt[data-theme-value="dark"] {
+  color: var(--band-pick-fg);
+  background: var(--band-pick-bg);
+}
+
+.theme-opt:focus-visible {
+  outline-offset: 1px;
+}
+
+@media (forced-colors: active) {
+  :root:not([data-theme]) .theme-opt[data-theme-value="system"],
+  :root[data-theme="light"] .theme-opt[data-theme-value="light"],
+  :root[data-theme="dark"] .theme-opt[data-theme-value="dark"],
+  :root[data-motion="on"] .motion-switch-track {
+    outline: 2px solid CanvasText;
+    outline-offset: 1px;
+  }
+}
+
+.pref-icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.5;
+}
+
+.motion-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 43px;
+  padding: 0 8px 0 16px;
+  font-size: 0.875rem;
+  font-weight: 650;
+  color: inherit;
+  background: transparent;
+  border: 1.5px solid var(--band-fg);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 200ms var(--ease);
+}
+
+.motion-switch:hover {
+  background: var(--band-hover);
+}
+
+.motion-switch-track {
+  display: flex;
+  align-items: center;
+  width: 42px;
+  height: 27px;
+  padding: 0 3.5px;
+  border: 1.5px solid var(--band-fg);
+  border-radius: 999px;
+  transition: background-color 200ms var(--ease), border-color 200ms var(--ease);
+}
+
+.motion-switch-thumb {
+  width: 17px;
+  height: 17px;
+  background: var(--band-fg);
+  border-radius: 50%;
+  transition: transform 260ms var(--ease-spring), background-color 200ms var(--ease);
+}
+
+:root[data-motion="on"] .motion-switch-track {
+  background: var(--band-pick-bg);
+  border-color: var(--band-pick-bg);
+}
+
+:root[data-motion="on"] .motion-switch-thumb {
+  background: var(--band-pick-fg);
+  transform: translateX(15px);
+}
+
+/* Forced colours drop backgrounds, so the thumb keeps a system colour to show its side. */
+@media (forced-colors: active) {
+  :root .motion-switch .motion-switch-thumb {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
 }
 
 /* Everything after the band sits above it. */
-.brand ~ * {
+.band ~ * {
   position: relative;
 }
 
@@ -464,7 +738,11 @@ svg {
     transform 160ms var(--ease);
 }
 
+/* Cream on the deeper tomato, the same as the band: 4.7:1, and 5.8:1 on hover. */
 .button-primary {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   width: 100%;
   height: 54px;
   background: var(--primary-bg);
@@ -479,6 +757,17 @@ svg {
 
 .button-primary:hover:not(:disabled) {
   background: var(--primary-hover);
+}
+
+/* A light that sweeps across once on hover (animations on). */
+.button-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 30%, oklch(97% 0.014 75 / 0.24) 50%, transparent 70%);
+  transform: translateX(-100%);
+  pointer-events: none;
 }
 
 .button-primary:active:not(:disabled),
@@ -706,6 +995,7 @@ svg {
 
 /* Status chip: green for Ready, butter for "Tap Allow", tomato while connecting. */
 .phone-status {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -738,8 +1028,8 @@ svg {
 }
 
 .phone[data-state="connecting"] .phone-status {
-  color: var(--ink);
-  background: var(--tomato);
+  color: var(--primary-fg);
+  background: var(--primary-bg);
 }
 
 .phone[data-state="connecting"] .phone-status::before {
@@ -883,6 +1173,10 @@ svg {
   text-decoration-thickness: 2.5px;
 }
 
+.status-action {
+  margin-top: 4px;
+}
+
 .link-button-quiet {
   color: var(--text-muted);
   font-weight: 500;
@@ -896,14 +1190,51 @@ svg {
   margin-top: 14px;
 }
 
-/* A segmented pill control, like the site's OS tabs. */
+/* A segmented pill control, like the site's OS tabs. The filled highlight is one shape behind
+   the options that slides to the chosen one: main.ts sets data-index, and the column and row
+   below place it. */
 .presets {
+  --col: 0;
+  --row: 0;
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 1fr;
   gap: 2px;
   padding: 4px;
   background: color-mix(in oklch, var(--text) 7%, transparent);
   border-radius: 999px;
+}
+
+.presets[data-index="1"] {
+  --col: 1;
+}
+
+.presets[data-index="2"] {
+  --col: 2;
+}
+
+.presets[data-index="3"] {
+  --col: 3;
+}
+
+.presets::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: -1;
+  width: calc((100% - 8px - 3 * 2px) / 4);
+  height: calc(100% - 8px);
+  background: var(--text);
+  border-radius: 999px;
+  transform: translate(calc(var(--col) * (100% + 2px)), calc(var(--row) * (100% + 2px)));
+  transition: transform 340ms var(--ease);
+}
+
+.presets:not([data-index])::before {
+  opacity: 0;
 }
 
 .preset {
@@ -927,7 +1258,13 @@ svg {
 
 .preset[aria-checked="true"] {
   color: var(--bg);
-  background: var(--text);
+  transition-delay: 90ms;
+}
+
+@media (forced-colors: active) {
+  .preset[aria-checked="true"] {
+    outline: 2px solid CanvasText;
+  }
 }
 
 .preset-summary {
@@ -1228,6 +1565,88 @@ svg {
   border-radius: 6px;
 }
 
+/* ---------- Help ---------- */
+
+.help {
+  margin-top: 20px;
+  padding: 16px 20px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.help-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.help h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-stretch: 106%;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.help-guide {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--link);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+}
+
+.help-guide:hover {
+  text-decoration-thickness: 2.5px;
+}
+
+.help-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 12px;
+  margin: 6px -10px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.help-links a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 42px;
+  padding: 6px 10px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: var(--radius-small);
+  transition: background-color 160ms var(--ease);
+}
+
+.help-links a:hover {
+  background: var(--surface-sunken);
+}
+
+.help-links .link-arrow {
+  color: var(--text-muted);
+  transition: transform 200ms var(--ease), color 160ms var(--ease);
+}
+
+.help-links a:hover .link-arrow {
+  color: var(--link);
+  transform: translate(2px, -2px);
+}
+
 /* ---------- Footer ---------- */
 
 .footer {
@@ -1271,10 +1690,21 @@ svg {
 }
 
 @media (max-width: 480px) {
+  .band {
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: 68px;
+  }
+
   .brand {
     gap: 12px;
-    padding-top: max(28px, env(safe-area-inset-top));
-    padding-bottom: 68px;
+    margin-top: 18px;
+  }
+
+  .band-orbit-path {
+    top: 160px;
+    left: 200px;
+    scale: 0.65;
+    transform-origin: left center;
   }
 
   .brand-mark {
@@ -1289,13 +1719,29 @@ svg {
 
   .methods,
   .settings-grid,
-  .wifi-pair-fields {
+  .wifi-pair-fields,
+  .help-links {
     grid-template-columns: 1fr;
   }
 
   .presets {
     grid-template-columns: 1fr 1fr;
     border-radius: 22px;
+  }
+
+  .presets::before {
+    width: calc((100% - 8px - 2px) / 2);
+    height: calc((100% - 8px - 2px) / 2);
+  }
+
+  .presets[data-index="2"] {
+    --col: 0;
+    --row: 1;
+  }
+
+  .presets[data-index="3"] {
+    --col: 1;
+    --row: 1;
   }
 
   .phone {
@@ -1315,6 +1761,288 @@ svg {
 
   .update-actions .icon-button {
     margin-left: auto;
+  }
+}
+
+/* ---------- Motion ----------
+   Only on the connect screen, and only with Animations on (data-motion="on" on <html>, set by
+   the switch or, by default, by the system's reduced-motion setting). Transform and opacity only.
+   Nothing keeps running except the light going round the band. The session gets no motion beyond
+   the dock showing and hiding. */
+
+/* Animations off: everything is instant, including the transitions declared above. */
+:root:not([data-motion="on"]) *,
+:root:not([data-motion="on"]) *::before,
+:root:not([data-motion="on"]) *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Spinners show that something is still happening, so they keep turning, just slowly. The
+   loading spinner still stops once DeX is on screen. */
+:root:not([data-motion="on"]) :is(.icon-button[data-busy="true"] svg, .step[data-status="checking"] .step-mark, .session:not([data-ready="true"]) .spinner),
+:root:not([data-motion="on"]) .update[data-view="busy"] .update-detail::before {
+  animation: spin 2.4s linear infinite !important;
+}
+
+/* The page rises in, a beat apart; the phone in the logo slides into its screen. This runs when
+   the connect screen first shows (on load, and back from a session), not when the switch flips. */
+:root[data-motion="on"] :is(.prefs, .brand, .card, .checklist, .help, .footer, .update) {
+  transition:
+    opacity 600ms var(--ease) var(--rise-delay, 0ms),
+    transform 700ms var(--ease) var(--rise-delay, 0ms);
+}
+
+:root[data-motion="on"] .brand-mark-phone {
+  transition: transform 800ms var(--ease-spring) 250ms;
+}
+
+@starting-style {
+  :root[data-motion="on"] :is(.prefs, .brand, .card, .checklist, .help, .footer, .update) {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  :root[data-motion="on"] .prefs {
+    transform: translateY(-8px);
+  }
+
+  :root[data-motion="on"] .brand-mark-phone {
+    transform: translateY(9px) scale(0.7);
+  }
+}
+
+.card {
+  --rise-delay: 70ms;
+}
+
+.checklist {
+  --rise-delay: 140ms;
+}
+
+.help {
+  --rise-delay: 200ms;
+}
+
+.footer {
+  --rise-delay: 250ms;
+}
+
+/* The light going round the band: two eased transforms a quarter turn apart make an ellipse,
+   and it grows a little as it comes to the front. */
+:root[data-motion="on"] .band-orbit-x {
+  animation: orbit-x 21s cubic-bezier(0.37, 0, 0.63, 1) -10.5s infinite alternate;
+}
+
+:root[data-motion="on"] .band-orbit-y {
+  animation: orbit-y 21s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+
+@keyframes orbit-x {
+  from {
+    transform: translateX(-200px);
+  }
+
+  to {
+    transform: translateX(200px);
+  }
+}
+
+@keyframes orbit-y {
+  from {
+    opacity: 0.45;
+    transform: translateY(-60px) scale(0.65);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(60px) scale(1.15);
+  }
+}
+
+/* Phone cards come in one after another, and fade out when a phone goes away. */
+:root[data-motion="on"] .phone {
+  transition:
+    opacity 380ms var(--ease) var(--enter-delay, 0ms),
+    transform 420ms var(--ease) var(--enter-delay, 0ms),
+    border-color 160ms var(--ease),
+    background-color 160ms var(--ease);
+}
+
+@starting-style {
+  :root[data-motion="on"] .phone {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+
+.phone:nth-child(2) {
+  --enter-delay: 70ms;
+}
+
+.phone:nth-child(3) {
+  --enter-delay: 140ms;
+}
+
+.phone:nth-child(n + 4) {
+  --enter-delay: 210ms;
+}
+
+.phone[data-leaving] {
+  --enter-delay: 0ms;
+  opacity: 0;
+  transform: scale(0.96);
+  pointer-events: none;
+}
+
+/* A ready phone's dot sends out a few soft rings, then rests. */
+:root[data-motion="on"] .phone[data-state="ready"] .phone-status::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  background: currentColor;
+  border-radius: 50%;
+  opacity: 0;
+  animation: ping 1.8s var(--ease) 400ms 3;
+}
+
+@keyframes ping {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  80%,
+  100% {
+    opacity: 0;
+    transform: scale(3);
+  }
+}
+
+/* Checklist ticks pop in as each step gets done. */
+:root[data-motion="on"] .step[data-status="done"] .step-mark {
+  animation: mark-in 460ms var(--ease-spring) var(--tick-delay, 0ms) both;
+}
+
+:root[data-motion="on"] .step[data-status="done"] .step-mark::after {
+  animation: tick-in 380ms var(--ease-spring) calc(var(--tick-delay, 0ms) + 140ms) both;
+}
+
+.step:nth-child(2) {
+  --tick-delay: 60ms;
+}
+
+.step:nth-child(3) {
+  --tick-delay: 120ms;
+}
+
+.step:nth-child(4) {
+  --tick-delay: 180ms;
+}
+
+.step:nth-child(5) {
+  --tick-delay: 240ms;
+}
+
+@keyframes mark-in {
+  from {
+    opacity: 0.3;
+    transform: scale(0.55);
+  }
+}
+
+@keyframes tick-in {
+  from {
+    opacity: 0;
+    transform: rotate(45deg) scale(0);
+  }
+}
+
+/* Disclosures: what opens slides down into place. */
+:root[data-motion="on"] :is(.wifi, .wifi-pair, .settings, .custom, .checklist)[open] > :not(summary) {
+  animation: reveal 320ms var(--ease) both;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* Start DeX: lifts on hover with a sweep of light, and gives a little when pressed. */
+:root[data-motion="on"] .button-primary {
+  transition:
+    background-color 160ms var(--ease),
+    opacity 160ms var(--ease),
+    transform 260ms var(--ease-spring);
+}
+
+:root[data-motion="on"] .button-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+:root[data-motion="on"] .button-primary:hover:not(:disabled)::before {
+  animation: sweep 900ms var(--ease);
+}
+
+:root[data-motion="on"] .button-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 90ms;
+}
+
+@keyframes sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* The hand-off to the loading screen: it fades in over the connect screen, which fades out.
+   main.ts holds body[data-handoff] for as long as this runs (HANDOFF_MS). */
+/* Keep the connect screen's background and scrollbar until it has faded, so nothing jumps. */
+body[data-view="session"][data-handoff] {
+  overflow-x: clip;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+body[data-handoff] .connect {
+  pointer-events: none;
+}
+
+/* Opacity only: a transform on .connect would move the band's ring, which is placed against the page. */
+:root[data-motion="on"] body[data-handoff] .connect {
+  animation: sink 320ms var(--ease) both;
+}
+
+:root[data-motion="on"] body[data-handoff] .session {
+  animation: fade-in 320ms var(--ease) both;
+}
+
+:root[data-motion="on"] body[data-handoff] :is(.loading p, .loading .overlay-button) {
+  animation: rise 280ms var(--ease) 40ms both;
+}
+
+@keyframes sink {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
 }
 
@@ -1400,6 +2128,11 @@ svg {
   pointer-events: none;
 }
 
+/* Nothing keeps running behind DeX: the faded-out spinner stops. */
+.session[data-ready="true"] .spinner {
+  animation: none;
+}
+
 .spinner {
   width: 36px;
   height: 36px;
@@ -1421,15 +2154,7 @@ svg {
   }
 }
 
-/* Dock: hidden until the pointer touches the top edge. */
-.dock-zone {
-  position: absolute;
-  top: 0;
-  left: 25%;
-  right: 25%;
-  height: 6px;
-  z-index: 2;
-}
+/* Dock: hidden until the mouse rests near the top of the screen (see dockPointer in main.ts). */
 
 .dock {
   position: absolute;
@@ -1459,7 +2184,7 @@ svg {
   flex: none;
 }
 
-.dock-zone:hover + .dock,
+.session[data-dock-peek] .dock,
 .dock:hover,
 .dock:focus-within,
 .session[data-dock="open"] .dock {
@@ -1467,13 +2192,8 @@ svg {
   opacity: 1;
 }
 
-/* Brushing the top edge (e.g. to reach a window's title bar) shouldn't pop the dock instantly. */
-.dock-zone:hover + .dock {
-  transition-delay: 350ms;
-}
-
 /* Nothing to control until DeX is on screen. */
-.session:not([data-ready="true"]) :is(.dock, .dock-zone, .dock-handle) {
+.session:not([data-ready="true"]) :is(.dock, .dock-handle) {
   display: none;
 }
 
@@ -1560,12 +2280,6 @@ svg {
   /* Open below the handle instead of under it. */
   .dock {
     top: calc(max(6px, env(safe-area-inset-top)) + 48px);
-  }
-}
-
-@media (hover: none) {
-  .dock-zone {
-    display: none;
   }
 }
 
@@ -1829,6 +2543,29 @@ kbd {
   color: var(--dock-muted);
 }
 
+.guide-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  margin: 0;
+  padding: 2px 8px;
+  list-style: none;
+}
+
+.guide-links a {
+  display: inline-block;
+  padding: 4px 0;
+  font-weight: 600;
+  color: var(--dock-text);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+}
+
+.guide-links a:hover {
+  color: var(--butter);
+  text-decoration-thickness: 2.5px;
+}
+
 /* Mute button shows the right icon for its state. */
 .dock-button .when-muted,
 .dock-button[aria-pressed="true"] .when-unmuted {
@@ -1875,13 +2612,4 @@ kbd {
   box-shadow: 0 10px 30px oklch(5% 0.02 345 / 0.5);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition: none !important;
-    animation-duration: 1.5s !important;
-  }
 }

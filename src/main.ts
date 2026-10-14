@@ -10,7 +10,7 @@ import {
   type PhoneState,
 } from "./lib/dex-session";
 import { Checklist, buildSteps, type RelayFacts } from "./lib/checklist";
-import { DeviceList, type DetailsState } from "./lib/device-list";
+import { DeviceList, findPhoneBySerial, type DetailsState } from "./lib/device-list";
 import { InputController } from "./lib/input";
 import { appChordLabel, isAppChord, isMacLike, metaKeyLabel } from "./lib/keymap";
 import { readPhoneDetails, MIN_ONE_UI } from "./lib/phone-info";
@@ -23,6 +23,7 @@ import {
   type PresetId,
   type QualityChoice,
 } from "./lib/presets";
+import { initPreferences, motionEnabled } from "./lib/preferences";
 import { fillForm, hasSavedSettings, loadSettings, readForm, saveSettings } from "./lib/settings";
 import { readStored, writeStored } from "./lib/storage";
 import {
@@ -32,6 +33,7 @@ import {
   readRelayToken,
   RelayTransport,
   requestWebUsbDevice,
+  UsbBusyError,
   webUsbSupport,
   type RelayInfo,
 } from "./lib/transports";
@@ -71,6 +73,7 @@ const ui = {
   start: $<HTMLButtonElement>("start"),
   startHint: $("start-hint"),
   status: $("status"),
+  busySwitch: $<HTMLButtonElement>("busy-switch"),
   settingsForm: $<HTMLFormElement>("settings-form"),
   presets: $("presets"),
   presetSummary: $("preset-summary"),
@@ -131,6 +134,8 @@ interface ActiveSession {
   dispose: () => void;
 }
 let active: ActiveSession | undefined;
+/** The last session's background clean-up (see endSession). Never rejects. */
+let closingSession: Promise<void> = Promise.resolve();
 
 // #endregion
 
@@ -150,6 +155,8 @@ let relayListed: boolean | undefined;
 let relayEmptyText = "";
 /** A just-connected Wi‑Fi phone to select once adb lists it. */
 let pendingPick: string | undefined;
+/** The phone whose USB start was refused as busy, so the relay tab can pick it. */
+let busySerial: string | undefined;
 let detailsRunning = false;
 let checklist: Checklist;
 let updateBanner: UpdateBanner | undefined;
@@ -168,6 +175,11 @@ const webUsbList = new DeviceList({
 function setStatus(message: string, tone: "info" | "error" = "info") {
   ui.status.textContent = message;
   ui.status.dataset.tone = tone;
+}
+
+/** Whether the page can use the relay: it's running, and the page has its token if it needs one. */
+function relayUsable(): boolean {
+  return relay !== undefined && !(relayInfo?.tokenRequired === true && !relayToken);
 }
 
 function setHint(element: HTMLElement, message: string, tone: "info" | "warning" = "info") {
@@ -189,6 +201,7 @@ function currentChoice(): DeviceChoice | undefined {
 
 function selectMethod(next: TransportKind) {
   method = next;
+  ui.busySwitch.hidden = true;
   for (const kind of ["relay", "webusb"] as const) {
     ui.tabs[kind].setAttribute("aria-selected", String(kind === next));
     ui.tabs[kind].tabIndex = kind === next ? 0 : -1;
@@ -341,6 +354,20 @@ function watchRelayDevices() {
   );
 }
 
+/** After a busy USB start: moves to the relay tab with the same phone selected, if the relay lists it. */
+async function switchToRelay() {
+  const serial = busySerial;
+  selectMethod("relay");
+  setStatus("");
+  await refreshRelayDevices();
+  const phone = serial ? findPhoneBySerial(relayDevices, serial) : undefined;
+  if (phone) {
+    relayList.select(phone.id, true);
+  } else {
+    ui.tabs.relay.focus();
+  }
+}
+
 async function refreshWebUsbDevices() {
   webUsbDevices = await listWebUsbDevices();
   renderWebUsbPhones("No phone added yet. Use the Add phone button.");
@@ -450,11 +477,16 @@ function choosePreset(choice: QualityChoice) {
 }
 
 function renderQuality() {
-  for (const chip of ui.presets.querySelectorAll<HTMLElement>("[data-preset]")) {
+  const chips = [...ui.presets.querySelectorAll<HTMLElement>("[data-preset]")];
+  chips.forEach((chip, index) => {
     const selected = chip.dataset.preset === quality;
     chip.setAttribute("aria-checked", String(selected));
     chip.tabIndex = selected ? 0 : -1;
-  }
+    if (selected) {
+      // Where the highlight slides to (styled in src/styles.css).
+      ui.presets.dataset.index = String(index);
+    }
+  });
   const preset = PRESETS.find((candidate) => candidate.id === quality);
   const values = preset ? presetValues(preset.id, supportsCodec) : settings;
   const detail = document.createElement("span");
@@ -572,7 +604,6 @@ async function initConnectScreen() {
   // WebUSB
   const usb = webUsbSupport();
   if (usb.supported) {
-    setHint(ui.webUsbHint, "Talks to the phone straight from this tab. Quit other adb tools on this device first.");
     ui.webUsbPick.addEventListener("click", async () => {
       try {
         const choice = await requestWebUsbDevice();
@@ -599,6 +630,7 @@ async function initConnectScreen() {
 
   // Relay
   relayInfo = await probeRelay();
+  ui.busySwitch.addEventListener("click", () => void switchToRelay());
   const wireless = new WirelessForm(
     {
       form: $<HTMLFormElement>("wifi-form"),
@@ -661,6 +693,15 @@ async function initConnectScreen() {
     selectMethod(usb.supported ? "webusb" : "relay");
   }
 
+  if (usb.supported) {
+    setHint(
+      ui.webUsbHint,
+      relayUsable()
+        ? "For computers without DeXterous. DeXterous is running here, so use Through DeXterous: it works over USB too."
+        : "Talks to the phone straight from this tab. Close other adb tools on your computer first.",
+    );
+  }
+
   if (!WebCodecsVideoDecoder.isSupported) {
     setStatus("This browser can't decode video (WebCodecs). Use a current Chrome, Edge, Safari or Firefox.", "error");
   }
@@ -671,10 +712,31 @@ async function initConnectScreen() {
 
 // #region Session lifecycle
 
+/** How long the connect screen fades out under the loading screen (matches `handoff` in styles.css). */
+const HANDOFF_MS = 320;
+let handoffTimer = 0;
+
 function setView(view: "connect" | "session") {
+  // A hand-off still running (say, a start that failed at once) ends here.
+  clearTimeout(handoffTimer);
+  delete document.body.dataset.handoff;
+  const handOff = view === "session" && motionEnabled() && !ui.connectView.hidden;
+
   document.body.dataset.view = view;
-  ui.connectView.hidden = view !== "connect";
   ui.sessionView.hidden = view !== "session";
+  if (handOff) {
+    // The loading screen fades in over the connect screen, which hides once it's covered.
+    document.body.dataset.handoff = "true";
+    ui.connectView.inert = true;
+    handoffTimer = window.setTimeout(() => {
+      delete document.body.dataset.handoff;
+      ui.connectView.hidden = true;
+      ui.connectView.inert = false;
+    }, HANDOFF_MS);
+  } else {
+    ui.connectView.inert = false;
+    ui.connectView.hidden = view !== "connect";
+  }
 }
 
 /** Largest virtual display we ask for; phone video encoders top out around 4K. */
@@ -722,8 +784,8 @@ async function startDex() {
   activeList().setConnecting(choice.id, phoneDetails);
   updateStartButton();
   setStatus("");
+  ui.busySwitch.hidden = true;
   replaceCanvas();
-  setView("session");
   ui.sessionView.dataset.ready = "false";
   ui.loadingText.textContent = "Connecting to your phone…";
 
@@ -740,6 +802,10 @@ async function startDex() {
   cancelled.catch(() => {});
 
   try {
+    // A session just disconnected may still be letting go of the phone (at most 8 s); over
+    // WebUSB, a new connection can't claim the phone before that.
+    await closingSession;
+
     // Race each slow step against Cancel, so Cancel works even while waiting
     // on the phone (e.g. the WebUSB "Allow" prompt). Late results are cleaned up.
     const connecting =
@@ -756,6 +822,18 @@ async function startDex() {
       },
       () => {},
     );
+    // Show the loading screen only once the connection didn't fail at once (say, the phone is
+    // busy), so a quick failure doesn't flash it.
+    const failedAtOnce = await Promise.race([
+      connecting.then(
+        () => false,
+        () => true,
+      ),
+      new Promise<boolean>((resolve) => window.setTimeout(() => resolve(false), 150)),
+    ]);
+    if (!failedAtOnce) {
+      setView("session");
+    }
     adb = await Promise.race([connecting, cancelled]);
 
     const { request, scale } = initialDisplay();
@@ -810,7 +888,11 @@ async function startDex() {
     input.focusKeyboard();
     warnAboutDevice(session);
 
-    void session.ended.then(endSession, (error: unknown) => endSession(errorMessage(error)));
+    // After Disconnect, this session ends in the background, maybe once a new one has started:
+    // only end the session that's still on screen.
+    const started = active;
+    const endIfCurrent = (reason: string | undefined) => (active === started ? endSession(reason) : undefined);
+    void session.ended.then(endIfCurrent, (error: unknown) => endIfCurrent(errorMessage(error)));
   } catch (error) {
     void audioPlayer?.stop().catch(() => {});
     await adb?.close().catch(() => {});
@@ -819,7 +901,17 @@ async function startDex() {
       setStatus("Cancelled.");
     } else {
       console.error("Couldn't start DeX", error);
-      setStatus(errorMessage(error), "error");
+      if (error instanceof UsbBusyError && relayUsable()) {
+        // Browser-only mode needs the phone to itself; say so plainly and let the person choose.
+        busySerial = choice.serial;
+        setStatus(
+          "Browser-only mode can't reach the phone: adb on your computer is using it. Close the programs that use adb, or start DeX through DeXterous instead.",
+          "error",
+        );
+        ui.busySwitch.hidden = false;
+      } else {
+        setStatus(errorMessage(error), "error");
+      }
     }
   } finally {
     ui.cancelStart.removeEventListener("click", cancel);
@@ -859,7 +951,9 @@ async function endSession(reason: string | undefined) {
   active = undefined;
   current.input.dispose();
   current.dispose();
-  await current.adb.close().catch(() => {});
+  // Close the session (which ends DeX's display on the phone), then the connection. Over
+  // WebUSB either can hang, so the page doesn't wait for them, and each gets a time limit.
+  closingSession = settleWithin(current.session.close(), 4000).then(() => settleWithin(current.adb.close(), 4000));
   if (document.fullscreenElement) {
     await document.exitFullscreen().catch(() => {});
   }
@@ -877,12 +971,30 @@ async function endSession(reason: string | undefined) {
   void refreshRelayInfo();
 }
 
+/** Waits for `promise` to settle, but no longer than `ms`. Never rejects. */
+function settleWithin(promise: Promise<unknown>, ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(resolve, ms);
+    promise.then(
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+    );
+  });
+}
+
 function resetSessionUi() {
   ui.stats.hidden = true;
   ui.toast.hidden = true;
   ui.lockScreen.hidden = true;
   setGuideOpen(false);
   setDockOpen(false);
+  setDockPeek(false);
   for (const button of ui.sessionView.querySelectorAll("[aria-pressed]")) {
     button.setAttribute("aria-pressed", "false");
   }
@@ -903,9 +1015,10 @@ function attachSessionUi(current: ActiveSession, request: DisplayRequest): () =>
     target: HTMLElement | Document | Window,
     type: K,
     handler: (event: HTMLElementEventMap[K]) => void,
+    options?: AddEventListenerOptions,
   ) => {
-    target.addEventListener(type, handler as EventListener);
-    disposers.push(() => target.removeEventListener(type, handler as EventListener));
+    target.addEventListener(type, handler as EventListener, options);
+    disposers.push(() => target.removeEventListener(type, handler as EventListener, options));
   };
 
   // Hide the loading screen once the first frame is on screen.
@@ -951,9 +1064,32 @@ function attachSessionUi(current: ActiveSession, request: DisplayRequest): () =>
     runCommand(button.dataset.command as Command, pointerType === "touch" || pointerType === "pen");
   });
 
+  // The guide's Help links open in a new tab; typing should still reach DeX afterwards.
+  listen(ui.guide, "click", (event) => {
+    if ((event.target as Element).closest("a")) {
+      const pointerType = (event as PointerEvent).pointerType;
+      if (pointerType !== "touch" && pointerType !== "pen") {
+        current.input.focusKeyboard();
+      }
+    }
+  });
+
   listen(ui.dockHandle, "click", () => {
     setDockOpen(ui.sessionView.dataset.dock !== "open");
   });
+
+  // Show the dock when the mouse rests near the top of the screen, under the dock, or slides
+  // off the top edge (easy to overshoot in a window). DeX still gets every event, so title bars
+  // and dragging a window to the top keep working. Capture phase: input.ts may stop propagation.
+  const stageEvent = { capture: true, passive: true };
+  listen(ui.stage, "pointermove", (event) => dockPointer(event, false), stageEvent);
+  listen(ui.stage, "pointerleave", (event) => dockPointer(event, true), stageEvent);
+  // Leaving the dock (e.g. out of the window) hands the hiding back to the timer.
+  listen(ui.dock, "pointerleave", (event) => {
+    if (event.pointerType === "mouse" && "dockPeek" in ui.sessionView.dataset && !dockPeekPending) {
+      armDockPeekTimer(false, 400);
+    }
+  }, { passive: true });
 
   // Live settings from the guide.
   fillForm(ui.guideSettingsForm, settings);
@@ -1199,7 +1335,8 @@ function runCommand(command: Command, fromTouch: boolean) {
       setGuideOpen(ui.guide.hidden !== false);
       break;
     case "disconnect":
-      void session.close();
+      // Back to the connect screen at once; the phone side is cleaned up in the background.
+      void endSession(undefined);
       return;
   }
   // Keep typing going to DeX, but don't pop up soft keyboards after a tap.
@@ -1253,6 +1390,68 @@ function setDockOpen(open: boolean) {
     delete ui.sessionView.dataset.dock;
   }
   ui.dockHandle.setAttribute("aria-expanded", String(open));
+}
+
+/** How close to the top of the screen the mouse has to be to bring up the dock. */
+const DOCK_REVEAL_PX = 36;
+/** How far below the dock the mouse can wander before it hides again. */
+const DOCK_KEEP_PX = 56;
+let dockPeekTimer = 0;
+/** What the timer is counting down to: showing the dock, hiding it, or nothing. */
+let dockPeekPending: "show" | "hide" | undefined;
+
+function setDockPeek(peek: boolean) {
+  cancelDockPeekTimer();
+  if (peek) {
+    ui.sessionView.dataset.dockPeek = "";
+  } else {
+    delete ui.sessionView.dataset.dockPeek;
+  }
+}
+
+function cancelDockPeekTimer() {
+  clearTimeout(dockPeekTimer);
+  dockPeekPending = undefined;
+}
+
+function armDockPeekTimer(show: boolean, delay: number) {
+  dockPeekPending = show ? "show" : "hide";
+  dockPeekTimer = window.setTimeout(() => setDockPeek(show), delay);
+}
+
+/** Handles the mouse over the DeX screen: opens the dock near the top, hides it further down. */
+function dockPointer(event: PointerEvent, left: boolean) {
+  // Mice only (touch has the ⌄ handle), and never while dragging, e.g. a window to the top edge.
+  if (event.pointerType !== "mouse" || event.buttons !== 0) {
+    if (dockPeekPending === "show") cancelDockPeekTimer();
+    return;
+  }
+  const stage = ui.stage.getBoundingClientRect();
+  const dock = ui.dock.getBoundingClientRect();
+  const y = event.clientY - stage.top;
+  // The dock's resting spot, not its animated one: it sits off-screen while hidden.
+  const dockBottom = ui.dock.offsetTop + ui.dock.offsetHeight;
+  const underDock = event.clientX >= dock.left - DOCK_KEEP_PX && event.clientX <= dock.right + DOCK_KEEP_PX;
+  const peeking = "dockPeek" in ui.sessionView.dataset;
+
+  if (left) {
+    // Slid off the top edge: show it right away. Any other way out cancels a pending show.
+    if (y <= 4 && underDock) setDockPeek(true);
+    else if (dockPeekPending === "show") cancelDockPeekTimer();
+    return;
+  }
+  if (y <= DOCK_REVEAL_PX && underDock) {
+    if (dockPeekPending === "hide") cancelDockPeekTimer();
+    if (!peeking && !dockPeekPending) armDockPeekTimer(true, 250);
+  } else if (dockPeekPending === "show") {
+    cancelDockPeekTimer();
+  } else if (peeking) {
+    if (y > dockBottom + DOCK_KEEP_PX || !underDock) {
+      if (!dockPeekPending) armDockPeekTimer(false, 400);
+    } else if (dockPeekPending === "hide") {
+      cancelDockPeekTimer();
+    }
+  }
 }
 
 /** Briefly show the dock so people know where it lives. */
@@ -1349,4 +1548,5 @@ if (new URLSearchParams(location.search).has("debug")) {
   Object.defineProperty(window, "dex", { get: () => active });
 }
 
+initPreferences({ theme: $("theme-switch"), motion: $("motion-switch") });
 void initConnectScreen();
