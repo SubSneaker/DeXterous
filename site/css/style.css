@@ -908,7 +908,7 @@ main:focus { outline: none; }
   box-shadow: 0 3cqi 10cqi -3cqi oklch(20% 0.06 340 / 0.55);
 }
 /* Crop off the screenshot's header so the picture starts at the connect card. */
-.shot img { width: 100%; height: auto; margin-top: -15.5cqi; }
+.shot img { width: 100%; height: auto; margin-top: -28cqi; }
 
 .also {
   display: grid;
