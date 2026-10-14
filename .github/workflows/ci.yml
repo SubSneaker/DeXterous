@@ -70,7 +70,12 @@ jobs:
       # temporary folder (no build runs) and smoke-test that copy.
       - name: Smoke test the packed package
         run: |
-          tarball="$RUNNER_TEMP/$(npm pack --ignore-scripts --silent --pack-destination "$RUNNER_TEMP")"
+          # Pack into an empty folder and look the file up there: npm 10 (Node
+          # 22) still runs `prepare` here and prints the build log on stdout,
+          # so the output of `npm pack` can't be used as the file name.
+          mkdir -p "$RUNNER_TEMP/pack"
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/pack" > /dev/null
+          tarball="$(node -p 'const [dir] = process.argv.slice(1); require("node:path").join(dir, require("node:fs").readdirSync(dir).find((name) => name.endsWith(".tgz")))' "$RUNNER_TEMP/pack")"
           npm install -g --prefix "$RUNNER_TEMP/global" "$tarball"
           # npm's global layout: <prefix>/node_modules on Windows, <prefix>/lib/node_modules elsewhere.
           if [ "$RUNNER_OS" = Windows ]; then modules="$RUNNER_TEMP/global/node_modules"; else modules="$RUNNER_TEMP/global/lib/node_modules"; fi
