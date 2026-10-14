@@ -1044,7 +1044,11 @@ async function startHero() {
     updateLoop();
   });
   motionQuery.addEventListener("change", updateLoop);
-  darkQuery.addEventListener("change", () => { syncColors(); renderOnce(); });
+  // New colours show on the next frame while the loop runs; otherwise draw once.
+  const recolour = () => { syncColors(); if (!state.raf) renderOnce(); };
+  darkQuery.addEventListener("change", recolour);
+  // The theme switch in the page header fires this after it changes data-theme.
+  document.addEventListener("dexterous:themechange", recolour);
   new ResizeObserver(resize).observe(stage);
 
   canvas.addEventListener("webglcontextlost", (e) => {

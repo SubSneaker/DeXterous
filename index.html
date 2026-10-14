@@ -3,10 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
-    <meta name="color-scheme" content="dark light" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f0613f" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#8e2c1f" media="(prefers-color-scheme: dark)" />
     <meta name="description" content="Run Samsung DeX from your Galaxy phone in any web browser." />
     <title>DeXterous</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/src/styles.css" />
     <script type="module" src="/src/main.ts"></script>
   </head>
@@ -15,9 +19,8 @@
     <main class="connect" id="connect-view">
       <header class="brand">
         <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
-          <rect x="4" y="9" width="40" height="26" rx="4" />
-          <rect x="17" y="17" width="14" height="22" rx="3" class="brand-mark-phone" />
-          <path d="M14 41h20" />
+          <rect x="4" y="9" width="40" height="26" rx="5" />
+          <rect x="17" y="17" width="14" height="22" rx="3.5" class="brand-mark-phone" />
         </svg>
         <div>
           <h1>DeXterous</h1>

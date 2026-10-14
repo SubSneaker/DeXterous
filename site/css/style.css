@@ -57,7 +57,30 @@
   --ink: oklch(21% 0.035 345);
   --cream: oklch(97% 0.014 75);
 
-  /* Roles: light */
+  /* Space */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --section-pad: clamp(72px, 9vw, 136px);
+  --gutter: clamp(16px, 4vw, 40px);
+  --max: 1200px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+/* Role tokens. Light is the default. The theme switch sets data-theme on <html>
+   ("light" or "dark") and an explicit choice always wins. With no data-theme the
+   system setting decides, through the media query. Keep both dark blocks identical. */
+
+:root,
+:root[data-theme="light"] {
   --bg: var(--paper);
   --fg: var(--ink);
   --muted: oklch(42% 0.035 345);
@@ -104,24 +127,49 @@
   --oui-press: oklch(92% 0.005 260);
   --oui-blue: oklch(60% 0.2 262);
   --oui-bezel: oklch(19% 0.01 300);
+}
 
-  /* Space */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 48px;
-  --space-3xl: 64px;
-  --section-pad: clamp(72px, 9vw, 136px);
-  --gutter: clamp(16px, 4vw, 40px);
-  --max: 1200px;
+:root[data-theme="dark"] {
+  --bg: oklch(17% 0.022 345);
+  --fg: var(--cream);
+  --muted: oklch(78% 0.025 345);
+  --line: oklch(31% 0.03 345);
+  --link: oklch(78% 0.13 40);
+  --focus: var(--butter);
 
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --hero-bg: oklch(41% 0.14 31);
+  --hero-fg: var(--cream);
+
+  --code-bg: oklch(14% 0.02 345);
+  --code-line: oklch(28% 0.035 345);
+
+  --feat-bg: oklch(25% 0.065 345);
+
+  --tile-1: oklch(45% 0.15 31);
+  --tile-2: oklch(50% 0.12 72);
+  --tile-3: oklch(36% 0.075 335);
+  --tile-num: var(--cream);
+
+  --foot-bg: oklch(12% 0.016 345);
+
+  --scene-floor: oklch(35% 0.12 30);
+  --scene-track: oklch(86% 0.1 80);
+  --scene-shadow: oklch(15% 0.05 28);
+  --scene-sky: oklch(90% 0.03 70);
+  --scene-ground: oklch(42% 0.12 30);
+  --scene-rim: oklch(85% 0.11 80);
+
+  --oui-bg: oklch(13% 0.002 260);
+  --oui-card: oklch(21% 0.004 260);
+  --oui-fg: oklch(95% 0.003 260);
+  --oui-sub: oklch(70% 0.006 260);
+  --oui-press: oklch(28% 0.005 260);
+  --oui-blue: oklch(66% 0.17 258);
+  --oui-bezel: oklch(8% 0.005 300);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: oklch(17% 0.022 345);
     --fg: var(--cream);
     --muted: oklch(78% 0.025 345);
@@ -314,6 +362,7 @@ main:focus { outline: none; }
   padding-block: 20px;
 }
 
+.topbar-end { display: flex; align-items: center; gap: clamp(16px, 3vw, 32px); }
 .nav { display: flex; gap: clamp(16px, 3vw, 32px); }
 .nav a {
   color: inherit;
@@ -325,6 +374,36 @@ main:focus { outline: none; }
 @media (max-width: 559px) {
   .nav a[href="#need"] { display: none; }
 }
+@media (max-width: 479px) {
+  .nav { display: none; }
+}
+
+/* Theme switch: System, Light, Dark. One pill, one segment filled. */
+.theme {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1.5px solid color-mix(in oklch, var(--hero-fg) 70%, transparent);
+  border-radius: 999px;
+}
+.theme[hidden] { display: none; }
+.theme-opt {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+.theme-opt:hover { background: color-mix(in oklch, var(--hero-fg) 18%, transparent); }
+.theme-opt[aria-checked="true"] { background: var(--hero-fg); color: var(--hero-bg); }
+.theme-opt:focus-visible { outline-offset: 1px; }
+.theme-opt .icon { width: 16px; height: 16px; }
 
 .hero-grid {
   display: grid;

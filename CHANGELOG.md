@@ -18,7 +18,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Phone cards show the name the phone has in *Settings › About phone*. Many Samsung phones have no marketing name, so their cards showed a model code like `SM-S938B`. The model code is still shown on the second line.
 - *Start DeX* is greyed out, with a short note, while an update installs and while DeXterous restarts afterwards.
 - The README and the user guide no longer say what has and hasn't been tested. The guide's *Using it from an iPad or another computer* section is now *Use it from another device*.
-- The project site serves its own fonts instead of loading them from Google Fonts.
+- The app has a new look to match the project site: the same colours, light and dark, and the same fonts. The fonts ship with DeXterous, so the app makes no requests to font services.
+- The project site serves its own fonts instead of loading them from Google Fonts, has a System, Light and Dark switch, and links to the npm package next to GitHub and in the footer.
 
 ## [0.2.0] - 2026-10-14
 

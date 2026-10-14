@@ -8,6 +8,9 @@ DeXterous is released under the [MIT License](LICENSE), © 2026 SubSneaker. It i
 |---|---|---|---|
 | [scrcpy server](https://github.com/Genymobile/scrcpy) | 5.0.1 | Apache-2.0 | Shipped unmodified as `scrcpy-server.jar` and pushed to the phone on each connection |
 | [Tango (ya-webadb)](https://github.com/yume-chan/ya-webadb), `@yume-chan/*` packages | 3.0.0-beta.4 | MIT | Bundled into the web app (`dist/assets/`) |
+| [Archivo](https://github.com/Omnibus-Type/Archivo) font | 2.001 | OFL-1.1 | Shipped as `dist/fonts/archivo-latin.woff2`, the web app's heading font |
+| [Figtree](https://github.com/erikdkennedy/figtree) font | 2.002 | OFL-1.1 | Shipped as `dist/fonts/figtree-latin.woff2`, the web app's text font |
+| [Geist Mono](https://github.com/vercel/geist-font) font | 1.701 | OFL-1.1 | Shipped as `dist/fonts/geist-mono-latin.woff2`, the web app's code font |
 | [ws](https://github.com/websockets/ws) | 8.x | MIT | Runtime dependency of the relay, installed by npm |
 | [selfsigned](https://github.com/jfromaniello/selfsigned) | 5.x | MIT | Runtime dependency of the relay, installed by npm |
 
@@ -262,6 +265,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
+
+## Fonts
+
+- **Fonts:** [Archivo](https://github.com/Omnibus-Type/Archivo) 2.001, [Figtree](https://github.com/erikdkennedy/figtree) 2.002 and [Geist Mono](https://github.com/vercel/geist-font) 1.701
+- **License:** SIL Open Font License 1.1
+- **Where they are:** `dist/fonts/` in the built app, as variable WOFF2 files cut down to Latin characters. The app loads them from the same place it is served from, so it makes no requests to font services. The project site (`site/fonts/`) uses the same files.
+- **License files:** shipped next to the fonts as `dist/fonts/Archivo-OFL.txt`, `dist/fonts/Figtree-OFL.txt` and `dist/fonts/GeistMono-OFL.txt`, each with the full license text.
+
+```text
+Copyright 2020 The Archivo Project Authors (https://github.com/Omnibus-Type/Archivo)
+Copyright 2022 The Figtree Project Authors (https://github.com/erikdkennedy/figtree)
+Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font.git)
+
+Each font is licensed under the SIL Open Font License, Version 1.1.
+The license is available with a FAQ at https://openfontlicense.org
 ```
 
 ## Runtime dependencies installed by npm

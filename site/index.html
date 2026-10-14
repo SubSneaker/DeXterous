@@ -8,6 +8,7 @@
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f0613f" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#8e2c1f" media="(prefers-color-scheme: dark)">
+  <script>try{var t=localStorage.getItem("dexterous-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
   <link rel="canonical" href="https://subsneaker.github.io/DeXterous/">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
@@ -57,11 +58,27 @@
         </svg>
         <span>DeXterous</span>
       </a>
-      <nav class="nav" aria-label="Main">
-        <a href="#start">Get started</a>
-        <a href="#need">What you need</a>
-        <a href="#faq">Questions</a>
-      </nav>
+      <div class="topbar-end">
+        <nav class="nav" aria-label="Main">
+          <a href="#start">Get started</a>
+          <a href="#need">What you need</a>
+          <a href="#faq">Questions</a>
+        </nav>
+        <div class="theme" role="radiogroup" aria-label="Colour theme" data-theme-switch hidden>
+          <button class="theme-opt" type="button" role="radio" aria-checked="true" data-theme-value="system" title="System">
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-system"/></svg>
+            <span class="visually-hidden">System</span>
+          </button>
+          <button class="theme-opt" type="button" role="radio" aria-checked="false" tabindex="-1" data-theme-value="light" title="Light">
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
+            <span class="visually-hidden">Light</span>
+          </button>
+          <button class="theme-opt" type="button" role="radio" aria-checked="false" tabindex="-1" data-theme-value="dark" title="Dark">
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-moon"/></svg>
+            <span class="visually-hidden">Dark</span>
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -99,12 +116,17 @@
               <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-github"/></svg>
               <span>GitHub</span>
             </a>
+            <a class="btn" href="https://www.npmjs.com/package/@subsneaker/dexterous">
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-npm"/></svg>
+              <span>npm</span>
+            </a>
           </div>
         </div>
 
         <div class="hero-stage" data-hero-stage>
           <picture>
             <source srcset="img/hero-dark.webp" media="(prefers-color-scheme: dark)">
+            <script>(function(){var t=document.documentElement.getAttribute("data-theme"),s=document.currentScript.previousElementSibling;if(t&&s)s.media=t==="dark"?"all":"not all"})()</script>
             <img class="hero-poster" src="img/hero-light.webp" width="1500" height="1125" alt="A phone floating above a ring of computers: a laptop, a monitor, a tablet and a wide monitor. Each screen shows a DeX desktop in a browser tab." decoding="async" fetchpriority="high">
           </picture>
           <canvas class="hero-canvas" data-hero-canvas aria-hidden="true"></canvas>
@@ -358,6 +380,7 @@
       </a>
       <nav class="footer-links" aria-label="Project links">
         <a href="https://github.com/SubSneaker/DeXterous">GitHub</a>
+        <a href="https://www.npmjs.com/package/@subsneaker/dexterous">npm</a>
         <a href="https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md">Guide</a>
         <a href="https://github.com/SubSneaker/DeXterous/blob/main/CHANGELOG.md">Changelog</a>
         <a href="https://github.com/SubSneaker/DeXterous/issues">Issues</a>
@@ -371,6 +394,10 @@
   <svg width="0" height="0" class="visually-hidden" aria-hidden="true" focusable="false">
     <defs>
       <symbol id="i-github" viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></symbol>
+      <symbol id="i-npm" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M1 1h14v14H1V1Zm2.4 2.4v9.2h4.6V5.7h2.3v6.9h2.3V3.4H3.4Z"/></symbol>
+      <symbol id="i-system" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M2.5 2.5h11a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1ZM5.5 14h5M8 11v3"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.9" fill="none" stroke="currentColor" stroke-width="1.5"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M8 1.4v1.5M8 13.1v1.5M1.4 8h1.5M13.1 8h1.5M3.3 3.3l1 1M11.7 11.7l1 1M3.3 12.7l1-1M11.7 4.3l1-1"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" d="M13.6 9.7A5.7 5.7 0 0 1 6.3 2.4a5.7 5.7 0 1 0 7.3 7.3Z"/></symbol>
       <symbol id="i-copy" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" d="M5.5 5.5h7a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Zm-2 6h-1a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v1"/></symbol>
       <symbol id="i-check" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m3 8.5 3.2 3.2L13 4.8"/></symbol>
     </defs>

@@ -1,4 +1,4 @@
-// Page behavior: tabs and copy buttons.
+// Page behavior: theme switch, tabs and copy buttons.
 // All styling lives in css/style.css. This file only toggles attributes and classes.
 (function () {
   "use strict";
@@ -8,6 +8,88 @@
   liveRegion.className = "visually-hidden";
   liveRegion.setAttribute("role", "status");
   document.body.appendChild(liveRegion);
+
+  // ---- Theme switch ----
+  // The choice is "system", "light" or "dark". "system" leaves data-theme off so the CSS
+  // follows prefers-color-scheme. An inline script in <head> applies a saved choice before paint.
+  var THEME_KEY = "dexterous-theme";
+  var THEME_COLOR = { light: "#f0613f", dark: "#8e2c1f" };
+  var root = document.documentElement;
+  var switcher = document.querySelector("[data-theme-switch]");
+
+  function readTheme() {
+    try {
+      var saved = localStorage.getItem(THEME_KEY);
+      if (saved === "light" || saved === "dark") return saved;
+    } catch (e) { /* storage blocked: follow the system */ }
+    return "system";
+  }
+  function saveTheme(choice) {
+    try {
+      if (choice === "system") localStorage.removeItem(THEME_KEY);
+      else localStorage.setItem(THEME_KEY, choice);
+    } catch (e) { /* the choice lasts until the page closes */ }
+  }
+
+  function applyTheme(choice) {
+    if (choice === "system") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", choice);
+
+    // Browser chrome: with a forced theme both theme-color tags carry that theme's colour.
+    var scheme = document.querySelector('meta[name="color-scheme"]');
+    if (scheme) scheme.setAttribute("content", choice === "system" ? "light dark" : choice);
+    ["light", "dark"].forEach(function (mode) {
+      var meta = document.querySelector('meta[name="theme-color"][media*="' + mode + '"]');
+      if (meta) meta.setAttribute("content", THEME_COLOR[choice === "system" ? mode : choice]);
+    });
+
+    // The hero poster picks its image by media query. Point it at the chosen theme.
+    var source = document.querySelector(".hero-stage picture source");
+    if (source) {
+      source.setAttribute("media", choice === "system" ? "(prefers-color-scheme: dark)" : choice === "dark" ? "all" : "not all");
+    }
+
+    if (switcher) {
+      var options = switcher.querySelectorAll("[data-theme-value]");
+      Array.prototype.forEach.call(options, function (opt) {
+        var on = opt.getAttribute("data-theme-value") === choice;
+        opt.setAttribute("aria-checked", on ? "true" : "false");
+        opt.tabIndex = on ? 0 : -1;
+      });
+    }
+
+    // The 3D hero listens for this and re-reads its colours.
+    document.dispatchEvent(new CustomEvent("dexterous:themechange"));
+  }
+
+  if (switcher) {
+    var themeOptions = Array.prototype.slice.call(switcher.querySelectorAll("[data-theme-value]"));
+    applyTheme(readTheme());
+    switcher.hidden = false;
+
+    themeOptions.forEach(function (opt, i) {
+      function choose(target, focus) {
+        var choice = target.getAttribute("data-theme-value");
+        saveTheme(choice);
+        applyTheme(choice);
+        if (focus) target.focus();
+      }
+      opt.addEventListener("click", function () { choose(opt, false); });
+      opt.addEventListener("keydown", function (e) {
+        var next = null;
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") next = themeOptions[(i + 1) % themeOptions.length];
+        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = themeOptions[(i - 1 + themeOptions.length) % themeOptions.length];
+        else if (e.key === "Home") next = themeOptions[0];
+        else if (e.key === "End") next = themeOptions[themeOptions.length - 1];
+        if (next) { e.preventDefault(); choose(next, true); }
+      });
+    });
+
+    // Another tab changed the choice.
+    window.addEventListener("storage", function (e) {
+      if (e.key === THEME_KEY || e.key === null) applyTheme(readTheme());
+    });
+  }
 
   // ---- Tabs (hero install box and the OS picker) ----
   function setupTabs(root) {
