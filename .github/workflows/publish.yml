@@ -7,9 +7,9 @@ name: Publish to npm
 # the package to this run. The trusted publisher must be set up on npmjs.com
 # first (see "Releasing" in CONTRIBUTING.md).
 #
-# GitHub releases are separate and made by hand; this workflow doesn't touch
-# them. To run it by hand (Actions > Publish to npm > Run workflow), pick the
-# tag under "Use workflow from".
+# The GitHub release is created by release.yml from the same tag; this
+# workflow doesn't touch it. To run it by hand (Actions > Publish to npm >
+# Run workflow), pick the tag under "Use workflow from".
 
 on:
   push:

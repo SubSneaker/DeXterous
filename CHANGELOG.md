@@ -12,7 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - `dexterous update` installs the latest version, and `dexterous update --check` only checks. Copies run through npx or from a clone get told what to run instead.
 - The relay's `/api/info` reports update details, and `POST /api/update` lets the DeXterous page install an update and restart the relay. It only works from the computer DeXterous runs on, while DeX isn't running. npm runs in the background, so stopping DeXterous mid-update waits for it to finish, and a version that needs a newer Node.js is refused.
 - `dexterous` restarts the relay in the same terminal after an update.
-- A publish workflow: pushing a version tag publishes the package to npm with trusted publishing and provenance.
+- Release workflows: pushing a version tag publishes the package to npm with trusted publishing and provenance, and creates the GitHub release with the notes from this changelog.
 - The connect screen shows an update banner when a new version is out, with a *What's new* link and either *Update now* or the command to run, with a *Copy* button.
 - Phone cards on the connect screen: each phone shows its name, model code, One UI version, battery, a *USB* or *Wi‑Fi* badge and whether it's ready. Phones on One UI 7 or older, or that aren't Galaxy phones, get a warning. DeXterous remembers the phone you used last. The arrow keys move between phones and Enter starts DeX.
 - *Before you start*, a live setup checklist: DeXterous running, adb reachable, phone found, USB debugging allowed, One UI 8 or newer. The first missing step says how to fix it, and the list folds up to *All set* when everything is ready.

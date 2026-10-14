@@ -3,32 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>DeXterous: Samsung DeX in any browser</title>
-  <meta name="description" content="Plug in your Galaxy phone, run one command, and a full DeX desktop opens in a browser tab. Free and open source. For Mac, Windows and Linux. iPad is supported but untested.">
+  <title>DeXterous: Samsung DeX on any computer</title>
+  <meta name="description" content="Plug in your Galaxy phone, run one command, and DeX opens in a browser tab on any computer. Free and open source.">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#f7f4ec" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0d1020" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f0613f" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#8e2c1f" media="(prefers-color-scheme: dark)">
   <link rel="canonical" href="https://subsneaker.github.io/DeXterous/">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="DeXterous">
-  <meta property="og:title" content="DeXterous: Samsung DeX in any browser">
-  <meta property="og:description" content="Plug in your Galaxy phone, run one command, and a full DeX desktop opens in a browser tab. Free and open source.">
+  <meta property="og:title" content="DeXterous: DeX for your Galaxy, anytime and anywhere">
+  <meta property="og:description" content="Plug in your Galaxy phone, run one command, and DeX opens in a browser tab. Free and open source.">
   <meta property="og:url" content="https://subsneaker.github.io/DeXterous/">
   <meta property="og:image" content="https://subsneaker.github.io/DeXterous/img/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="A Galaxy-style phone floating above a ring of devices that each show a DeX-style desktop.">
+  <meta property="og:image:alt" content="A phone floating above a ring of computers that each show a DeX-style desktop, on a red-orange background.">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="DeXterous: Samsung DeX in any browser">
-  <meta name="twitter:description" content="Plug in your Galaxy phone, run one command, and a full DeX desktop opens in a browser tab.">
+  <meta name="twitter:title" content="DeXterous: DeX for your Galaxy, anytime and anywhere">
+  <meta name="twitter:description" content="Plug in your Galaxy phone, run one command, and DeX opens in a browser tab.">
   <meta name="twitter:image" content="https://subsneaker.github.io/DeXterous/img/og.png">
-  <meta name="twitter:image:alt" content="A Galaxy-style phone floating above a ring of devices that each show a DeX-style desktop.">
+  <meta name="twitter:image:alt" content="A phone floating above a ring of computers that each show a DeX-style desktop, on a red-orange background.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&amp;family=Figtree:wght@400..700&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
   <link rel="stylesheet" href="css/style.css">
 
   <script>document.documentElement.classList.add("js");</script>
@@ -49,37 +49,30 @@
 <body>
   <a class="skip" href="#main">Skip to content</a>
 
-  <header class="topbar" data-topbar>
-    <div class="topbar-inner">
+  <header class="site-head" id="top">
+    <div class="topbar wrap">
       <a class="logo" href="#top" aria-label="DeXterous, back to top">
         <svg class="logo-mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
           <rect x="4" y="9" width="40" height="26" rx="5" />
           <rect x="17" y="17" width="14" height="22" rx="3.5" class="logo-phone" />
-          <path d="M14 43h20" />
         </svg>
         <span>DeXterous</span>
       </a>
       <nav class="nav" aria-label="Main">
-        <a href="#how">How it works</a>
-        <a href="#get">What you need</a>
-        <a href="#ipad">iPad</a>
-        <a href="#faq">FAQ</a>
+        <a href="#start">Get started</a>
+        <a href="#need">What you need</a>
+        <a href="#faq">Questions</a>
       </nav>
-      <a class="btn btn-small btn-ghost" href="https://github.com/SubSneaker/DeXterous">
-        <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-github"/></svg>
-        <span>GitHub</span>
-      </a>
     </div>
   </header>
 
   <main id="main" tabindex="-1">
-    <!-- HERO -->
-    <section class="hero" id="top" aria-labelledby="hero-title">
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
       <div class="wrap hero-grid">
+        <h1 id="hero-title">DeX for your Galaxy, <span class="nowrap">anytime and anywhere</span></h1>
         <div class="hero-copy">
-          <p class="eyebrow"><span class="dot" aria-hidden="true"></span>Free and open source</p>
-          <h1 id="hero-title">Your Galaxy desktop, <span class="mark">in any browser.</span></h1>
-          <p class="lede">Samsung stopped making its DeX apps for Windows and Mac. DeXterous brings DeX back. Plug in your phone, run one command, and a full desktop opens in a browser tab.</p>
+          <p class="lede">Plug in your phone, run one command, and DeX opens in your browser.</p>
 
           <div class="cmd" data-tabs>
             <div class="cmd-bar">
@@ -93,29 +86,27 @@
                 <span class="copy-label">Copy</span>
               </button>
             </div>
-            <div class="cmd-panel" role="tabpanel" id="panel-install" aria-labelledby="tab-install" data-copy-text="npm install -g @subsneaker/dexterous&#10;dexterous">
-              <pre><code><span class="p">$</span> npm install -g @subsneaker/dexterous
-<span class="p">$</span> dexterous</code></pre>
+            <div class="cmd-panel" role="tabpanel" tabindex="0" id="panel-install" aria-labelledby="tab-install" data-copy-text="npm install -g @subsneaker/dexterous&#10;dexterous">
+              <pre><code><span class="p" aria-hidden="true">$ </span>npm install -g @subsneaker/dexterous
+<span class="p" aria-hidden="true">$ </span>dexterous</code></pre>
             </div>
-            <div class="cmd-panel" role="tabpanel" id="panel-npx" aria-labelledby="tab-npx" data-copy-text="npx @subsneaker/dexterous@latest" hidden>
-              <pre><code><span class="p">$</span> npx @subsneaker/dexterous@latest</code></pre>
+            <div class="cmd-panel" role="tabpanel" tabindex="0" id="panel-npx" aria-labelledby="tab-npx" data-copy-text="npx @subsneaker/dexterous@latest" hidden>
+              <pre><code><span class="p" aria-hidden="true">$ </span>npx @subsneaker/dexterous@latest</code></pre>
             </div>
           </div>
 
-          <p class="hero-actions">
-            <a class="btn btn-primary" href="https://github.com/SubSneaker/DeXterous">
+          <div class="hero-actions">
+            <a class="btn" href="https://github.com/SubSneaker/DeXterous">
               <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-github"/></svg>
-              <span>View on GitHub</span>
+              <span>GitHub</span>
             </a>
-            <a class="link-quiet" href="#how">See how it works</a>
-          </p>
-          <p class="hero-note">Needs Node.js 22.18+ and Android platform-tools (adb) on your computer. <a href="#get">Setup details</a></p>
+          </div>
         </div>
 
         <div class="hero-stage" data-hero-stage>
           <picture>
             <source srcset="img/hero-dark.webp" media="(prefers-color-scheme: dark)">
-            <img class="hero-poster" src="img/hero-light.webp" width="1500" height="1125" alt="A Galaxy-style phone floating above a ring of devices: a laptop, a monitor, a tablet and a wide monitor. Each screen shows a DeX-style desktop with windows and a taskbar." decoding="async" fetchpriority="high">
+            <img class="hero-poster" src="img/hero-light.webp" width="1500" height="1125" alt="A phone floating above a ring of computers: a laptop, a monitor, a tablet and a wide monitor. Each screen shows a DeX-style desktop with windows and a taskbar." decoding="async" fetchpriority="high">
           </picture>
           <canvas class="hero-canvas" data-hero-canvas aria-hidden="true"></canvas>
           <p class="visually-hidden" role="status" data-hero-announce></p>
@@ -127,69 +118,75 @@
               <svg class="icon icon-pause" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M4.5 3h2.5v10H4.5zM9 3h2.5v10H9z"/></svg>
               <svg class="icon icon-play" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M5 3.2v9.6L13 8z"/></svg>
             </button>
-            <p class="hero-caption"><span class="hero-caption-k">DeX on</span> <strong data-hero-name></strong></p>
             <button class="hero-nav" type="button" data-hero-next aria-label="Show the next device">
               <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m6 3 5 5-5 5"/></svg>
             </button>
+            <p class="hero-caption">DeX on <strong data-hero-name></strong></p>
           </div>
         </div>
       </div>
-
-      <ul class="wrap facts" aria-label="Quick facts">
-        <li>No root</li>
-        <li>No app on the phone</li>
-        <li>MIT licensed</li>
-        <li>No telemetry</li>
-      </ul>
     </section>
 
-    <!-- HOW IT WORKS -->
-    <section class="section" id="how" aria-labelledby="how-title">
+    <!-- Get started -->
+    <section class="section start" id="start" aria-labelledby="start-title">
       <div class="wrap">
-        <header class="section-head reveal">
-          <p class="kicker">How it works</p>
-          <h2 id="how-title">Three steps, about five minutes.</h2>
-          <p class="section-lede">Do the first one once. After that, it is just plug in and go.</p>
-        </header>
+        <h2 id="start-title">Get started</h2>
 
         <ol class="steps">
-          <li class="step reveal">
-            <div class="step-text">
+          <li class="step">
+            <div class="step-art step-art-1">
               <span class="step-num" aria-hidden="true">1</span>
-              <h3>Turn on USB debugging</h3>
-              <p>This lets your computer talk to the phone. Open <em>Settings</em>, then <em>About phone</em>, then <em>Software information</em>. Tap <em>Build number</em> seven times. Back in <em>Settings</em>, open <em>Developer options</em> and switch on <em>USB debugging</em>.</p>
-              <p class="aside">If it will not stay on, check <em>Auto Blocker</em> in <em>Security and privacy</em>. Turn it off while you use DeXterous.</p>
-            </div>
-            <div class="step-visual">
-              <div class="phone-path" role="img" aria-label="Settings, then About phone, then Software information, then tap Build number seven times. Then Developer options, then switch on USB debugging.">
-                <ol aria-hidden="true">
-                  <li>Settings</li>
-                  <li>About phone</li>
-                  <li>Software information</li>
-                  <li class="hit">Build number <span class="tap">tap 7 times</span></li>
-                </ol>
-                <div class="path-gap" aria-hidden="true">then back to Settings</div>
-                <ol aria-hidden="true">
-                  <li>Developer options</li>
-                  <li class="hit">USB debugging <span class="toggle" data-on></span></li>
-                </ol>
+              <div class="oneui" role="img" aria-label="A Galaxy Settings screen with About phone and Developer options. In front of it, the USB debugging switch is on.">
+                <div class="oneui-phone" aria-hidden="true">
+                  <div class="oneui-screen">
+                    <div class="oneui-status">
+                      <span>12:45</span>
+                      <svg viewBox="0 0 28 12"><path d="M1 10.5 7 2v8.5z" class="fill"/><rect x="11" y="2" width="14" height="8" rx="2.2" class="stroke"/><rect x="12.6" y="3.6" width="8.4" height="4.8" rx="1" class="fill"/><rect x="25.6" y="4.6" width="1.4" height="2.8" rx=".6" class="fill"/></svg>
+                    </div>
+                    <div class="oneui-head">
+                      <span class="oneui-title">Settings</span>
+                      <svg class="oneui-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+                    </div>
+                    <ul class="oneui-card">
+                      <li>
+                        <span class="oneui-ic ic-blue"><svg viewBox="0 0 24 24"><path d="M3.5 9.5a12 12 0 0 1 17 0M6.5 12.6a7.6 7.6 0 0 1 11 0M9.5 15.6a3.4 3.4 0 0 1 5 0"/><circle cx="12" cy="18.6" r="1.2" class="fill"/></svg></span>
+                        <span class="oneui-row"><b>Connections</b><small>Wi-Fi • Bluetooth • SIM manager</small></span>
+                      </li>
+                      <li>
+                        <span class="oneui-ic ic-green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.6" class="fill"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6"/></svg></span>
+                        <span class="oneui-row"><b>Display</b><small>Brightness • Eye comfort shield</small></span>
+                      </li>
+                    </ul>
+                    <ul class="oneui-card">
+                      <li>
+                        <span class="oneui-ic ic-grey"><svg viewBox="0 0 24 24"><circle cx="12" cy="7.6" r="1.3" class="fill"/><path d="M12 11v6.5"/></svg></span>
+                        <span class="oneui-row"><b>About phone</b><small>Status • Legal information</small></span>
+                      </li>
+                      <li class="is-hit">
+                        <span class="oneui-ic ic-grey"><svg viewBox="0 0 24 24"><path d="M9.5 5.5c-2 0-2.6.9-2.6 2.6v1.7c0 1.2-.7 2.2-1.9 2.2 1.2 0 1.9 1 1.9 2.2v1.7c0 1.7.6 2.6 2.6 2.6M14.5 5.5c2 0 2.6.9 2.6 2.6v1.7c0 1.2.7 2.2 1.9 2.2-1.2 0-1.9 1-1.9 2.2v1.7c0 1.7-.6 2.6-2.6 2.6"/></svg></span>
+                        <span class="oneui-row"><b>Developer options</b></span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="oneui-pop" aria-hidden="true">
+                  <span class="oneui-row"><b>USB debugging</b><small>Debug mode when USB is connected</small></span>
+                  <span class="oneui-switch"></span>
+                </div>
               </div>
             </div>
+            <h3>Turn on USB debugging</h3>
+            <p>In <em>Settings › About phone › Software information</em>, tap <em>Build number</em> seven times. Then switch on <em>USB debugging</em> in <em>Developer options</em>.</p>
           </li>
 
-          <li class="step reveal">
-            <div class="step-text">
+          <li class="step">
+            <div class="step-art step-art-2">
               <span class="step-num" aria-hidden="true">2</span>
-              <h3>Run <code>dexterous</code></h3>
-              <p>Plug the phone in and unlock it. Tap <em>Allow</em> when it asks about USB debugging, and tick <em>Always allow from this computer</em> (that is the phone's own wording). Then open a terminal and run the command. It starts a small server on your computer and opens a browser tab. Keep the terminal open while you use DeX.</p>
-              <p class="aside">First time? Install it once with <code>npm install -g @subsneaker/dexterous</code>.</p>
-            </div>
-            <div class="step-visual">
-              <div class="term" role="img" aria-label="A terminal. The command dexterous prints the version and the address http://localhost:8686.">
-                <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i><span>Terminal</span></div>
+              <div class="term" role="img" aria-label="A terminal. The command dexterous prints its version and the address http://localhost:8686.">
+                <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i></div>
 <pre aria-hidden="true"><code><span class="p">$</span> dexterous
 
-  DeXterous v0.1.0
+  <b>DeXterous</b> <span class="dim">v0.2.0</span>
 
   Open DeXterous in your browser:
     <span class="url">http://localhost:8686/</span>
@@ -198,332 +195,176 @@
 </code></pre>
               </div>
             </div>
+            <h3>Run <code>dexterous</code></h3>
+            <p>Plug in your phone and run the command. Tap <em>Allow</em> when the phone asks.</p>
           </li>
 
-          <li class="step reveal">
-            <div class="step-text">
+          <li class="step">
+            <div class="step-art step-art-3">
               <span class="step-num" aria-hidden="true">3</span>
-              <h3>Pick your phone, press Start DeX</h3>
-              <p>Choose your phone from the list and press <em>Start DeX</em>. If the phone is locked, unlock it. DeX appears in the tab and follows the size of the window. Press <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>/</kbd> to see every shortcut.</p>
-              <p class="aside">When you are done, close the tab. Your open apps move back to the phone.</p>
-            </div>
-            <div class="step-visual">
               <figure class="shot">
-                <div class="shot-bar" aria-hidden="true"><i></i><i></i><i></i><span>localhost:8686</span></div>
-                <img src="img/connect.png" width="1100" height="900" loading="lazy" decoding="async" alt="The DeXterous connect screen. A card titled Connect your phone shows one phone, with its One UI version, battery, a Wi-Fi badge and the word Ready, above a blue Start DeX button. Below it, the Before you start checklist says All set.">
+                <img src="img/connect.png" width="1100" height="900" loading="lazy" decoding="async" alt="The DeXterous connect screen. A card titled Connect your phone shows one phone with its One UI version, battery and the word Ready, above a blue Start DeX button.">
               </figure>
             </div>
+            <h3>Press Start DeX</h3>
+            <p>Pick your phone and DeX fills the tab. Close the tab and your apps move back to the phone.</p>
           </li>
         </ol>
+
+        <ul class="also">
+          <li>Open it from any device on your network with <code>dexterous --lan</code> (<a href="https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md#using-it-from-an-ipad-or-another-computer">guide</a>).</li>
+          <li>No Node.js? Try the <a href="app/">browser-only version</a> in Chrome or Edge, over USB.</li>
+        </ul>
       </div>
     </section>
 
-    <!-- WHAT YOU GET -->
-    <section class="section section-tint" id="features" aria-labelledby="features-title">
-      <div class="wrap features-grid">
-        <div class="features-intro reveal">
-          <p class="kicker">What you get</p>
-          <h2 id="features-title">A real desktop, not a mirror.</h2>
-          <p>Most tools copy your phone screen to the computer. DeXterous does something else. It gives the phone a second, virtual screen, and DeX runs on that. You get a desktop. The phone stays a phone.</p>
-
-          <figure class="twoscreens">
-            <svg viewBox="0 0 420 220" role="img" aria-labelledby="ts-title ts-desc" focusable="false">
-              <title id="ts-title">Two screens</title>
-              <desc id="ts-desc">The phone keeps its own screen. DeX runs on a second virtual screen that you see in the browser.</desc>
-              <g class="ts-phone">
-                <rect x="14" y="40" width="74" height="140" rx="14"/>
-                <rect x="22" y="52" width="58" height="104" rx="6" class="ts-screen"/>
-                <rect x="30" y="62" width="20" height="20" rx="5" class="ts-app a"/>
-                <rect x="54" y="62" width="20" height="20" rx="5" class="ts-app b"/>
-                <rect x="30" y="88" width="20" height="20" rx="5" class="ts-app c"/>
-                <rect x="54" y="88" width="20" height="20" rx="5" class="ts-app a"/>
-                <rect x="30" y="118" width="44" height="26" rx="6" class="ts-line"/>
-              </g>
-              <g class="ts-arrow">
-                <path d="M104 110h56"/>
-                <path d="M152 102l10 8-10 8"/>
-              </g>
-              <g class="ts-monitor">
-                <rect x="176" y="34" width="230" height="146" rx="10"/>
-                <rect x="184" y="42" width="214" height="130" rx="5" class="ts-screen"/>
-                <rect x="198" y="56" width="92" height="64" rx="5" class="ts-win"/>
-                <rect x="250" y="82" width="104" height="58" rx="5" class="ts-win w2"/>
-                <rect x="184" y="156" width="214" height="16" rx="0" class="ts-task"/>
-              </g>
-              <text x="51" y="206" text-anchor="middle" class="ts-label">Phone screen</text>
-              <text x="291" y="206" text-anchor="middle" class="ts-label">Virtual second screen</text>
-            </svg>
-            <figcaption>Your apps stay on the phone. DeX opens on the second screen.</figcaption>
-          </figure>
-        </div>
-
-        <dl class="features">
-          <div class="feature reveal">
-            <dt>Windows, taskbar, right-click</dt>
-            <dd>Move, resize and snap windows. Hover and right-click menus work like on a computer.</dd>
-          </div>
-          <div class="feature reveal">
-            <dt>Your phone stays usable</dt>
-            <dd>Calls and messages still reach you. You can use the phone while DeX runs.</dd>
-          </div>
-          <div class="feature reveal">
-            <dt>Fits your window</dt>
-            <dd>Resize the browser tab and the desktop resizes with it.</dd>
-          </div>
-          <div class="feature reveal">
-            <dt>Keyboard, mouse and touch</dt>
-            <dd>Type, scroll and use shortcuts. On a Mac, <kbd>⌘</kbd><kbd>C</kbd> and <kbd>⌘</kbd><kbd>V</kbd> work like Ctrl. Touch screens work too.</dd>
-          </div>
-          <div class="feature reveal">
-            <dt>Sound</dt>
-            <dd>The phone's audio plays in the browser. One button mutes it.</dd>
-          </div>
-          <div class="feature reveal">
-            <dt>One clipboard</dt>
-            <dd>Copy on the phone, paste on the device you're using, and the other way round. Or keep them apart.</dd>
-          </div>
-          <div class="feature reveal">
-            <dt>Smooth video</dt>
-            <dd>Your browser decodes the video with hardware help, at up to 120 frames a second.</dd>
-          </div>
-          <div class="feature reveal">
-            <dt>Respects the lock screen</dt>
-            <dd>When the phone locks, DeXterous covers the desktop, blocks input and mutes sound until you unlock.</dd>
-          </div>
-          <div class="feature reveal">
-            <dt>Stays on your computer</dt>
-            <dd>By default it only listens on your own machine. No account. No telemetry.</dd>
-          </div>
-        </dl>
-      </div>
-    </section>
-
-    <!-- WHAT YOU NEED -->
-    <section class="section" id="get" aria-labelledby="get-title">
+    <!-- Features -->
+    <section class="section features" id="features" aria-labelledby="features-title">
       <div class="wrap">
-        <header class="section-head reveal">
-          <p class="kicker">What you need</p>
-          <h2 id="get-title">A Galaxy phone, a cable and two small tools.</h2>
-        </header>
-
-        <div class="needs">
-          <ul class="checklist reveal">
-            <li>
-              <h3>A Galaxy phone or tablet</h3>
-              <p>It must run <strong>One UI 8 or newer</strong>. That is the first version where DeX can use a virtual screen. Check under <em>Settings</em>, <em>About phone</em>, <em>Software information</em>.</p>
-            </li>
-            <li>
-              <h3>A USB cable</h3>
-              <p>USB is the easiest way to start and the smoothest to use. Wi-Fi works too, once you have set it up.</p>
-            </li>
-            <li>
-              <h3>A computer with Node.js and adb</h3>
-              <p><strong>Node.js 22.18 or newer</strong> runs DeXterous. <strong>adb</strong> (Android platform-tools) is how it talks to the phone. Pick your system on the right.</p>
-            </li>
-            <li>
-              <h3>A modern browser</h3>
-              <p>Chrome, Edge, Opera, Safari 17 or newer, or Firefox 130 or newer. So far it has been tested in Chrome on a Mac.</p>
-            </li>
-          </ul>
-
-          <div class="os reveal" data-tabs data-os-tabs>
-            <div class="os-tabs" role="tablist" aria-label="Your computer">
-              <button class="os-tab" role="tab" type="button" id="os-tab-mac" aria-controls="os-mac" aria-selected="true">macOS</button>
-              <button class="os-tab" role="tab" type="button" id="os-tab-win" aria-controls="os-win" aria-selected="false" tabindex="-1">Windows</button>
-              <button class="os-tab" role="tab" type="button" id="os-tab-linux" aria-controls="os-linux" aria-selected="false" tabindex="-1">Linux</button>
-            </div>
-
-            <div class="os-panel" role="tabpanel" id="os-mac" aria-labelledby="os-tab-mac" data-os="mac">
-              <p class="os-label">Install Node.js and adb</p>
-              <div class="cmd cmd-flat">
-                <div class="cmd-panel-static" data-copy-text="brew install node&#10;brew install --cask android-platform-tools">
-                  <pre><code><span class="p">$</span> brew install node
-<span class="p">$</span> brew install --cask android-platform-tools</code></pre>
-                  <button class="copy" type="button" data-copy>
-                    <svg class="icon icon-copy" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>
-                    <svg class="icon icon-check" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>
-                    <span class="copy-label">Copy</span>
-                  </button>
-                </div>
-              </div>
-              <p class="os-note">No Homebrew? Get Node.js from <a href="https://nodejs.org">nodejs.org</a>.</p>
-            </div>
-
-            <div class="os-panel" role="tabpanel" id="os-win" aria-labelledby="os-tab-win" data-os="win" hidden>
-              <p class="os-label">Install Node.js and adb</p>
-              <div class="cmd cmd-flat">
-                <div class="cmd-panel-static" data-copy-text="winget install OpenJS.NodeJS.LTS&#10;winget install Google.PlatformTools">
-                  <pre><code><span class="p">&gt;</span> winget install OpenJS.NodeJS.LTS
-<span class="p">&gt;</span> winget install Google.PlatformTools</code></pre>
-                  <button class="copy" type="button" data-copy>
-                    <svg class="icon icon-copy" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>
-                    <svg class="icon icon-check" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>
-                    <span class="copy-label">Copy</span>
-                  </button>
-                </div>
-              </div>
-              <p class="os-note">Open a new terminal afterwards. If the phone does not show up, install Samsung's USB driver for Windows.</p>
-            </div>
-
-            <div class="os-panel" role="tabpanel" id="os-linux" aria-labelledby="os-tab-linux" data-os="linux" hidden>
-              <p class="os-label">Install adb (Debian and Ubuntu)</p>
-              <div class="cmd cmd-flat">
-                <div class="cmd-panel-static" data-copy-text="sudo apt install android-tools-adb">
-                  <pre><code><span class="p">$</span> sudo apt install android-tools-adb</code></pre>
-                  <button class="copy" type="button" data-copy>
-                    <svg class="icon icon-copy" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>
-                    <svg class="icon icon-check" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>
-                    <span class="copy-label">Copy</span>
-                  </button>
-                </div>
-              </div>
-              <p class="os-note">Fedora: <code>sudo dnf install android-tools</code>. Arch: <code>sudo pacman -S android-tools</code>. Or use Google's <a href="https://developer.android.com/tools/releases/platform-tools">platform-tools zip</a>.</p>
-              <p class="os-note">Many distributions ship an old Node.js. Check with <code>node --version</code>. If it is below 22.18, use <a href="https://github.com/nvm-sh/nvm">nvm</a>.</p>
-            </div>
-          </div>
-        </div>
+        <h2 id="features-title">What you get</h2>
+        <ul class="feature-list">
+          <li>
+            <h3>Windows and a taskbar</h3>
+            <p>Move, resize and snap apps on a desktop that fits your tab.</p>
+          </li>
+          <li>
+            <h3>Keyboard, mouse and touch</h3>
+            <p>Shortcuts and right-click work, and <kbd>⌘</kbd> acts as Ctrl on a Mac.</p>
+          </li>
+          <li>
+            <h3>Your phone keeps working</h3>
+            <p>DeX gets its own screen, so calls and apps keep working on the phone.</p>
+          </li>
+          <li>
+            <h3>Sound and clipboard</h3>
+            <p>Phone audio plays in the tab, and copy and paste work both ways.</p>
+          </li>
+          <li>
+            <h3>Smooth video</h3>
+            <p>Hardware decoding at up to 120 frames a second.</p>
+          </li>
+          <li>
+            <h3>Locks with the phone</h3>
+            <p>Lock your phone and DeX stays covered until you unlock it.</p>
+          </li>
+        </ul>
       </div>
     </section>
 
-    <!-- IPAD -->
-    <section class="section section-tint" id="ipad" aria-labelledby="ipad-title">
-      <div class="wrap split">
-        <div class="split-text reveal">
-          <p class="kicker">Another screen</p>
-          <h2 id="ipad-title">Use it from an iPad or another computer.</h2>
-          <p>The phone stays plugged into one computer. That computer runs DeXterous. Any other device on the same Wi-Fi can open DeX in its browser.</p>
-          <ol class="mini-steps">
-            <li>On the computer with the phone, run <code>dexterous --lan</code>.</li>
-            <li>It prints a link that starts with <code>https://</code>. Open that link on the iPad.</li>
-            <li>Your browser warns about the certificate. Accept it once.</li>
-          </ol>
-          <p class="aside">The link holds a secret token. Treat it like a password. Allow incoming connections in the computer's firewall.</p>
+    <!-- What you need -->
+    <section class="section need" id="need" aria-labelledby="need-title">
+      <div class="wrap need-grid">
+        <h2 id="need-title">What you need</h2>
+        <div>
+          <dl class="reqs">
+            <div><dt>A Galaxy phone or tablet</dt><dd>One UI 8 or newer</dd></div>
+            <div><dt>Node.js</dt><dd>22.18 or newer</dd></div>
+            <div><dt>adb</dt><dd>Android platform-tools</dd></div>
+            <div><dt>A browser</dt><dd>Chrome, Edge, Opera, Safari 17+ or Firefox 130+</dd></div>
+          </dl>
         </div>
-        <div class="split-side reveal">
-          <div class="cmd cmd-flat">
-            <div class="cmd-panel-static" data-copy-text="dexterous --lan">
-              <pre><code><span class="p">$</span> dexterous --lan</code></pre>
-              <button class="copy" type="button" data-copy>
-                <svg class="icon icon-copy" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>
-                <svg class="icon icon-check" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>
-                <span class="copy-label">Copy</span>
-              </button>
-            </div>
-          </div>
-          <div class="note">
-            <h3>Not tested on an iPad yet</h3>
-            <p>Safari and iPad can refuse a self-signed certificate for the live connection. If yours does, use a certificate your iPad trusts, made with mkcert or Tailscale. The guide shows how. DeXterous is meant to work on an iPad, but nobody has tried it on a real one yet. So far it has been tested in Chrome on a Mac.</p>
-            <p><a href="https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md#using-it-from-an-ipad-or-another-computer">Read the iPad guide</a></p>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- TRY IN BROWSER -->
-    <section class="section" id="try" aria-labelledby="try-title">
-      <div class="wrap">
-        <div class="try reveal">
-          <div class="try-text">
-            <p class="kicker">Nothing to install</p>
-            <h2 id="try-title">Or try it right in your browser.</h2>
-            <p>There is a browser-only version. It talks to your phone over USB with no server in between. It is good for a quick look. The installed command works in every browser and over Wi-Fi.</p>
-            <p class="hero-actions">
-              <a class="btn btn-primary" href="app/">Open the browser version</a>
-            </p>
+        <div class="os" data-tabs data-os-tabs>
+          <div class="os-tabs" role="tablist" aria-label="Install Node.js and adb on">
+            <button class="os-tab" role="tab" type="button" id="os-tab-mac" aria-controls="os-mac" aria-selected="true">macOS</button>
+            <button class="os-tab" role="tab" type="button" id="os-tab-win" aria-controls="os-win" aria-selected="false" tabindex="-1">Windows</button>
+            <button class="os-tab" role="tab" type="button" id="os-tab-linux" aria-controls="os-linux" aria-selected="false" tabindex="-1">Linux</button>
           </div>
-          <div class="try-limits">
-            <h3>Before you click</h3>
-            <ul>
-              <li>Chrome or Edge only.</li>
-              <li>USB cable only.</li>
-              <li>Run <code>adb kill-server</code> first. Your computer's adb must not be holding the phone.</li>
-              <li>You still need USB debugging on the phone.</li>
-            </ul>
+
+          <div class="os-panel" role="tabpanel" id="os-mac" aria-labelledby="os-tab-mac">
+            <p class="os-name">macOS</p>
+            <div class="cmd cmd-flat">
+              <div class="cmd-static" data-copy-text="brew install node&#10;brew install --cask android-platform-tools">
+                <pre><code><span class="p" aria-hidden="true">$ </span>brew install node
+<span class="p" aria-hidden="true">$ </span>brew install --cask android-platform-tools</code></pre>
+                <button class="copy" type="button" data-copy aria-label="Copy the macOS commands">
+                  <svg class="icon icon-copy" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>
+                  <svg class="icon icon-check" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>
+                </button>
+              </div>
+            </div>
+            <p class="os-note">No Homebrew? Get <a href="https://nodejs.org">Node.js</a> and <a href="https://developer.android.com/tools/releases/platform-tools">platform-tools</a> directly.</p>
+          </div>
+
+          <div class="os-panel" role="tabpanel" id="os-win" aria-labelledby="os-tab-win" hidden>
+            <p class="os-name">Windows</p>
+            <div class="cmd cmd-flat">
+              <div class="cmd-static" data-copy-text="winget install OpenJS.NodeJS.LTS&#10;winget install Google.PlatformTools">
+                <pre><code><span class="p" aria-hidden="true">&gt; </span>winget install OpenJS.NodeJS.LTS
+<span class="p" aria-hidden="true">&gt; </span>winget install Google.PlatformTools</code></pre>
+                <button class="copy" type="button" data-copy aria-label="Copy the Windows commands">
+                  <svg class="icon icon-copy" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>
+                  <svg class="icon icon-check" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>
+                </button>
+              </div>
+            </div>
+            <p class="os-note">Then open a new terminal.</p>
+          </div>
+
+          <div class="os-panel" role="tabpanel" id="os-linux" aria-labelledby="os-tab-linux" hidden>
+            <p class="os-name">Linux</p>
+            <div class="cmd cmd-flat">
+              <div class="cmd-static" data-copy-text="sudo apt install android-tools-adb">
+                <pre><code><span class="p" aria-hidden="true">$ </span>sudo apt install android-tools-adb</code></pre>
+                <button class="copy" type="button" data-copy aria-label="Copy the Linux command">
+                  <svg class="icon icon-copy" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>
+                  <svg class="icon icon-check" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>
+                </button>
+              </div>
+            </div>
+            <p class="os-note">Fedora: <code>sudo dnf install android-tools</code>. Arch: <code>sudo pacman -S android-tools</code>. Get Node.js 22.18+ from <a href="https://nodejs.org">nodejs.org</a>.</p>
           </div>
         </div>
       </div>
     </section>
 
     <!-- FAQ -->
-    <section class="section" id="faq" aria-labelledby="faq-title">
-      <div class="wrap faq-wrap">
-        <header class="section-head reveal">
-          <p class="kicker">Questions</p>
-          <h2 id="faq-title">Good to know.</h2>
-        </header>
-        <div class="faq reveal">
+    <section class="section faq-section" id="faq" aria-labelledby="faq-title">
+      <div class="wrap faq-grid">
+        <h2 id="faq-title">Questions</h2>
+        <div class="faq">
           <details>
             <summary>Is it safe?</summary>
-            <div class="answer">
-              <p>The code is open, so anyone can read it. By default DeXterous only listens on your own computer. It has no telemetry and sends nothing to us. The only thing it asks the internet is npm, about once a day, for the latest version number, and you can turn that off. On the phone it uses the stock scrcpy server, the same tool many developers use.</p>
-              <p>One thing to know. Whoever can reach DeXterous can control your phone through adb. So keep the <code>--lan</code> link private and never put it on the internet.</p>
-            </div>
+            <p>DeXterous only listens on your own computer unless you start it with <code>--lan</code>. The one thing it sends out is a daily check with npm for a newer version, which <a href="https://github.com/SubSneaker/DeXterous#updating">you can turn off</a>.</p>
           </details>
           <details>
-            <summary>Does it need root?</summary>
-            <div class="answer"><p>No. You do not root the phone and you do not install an app on it. You only switch on USB debugging.</p></div>
+            <summary>Do I need root or an app on the phone?</summary>
+            <p>No. USB debugging is all it needs.</p>
           </details>
           <details>
             <summary>Which phones work?</summary>
-            <div class="answer"><p>Galaxy phones and tablets on One UI 8 or newer. Older versions only show a plain launcher on the second screen, and DeXterous will tell you the phone refused. So far it has been tested on a Galaxy Z Fold8 with One UI 9. Other models should work, but haven't been tested.</p></div>
+            <p>Galaxy phones and tablets on One UI 8 or newer. Older versions can't run DeX on a virtual screen.</p>
           </details>
           <details>
             <summary>Does it work over Wi-Fi?</summary>
-            <div class="answer"><p>Yes. Turn on <em>Wireless debugging</em> on the phone, then use <em>Add a phone over Wi-Fi</em> on the DeXterous page. The first time, you also enter the pairing code the phone shows. USB is smoother. On Wi-Fi, pick the <em>Balanced</em> picture quality.</p></div>
+            <p>Yes. Turn on <em>Wireless debugging</em> on the phone, then choose <em>Add a phone over Wi-Fi</em> in DeXterous. USB is smoother.</p>
           </details>
           <details>
-            <summary>Does it cost anything?</summary>
-            <div class="answer"><p>No. DeXterous is free and released under the MIT license. There are no accounts and no ads.</p></div>
-          </details>
-          <details>
-            <summary>Is this from Samsung?</summary>
-            <div class="answer"><p>No. DeXterous is an independent project. It is not affiliated with or endorsed by Samsung. It works with the DeX feature that is already built into your phone.</p></div>
-          </details>
-          <details>
-            <summary>Something is not working. Where do I look?</summary>
-            <div class="answer"><p>The <a href="https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md#troubleshooting">troubleshooting guide</a> covers the common problems, such as no phone in the list or a locked phone. If that does not help, <a href="https://github.com/SubSneaker/DeXterous/issues">open an issue</a>.</p></div>
+            <summary>Something isn't working. Where do I look?</summary>
+            <p>See the guide's <a href="https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md#troubleshooting">troubleshooting section</a>, or <a href="https://github.com/SubSneaker/DeXterous/issues">open an issue</a>.</p>
           </details>
         </div>
-      </div>
-    </section>
-
-    <section class="closing" aria-labelledby="closing-title">
-      <div class="wrap closing-inner reveal">
-        <h2 id="closing-title">Ready to get DeX back on your desk?</h2>
-        <p class="hero-actions">
-          <a class="btn btn-primary" href="#top">Back to the install command</a>
-          <a class="btn btn-ghost" href="https://github.com/SubSneaker/DeXterous">
-            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-github"/></svg>
-            <span>GitHub</span>
-          </a>
-        </p>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div class="wrap footer-grid">
-      <div class="footer-brand">
-        <a class="logo" href="#top" aria-label="DeXterous, back to top">
-          <svg class="logo-mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-            <rect x="4" y="9" width="40" height="26" rx="5" />
-            <rect x="17" y="17" width="14" height="22" rx="3.5" class="logo-phone" />
-            <path d="M14 43h20" />
-          </svg>
-          <span>DeXterous</span>
-        </a>
-        <p>Your Galaxy desktop, in any browser.</p>
-      </div>
+    <div class="wrap footer-inner">
+      <a class="logo" href="#top" aria-label="DeXterous, back to top">
+        <svg class="logo-mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+          <rect x="4" y="9" width="40" height="26" rx="5" />
+          <rect x="17" y="17" width="14" height="22" rx="3.5" class="logo-phone" />
+        </svg>
+        <span>DeXterous</span>
+      </a>
       <nav class="footer-links" aria-label="Project links">
         <a href="https://github.com/SubSneaker/DeXterous">GitHub</a>
-        <a href="https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md">User guide</a>
+        <a href="https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md">Guide</a>
         <a href="https://github.com/SubSneaker/DeXterous/blob/main/CHANGELOG.md">Changelog</a>
-        <a href="https://github.com/SubSneaker/DeXterous/releases">Releases</a>
         <a href="https://github.com/SubSneaker/DeXterous/issues">Issues</a>
-        <a href="https://github.com/SubSneaker/DeXterous/blob/main/SECURITY.md">Security</a>
-        <a href="https://github.com/SubSneaker/DeXterous/blob/main/LICENSE">MIT License</a>
       </nav>
-      <p class="disclaimer">DeXterous is an independent project. It is not affiliated with or endorsed by Samsung. "Samsung", "Galaxy" and "DeX" are trademarks of Samsung Electronics. The phone in the picture is a generic drawing, not a Samsung product. Released under the MIT License. © 2026 SubSneaker.</p>
+      <p class="legal">Free and open source under the <a href="https://github.com/SubSneaker/DeXterous/blob/main/LICENSE">MIT License</a>. © 2026 SubSneaker.</p>
+      <p class="legal">DeXterous is an independent project, not affiliated with or endorsed by Samsung. Samsung, Galaxy and DeX are trademarks of Samsung Electronics.</p>
     </div>
   </footer>
 

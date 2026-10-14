@@ -158,7 +158,7 @@ Common types: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, 
 
 ## Releasing
 
-DeXterous is published to npm as [`@subsneaker/dexterous`](https://www.npmjs.com/package/@subsneaker/dexterous) by the [publish workflow](.github/workflows/publish.yml), which runs when a version tag is pushed. It uses npm trusted publishing, so there's no npm token to keep anywhere, and npm adds a provenance statement to each version. GitHub releases are separate: make them by hand, as before. The workflow doesn't need or touch them.
+DeXterous is published to npm as [`@subsneaker/dexterous`](https://www.npmjs.com/package/@subsneaker/dexterous) by the [publish workflow](.github/workflows/publish.yml), which runs when a version tag is pushed. It uses npm trusted publishing, so there's no npm token to keep anywhere, and npm adds a provenance statement to each version. The same tag also starts the [release workflow](.github/workflows/release.yml), which creates the GitHub release with that version's section of `CHANGELOG.md` as the notes. The two run independently, so one failing doesn't stop the other.
 
 To release version `X.Y.Z`:
 
@@ -167,9 +167,9 @@ To release version `X.Y.Z`:
 3. Commit, and push to `main`. Wait for CI to pass.
 4. Tag that commit and push the tag: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 5. Watch *Actions › Publish to npm*. It checks that the tag matches `package.json`, builds, type-checks, smoke-tests the build and the packed package, and publishes. A version that's already on npm is tested but not published again.
-6. Make the GitHub release for the tag by hand, if you want one.
+6. Watch *Actions › GitHub release*. It checks the tag the same way and creates the release, marked as a prerelease for versions like `1.2.0-rc.1`. It fails if `CHANGELOG.md` has no section for the version, and leaves a release that already exists alone.
 
-A prerelease version such as `1.2.0-rc.1` is published under npm's `next` tag, so `npm install -g @subsneaker/dexterous` and the update check keep offering the last full release. You can also start the workflow by hand from *Actions › Publish to npm › Run workflow*, choosing the tag under *Use workflow from*. It refuses to run from a branch.
+A prerelease version such as `1.2.0-rc.1` is published under npm's `next` tag, so `npm install -g @subsneaker/dexterous` and the update check keep offering the last full release. You can also start either workflow by hand: open it under *Actions* (*Publish to npm* or *GitHub release*), click *Run workflow* and choose the tag under *Use workflow from*. They refuse to run from a branch.
 
 ### The first publish
 

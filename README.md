@@ -299,7 +299,7 @@ npm run dev         # terminal 2: Vite dev server with hot reload
 | `docs/` | The user guide. |
 | `scripts/` | Build helpers and the smoke test. |
 
-CI runs on GitHub Actions (Linux with Node 22 and 24, macOS and Windows with Node 22): type-check, build, and smoke tests of the build and of the packed npm package. Pushing a version tag publishes the package to npm. [CONTRIBUTING.md](CONTRIBUTING.md) has the architecture map, the coding rules and the release steps.
+CI runs on GitHub Actions (Linux with Node 22 and 24, macOS and Windows with Node 22): type-check, build, and smoke tests of the build and of the packed npm package. Pushing a version tag publishes the package to npm and creates the GitHub release. [CONTRIBUTING.md](CONTRIBUTING.md) has the architecture map, the coding rules and the release steps.
 
 ## Security
 

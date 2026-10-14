@@ -8,7 +8,8 @@
 //  - Caps the pixel ratio, pauses when offscreen or in a background tab.
 //  - Drag, click a device, or use the arrow buttons to turn the ring.
 //  - With prefers-reduced-motion it renders one still frame and never orbits on its own.
-// No element styles are set from JS. The canvas is sized by CSS.
+// No element styles are set from JS. The canvas is sized by CSS, and the scene's colours
+// (backdrop, floor, track, shadows, light tints) come from --scene-* custom properties in CSS.
 
 const THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js";
 
@@ -166,7 +167,7 @@ function drawDesktopArt(W, H, tone) {
 
   // Browser chrome
   const chromeH = 88;
-  ctx.fillStyle = "#1c2132";
+  ctx.fillStyle = "#2a1a26";
   ctx.fillRect(0, 0, W, chromeH);
   ["#ff6b62", "#ffc247", "#3ed36b"].forEach((col, i) => {
     ctx.fillStyle = col;
@@ -175,11 +176,11 @@ function drawDesktopArt(W, H, tone) {
     ctx.fill();
   });
   // tab
-  ctx.fillStyle = "#2b3249";
+  ctx.fillStyle = "#3d2836";
   ctx.beginPath();
   ctx.roundRect(170, 18, 250, 70, [14, 14, 0, 0]);
   ctx.fill();
-  ctx.fillStyle = "#3d7bff";
+  ctx.fillStyle = "#f0613f";
   rr(ctx, 192, 40, 26, 26, 7);
   ctx.fill();
   ctx.fillStyle = "#e8ecf8";
@@ -187,7 +188,7 @@ function drawDesktopArt(W, H, tone) {
   ctx.textBaseline = "middle";
   ctx.fillText("DeXterous", 230, 54);
   // address bar
-  ctx.fillStyle = "#11141f";
+  ctx.fillStyle = "#1a0f17";
   rr(ctx, 450, 20, Math.min(760, W - 700), 48, 24);
   ctx.fill();
   ctx.fillStyle = "#9aa3bd";
@@ -258,7 +259,7 @@ function drawDesktopArt(W, H, tone) {
   ctx.fill();
 
   // Window: photos
-  windowFrame(ctx, 520, top + 190, 640, 500, "Photos", "#2f6bff");
+  windowFrame(ctx, 520, top + 190, 640, 500, "Photos", "#1f8a86");
   const tiles = [
     ["#ffb457", "#ff6f61"], ["#69d2c2", "#2b8f9e"], ["#8a7cf0", "#4f4bb8"],
     ["#f6d365", "#fda085"], ["#7ed6a0", "#2f9e6a"], ["#ff9db1", "#d9467a"],
@@ -290,7 +291,7 @@ function drawDesktopArt(W, H, tone) {
   });
 
   // Window: music
-  windowFrame(ctx, 1130, top + 90, 400, 250, "Music", "#7c4dd6");
+  windowFrame(ctx, 1130, top + 90, 400, 250, "Music", "#8a3a78");
   const art = ctx.createLinearGradient(1160, top + 170, 1260, top + 270);
   art.addColorStop(0, "#ffc978");
   art.addColorStop(1, "#e6683c");
@@ -306,7 +307,7 @@ function drawDesktopArt(W, H, tone) {
   ctx.fillStyle = "#dde1ee";
   rr(ctx, 1160, top + 288, 340, 8, 4);
   ctx.fill();
-  ctx.fillStyle = "#7c4dd6";
+  ctx.fillStyle = "#8a3a78";
   rr(ctx, 1160, top + 288, 190, 8, 4);
   ctx.fill();
 
@@ -326,7 +327,7 @@ function drawDesktopArt(W, H, tone) {
   ctx.restore();
 
   // Taskbar
-  ctx.fillStyle = "rgba(10,14,32,0.78)";
+  ctx.fillStyle = "rgba(30,14,26,0.78)";
   ctx.fillRect(0, H - tbH, W, tbH);
   ctx.fillStyle = "rgba(255,255,255,0.9)";
   for (let i = 0; i < 9; i++) {
@@ -334,7 +335,7 @@ function drawDesktopArt(W, H, tone) {
     ctx.arc(48 + (i % 3) * 16, H - tbH + 26 + Math.floor(i / 3) * 16, 4.5, 0, Math.PI * 2);
     ctx.fill();
   }
-  const icons = ["#e6683c", "#2f6bff", "#2fb67c", "#7c4dd6", "#f2b233", "#ee5a8a"];
+  const icons = ["#e6683c", "#1f8a86", "#f2b233", "#8a3a78", "#ee5a8a", "#3f7be0"];
   icons.forEach((col, i) => {
     const ix = W / 2 - icons.length * 36 + i * 72;
     drawAppIcon(ctx, ix, H - tbH + 14, 56, col, i % 5);
@@ -476,13 +477,14 @@ function drawKeyboardArt() {
   return c;
 }
 
-function drawGlowArt() {
+// A soft round shadow, white on transparent. The material tints it.
+function drawShadowArt() {
   const c = makeCanvas(256, 256);
   const ctx = c.getContext("2d");
   const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-  g.addColorStop(0, "rgba(255,190,90,0.75)");
-  g.addColorStop(0.45, "rgba(255,190,90,0.22)");
-  g.addColorStop(1, "rgba(255,190,90,0)");
+  g.addColorStop(0, "rgba(255,255,255,0.85)");
+  g.addColorStop(0.5, "rgba(255,255,255,0.35)");
+  g.addColorStop(1, "rgba(255,255,255,0)");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 256, 256);
   return c;
@@ -493,10 +495,10 @@ function drawGlowArt() {
 /* ------------------------------------------------------------------ */
 
 const DEVICES = [
-  { id: "laptop", name: "Mac" },
-  { id: "monitor", name: "Windows PC" },
-  { id: "tablet", name: "iPad" },
-  { id: "ultrawide", name: "Linux PC" },
+  { id: "laptop", name: "a Mac" },
+  { id: "monitor", name: "a Windows PC" },
+  { id: "tablet", name: "a tablet" },
+  { id: "ultrawide", name: "a Linux PC" },
 ];
 
 const FLOOR = -1.55; // y of the ring plane
@@ -504,13 +506,25 @@ const RX = 2.7; // ring half-width
 const RZ = 2.3; // ring half-depth
 const PHONE_Y = 1.85; // phone centre height
 
-function pageBackground() {
-  // Resolve the page background (any CSS color syntax) to 0..1 rgb through a 1px canvas.
-  const probe = makeCanvas(1, 1);
-  const ctx = probe.getContext("2d", { willReadFrequently: true });
-  ctx.fillStyle = getComputedStyle(document.body).backgroundColor || "#f7f4ec";
-  ctx.fillRect(0, 0, 1, 1);
-  const d = ctx.getImageData(0, 0, 1, 1).data;
+// Scene colours live in CSS as custom properties on the stage (--scene-*).
+// Resolve any CSS colour syntax to 0..1 sRGB through a 1px canvas.
+const probe = makeCanvas(1, 1).getContext("2d", { willReadFrequently: true });
+function cssColor(name, fallback) {
+  const value = getComputedStyle(stage).getPropertyValue(name).trim();
+  probe.clearRect(0, 0, 1, 1);
+  probe.fillStyle = fallback;
+  if (value) probe.fillStyle = value;
+  probe.fillRect(0, 0, 1, 1);
+  const d = probe.getImageData(0, 0, 1, 1).data;
+  return [d[0] / 255, d[1] / 255, d[2] / 255];
+}
+function stageBackground() {
+  // The nearest ancestor with a painted background is the hero section.
+  probe.clearRect(0, 0, 1, 1);
+  probe.fillStyle = "#f0613f";
+  probe.fillStyle = getComputedStyle(stage.closest(".hero") || document.body).backgroundColor;
+  probe.fillRect(0, 0, 1, 1);
+  const d = probe.getImageData(0, 0, 1, 1).data;
   return [d[0] / 255, d[1] / 255, d[2] / 255];
 }
 
@@ -527,24 +541,21 @@ async function startHero() {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  // Fog in the page's background color: devices at the back fade into the page.
+  // Fog in the hero's background colour: devices at the back fade into it.
   scene.fog = new THREE.Fog(0xffffff, 10, 19.5);
   const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
-  function syncFog() {
-    const [r, g, b] = pageBackground();
-    scene.fog.color.setRGB(r, g, b, THREE.SRGBColorSpace);
-  }
-  syncFog();
 
   const camera = new THREE.PerspectiveCamera(30, 4 / 3, 0.1, 80);
   camera.position.set(0, 3.0, 11.7);
   camera.lookAt(0, 0.1, 0);
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a96c8, 1.7));
-  const key = new THREE.DirectionalLight(0xfff1dd, 2.3);
+  // Warm studio light: a cream sky, light bouncing up off the coloured floor, a butter rim.
+  const hemi = new THREE.HemisphereLight(0xffffff, 0xffffff, 1.75);
+  scene.add(hemi);
+  const key = new THREE.DirectionalLight(0xfff3e4, 2.2);
   key.position.set(-4, 6, 7);
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0x7da2ff, 1.5);
+  const rim = new THREE.DirectionalLight(0xffffff, 1.6);
   rim.position.set(5, 3, -4);
   scene.add(rim);
 
@@ -599,11 +610,11 @@ async function startHero() {
   }
 
   const mats = {
-    black: new THREE.MeshStandardMaterial({ color: 0x141927, roughness: 0.4, metalness: 0.2 }),
-    graphite: new THREE.MeshStandardMaterial({ color: 0x2a3148, roughness: 0.4, metalness: 0.3 }),
-    silver: new THREE.MeshStandardMaterial({ color: 0xc9cedc, roughness: 0.42, metalness: 0.2 }),
-    steel: new THREE.MeshStandardMaterial({ color: 0x8e96ad, roughness: 0.35, metalness: 0.3 }),
-    bezel: new THREE.MeshStandardMaterial({ color: 0x0b0e18, roughness: 0.5, metalness: 0.1 }),
+    black: new THREE.MeshStandardMaterial({ color: 0x1c1519, roughness: 0.4, metalness: 0.2 }),
+    graphite: new THREE.MeshStandardMaterial({ color: 0x33282f, roughness: 0.4, metalness: 0.3 }),
+    silver: new THREE.MeshStandardMaterial({ color: 0xd8d2d0, roughness: 0.42, metalness: 0.2 }),
+    steel: new THREE.MeshStandardMaterial({ color: 0xa3979a, roughness: 0.35, metalness: 0.3 }),
+    bezel: new THREE.MeshStandardMaterial({ color: 0x120c10, roughness: 0.5, metalness: 0.1 }),
   };
 
   // A display: body slab, black bezel plane, picture. Faces +z, centred on the origin.
@@ -629,10 +640,10 @@ async function startHero() {
   }
 
   const tones = {
-    blue: { top: "#16245e", mid: "#2f4fc4", low: "#6b6fd8", sunX: 0.74, h1: "#3a47a8", h2: "#27337f", h3: "#18215c" },
-    teal: { top: "#0b3a4a", mid: "#14788a", low: "#3fb0a8", sunX: 0.3, h1: "#1a6b7b", h2: "#12505f", h3: "#0b3544" },
-    plum: { top: "#3a1a5e", mid: "#7a3fb0", low: "#d47fa6", sunX: 0.66, h1: "#7a3a9a", h2: "#582a80", h3: "#3a1a5c" },
-    forest: { top: "#0f2c3a", mid: "#1f6a5a", low: "#62b38a", sunX: 0.5, h1: "#2a7a62", h2: "#1d5a4a", h3: "#123d36" },
+    dusk: { top: "#3d1838", mid: "#d9573c", low: "#f5bd5c", sunX: 0.72, h1: "#a8433f", h2: "#74283f", h3: "#3d1534" },
+    sea: { top: "#0d3a44", mid: "#1d7d82", low: "#93d3bf", sunX: 0.3, h1: "#1a6b70", h2: "#12505a", h3: "#0b3540" },
+    peach: { top: "#f6d7b4", mid: "#ef9677", low: "#b75c78", sunX: 0.62, h1: "#c9707a", h2: "#97496a", h3: "#5e2c52" },
+    plum: { top: "#1f1030", mid: "#5d2a68", low: "#d9695a", sunX: 0.5, h1: "#7a3566", h2: "#55234f", h3: "#311634" },
   };
 
   const builders = {
@@ -653,7 +664,7 @@ async function startHero() {
       const hinge = new THREE.Group();
       hinge.position.set(0, 0.08, -0.8);
       hinge.rotation.x = -0.3;
-      const lid = display(2.66, 1.66, 0.12, 0.06, mats.silver, 0.09, drawDesktopArt(1600, 1000, tones.blue));
+      const lid = display(2.66, 1.66, 0.12, 0.06, mats.silver, 0.09, drawDesktopArt(1600, 1000, tones.dusk));
       lid.position.y = 0.95;
       hinge.add(lid);
       const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2.5, 14), mats.steel);
@@ -670,7 +681,7 @@ async function startHero() {
       const neck = box(0.22, 0.85, 0.08, mats.graphite);
       neck.position.set(0, 0.45, -0.1);
       g.add(neck);
-      const d = display(2.7, 1.52, 0.07, 0.09, mats.black, 0.07, drawDesktopArt(1600, 900, tones.teal));
+      const d = display(2.7, 1.52, 0.07, 0.09, mats.black, 0.07, drawDesktopArt(1600, 900, tones.sea));
       d.position.set(0, 1.0 + 0.8, 0);
       d.rotation.x = -0.04;
       g.add(d);
@@ -683,7 +694,7 @@ async function startHero() {
       const neck = box(0.5, 0.6, 0.07, mats.graphite);
       neck.position.set(0, 0.34, -0.12);
       g.add(neck);
-      const d = display(2.4, 1.8, 0.1, 0.05, mats.silver, 0.17, drawDesktopArt(1600, 1200, tones.plum));
+      const d = display(2.4, 1.8, 0.1, 0.05, mats.silver, 0.17, drawDesktopArt(1600, 1200, tones.peach));
       d.position.set(0, 0.62 + 1.0, 0);
       d.rotation.x = -0.12;
       g.add(d);
@@ -696,7 +707,7 @@ async function startHero() {
       const neck = box(0.2, 0.6, 0.08, mats.graphite);
       neck.position.set(0, 0.34, -0.1);
       g.add(neck);
-      const d = display(3.3, 1.4, 0.06, 0.09, mats.black, 0.06, drawDesktopArt(1920, 820, tones.forest));
+      const d = display(3.3, 1.4, 0.06, 0.09, mats.black, 0.06, drawDesktopArt(1920, 820, tones.plum));
       d.position.set(0, 0.62 + 0.76, 0);
       d.rotation.x = -0.04;
       g.add(d);
@@ -717,28 +728,59 @@ async function startHero() {
     ring.add(g);
   });
 
-  // Orbit track and a soft light under the phone
+  // The turntable: a flat disc a shade darker than the backdrop, one thin track on it,
+  // and a soft shadow under every device and under the phone.
+  const floor = new THREE.Mesh(
+    new THREE.CircleGeometry(1, 128),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, depthWrite: false })
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = FLOOR - 0.01;
+  floor.scale.set(RX * 1.36, RZ * 1.36, 1);
+  floor.renderOrder = -2;
+  tilt.add(floor);
   const track = new THREE.Mesh(
-    new THREE.TorusGeometry(RX, 0.011, 8, 160),
-    new THREE.MeshBasicMaterial({ color: 0xf2b233, transparent: true, opacity: 0.55, fog: false })
+    new THREE.TorusGeometry(RX, 0.012, 8, 192),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 })
   );
   track.scale.set(1, RZ / RX, 1);
   track.rotation.x = Math.PI / 2;
   track.position.y = FLOOR;
   tilt.add(track);
-  const glow = new THREE.Mesh(
-    new THREE.PlaneGeometry(1, 1),
-    new THREE.MeshBasicMaterial({ map: textureFrom(drawGlowArt()), transparent: true, depthWrite: false, fog: false })
-  );
-  glow.rotation.x = -Math.PI / 2;
-  glow.position.y = FLOOR + 0.01;
-  glow.scale.set(RX * 1.9, RZ * 1.9, 1);
-  tilt.add(glow);
-  const motes = [0, 1, 2].map(() => {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 10), new THREE.MeshBasicMaterial({ color: 0xffe9b8, toneMapped: false, fog: false }));
-    tilt.add(m);
+
+  const shadowArt = textureFrom(drawShadowArt());
+  const shadowMat = new THREE.MeshBasicMaterial({ map: shadowArt, color: 0x000000, transparent: true, opacity: 0.5, depthWrite: false });
+  function blob(w, d, mat = shadowMat) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
+    m.rotation.x = -Math.PI / 2;
+    m.scale.set(w, d, 1);
+    m.renderOrder = -1;
     return m;
+  }
+  const footprint = { laptop: [3.6, 2.6], monitor: [3.2, 1.3], tablet: [2.9, 1.2], ultrawide: [3.8, 1.2] };
+  ring.children.forEach((g) => {
+    const [w, d] = footprint[DEVICES[g.userData.index].id];
+    const b = blob(w, d);
+    b.position.set(0, 0.006, 0);
+    g.add(b);
   });
+  const phoneShadowMat = shadowMat.clone();
+  const phoneShadow = blob(1.9, 1.0, phoneShadowMat);
+  phoneShadow.position.set(0, FLOOR + 0.004, 0.1);
+  tilt.add(phoneShadow);
+
+  function syncColors() {
+    const set = (color, rgb) => color.setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);
+    set(scene.fog.color, stageBackground());
+    set(floor.material.color, cssColor("--scene-floor", "#d9532f"));
+    set(track.material.color, cssColor("--scene-track", "#fff4e6"));
+    set(shadowMat.color, cssColor("--scene-shadow", "#4a1610"));
+    phoneShadowMat.color.copy(shadowMat.color);
+    set(hemi.color, cssColor("--scene-sky", "#fff6ea"));
+    set(hemi.groundColor, cssColor("--scene-ground", "#f08060"));
+    set(rim.color, cssColor("--scene-rim", "#ffe08a"));
+  }
+  syncColors();
 
   // The phone, floating in the middle
   const PW = 0.78;
@@ -852,11 +894,10 @@ async function startHero() {
     const bob = still ? 0 : Math.sin(t * 0.9);
     phone.position.y = PHONE_Y + bob * 0.06;
     phone.rotation.y = still ? 0 : Math.sin(t * 0.5) * 0.05 + state.cx * 0.14;
-    glow.material.opacity = still ? 0.8 : 0.7 + Math.sin(t * 1.3) * 0.15;
-    motes.forEach((m, i) => {
-      const a = (still ? 0.4 : t * 0.35) + (i * Math.PI * 2) / motes.length;
-      m.position.set(Math.sin(a) * RX, FLOOR + 0.03, Math.cos(a) * RZ);
-    });
+    // The shadow tightens and darkens as the phone dips.
+    const lift = (bob + 1) / 2;
+    phoneShadow.scale.set(1.9 - lift * 0.25, 1.0 - lift * 0.12, 1);
+    phoneShadowMat.opacity = 0.42 - lift * 0.1;
     updateCaption();
   }
 
@@ -976,7 +1017,7 @@ async function startHero() {
     updateLoop();
   });
   motionQuery.addEventListener("change", updateLoop);
-  darkQuery.addEventListener("change", () => { syncFog(); renderOnce(); });
+  darkQuery.addEventListener("change", () => { syncColors(); renderOnce(); });
   new ResizeObserver(resize).observe(stage);
 
   canvas.addEventListener("webglcontextlost", (e) => {
