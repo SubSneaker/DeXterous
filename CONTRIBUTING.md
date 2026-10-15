@@ -105,7 +105,7 @@ All ADB and scrcpy logic runs in the browser, using [Tango](https://github.com/y
 
 | Folder | Contents |
 |---|---|
-| `brand/` | `icon.png`, the 1024 px master of the app icon. The PNG icons in `public/` and `site/` are exported from it. Not part of the npm package. |
+| `brand/` | `icon.png`, the 1024 px master of the app icon, and its source artwork (`dexterous_icon.psd`, `dexterous_icon.png`). The PNG icons in `public/` and `site/` are exported from `icon.png`. Not part of the npm package or the site. |
 | `public/` | Static files copied into the build as they are: the app icons (favicons, the Apple touch icon and the header logo) and the fonts with their licenses. The build adds the scrcpy server, downloaded from GitHub, and its license, copied from `licenses/`. |
 | `licenses/` | The scrcpy server's license, which ships next to the server. |
 | `scripts/` | `fetch-server.mjs` (downloads and verifies the scrcpy server) and `smoke-test.mjs`. |

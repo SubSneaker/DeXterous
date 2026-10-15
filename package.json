@@ -1,6 +1,6 @@
 {
   "name": "@subsneaker/dexterous",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Run Samsung DeX from your Galaxy phone in any web browser.",
   "type": "module",
   "scripts": {

@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-10-15
+
 ### Changed
 
 - Without DeXterous running, as on the hosted copy of the app, the *Through DeXterous* tab is no longer greyed out. It says "Needs DeXterous on your computer", and choosing it shows what DeXterous is, the commands to install and start it with a *Copy* button, and a link to the install steps. It also points Chrome and Edge users to *USB, browser only*. *Start DeX* stays off on that tab, and the checklist's *DeXterous is running* step points to the same steps.
@@ -105,7 +107,8 @@ First release.
 - Typing non-ASCII text goes through the phone's clipboard.
 - Browser-reserved shortcuts (⌘W, ⌘T, ⌘Q, Alt+Tab) only reach DeX in full screen in Chrome or Edge.
 
-[Unreleased]: https://github.com/SubSneaker/DeXterous/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/SubSneaker/DeXterous/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/SubSneaker/DeXterous/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/SubSneaker/DeXterous/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/SubSneaker/DeXterous/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/SubSneaker/DeXterous/compare/v0.1.0...v0.2.0
