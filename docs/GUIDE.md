@@ -114,7 +114,7 @@ The first prints DeXterous's version. The second should list your phone once it'
 1. **Start DeXterous.** Run `dexterous` in a terminal. It prints something like this, then opens the address in your browser:
 
    ```text
-     DeXterous v0.1.0
+     DeXterous v0.2.2
 
      Open DeXterous in your browser:
        http://localhost:8686/
@@ -252,7 +252,7 @@ Ctrl+Alt+S shows the virtual display's resolution and DPI, frames per second, wh
 
 ### Disconnecting
 
-Press Ctrl+Alt+Q, click the disconnect button at the right end of the dock, or close the tab. Your open apps move back to the phone, like unplugging a DeX monitor (unless you turned off *Move open apps to the phone on disconnect*). Stopping DeXterous in the terminal (Ctrl+C) also ends the session. When the session ends, the phone's normal screen timeout applies again.
+Press Ctrl+Alt+Q, click the disconnect button at the right end of the dock (or *Disconnect* on the lock screen), or close the tab. Your open apps move back to the phone, like unplugging a DeX monitor (unless you turned off *Move open apps to the phone on disconnect*). Stopping DeXterous in the terminal (Ctrl+C) also ends the session. When the session ends, the phone's normal screen timeout applies again.
 
 ## Shortcuts and the commands panel
 
@@ -450,7 +450,7 @@ In this mode the browser talks to the phone directly over USB (WebUSB). There's 
 
 The web app is a static site, so any HTTPS host can serve it, even under a sub-path:
 
-- **From the project site:** [subsneaker.github.io/DeXterous/app/](https://subsneaker.github.io/DeXterous/app/) serves a copy built from this repository by its GitHub Actions workflow.
+- **From the project site:** [subsneaker.github.io/DeXterous/app/](https://subsneaker.github.io/DeXterous/app/) serves a copy built from this repository by its GitHub Actions workflow. The *Browser* tab on the [project site](https://subsneaker.github.io/DeXterous/) opens it too. It can only connect with *USB, browser only*. Its *Through DeXterous* tab says "Needs DeXterous on your computer" and shows how to [install DeXterous](#install-dexterous) instead of a phone list.
 - **From source:** `npm run build`, then upload the `dist/` folder.
 - **From an installed copy:** the built app is in DeXterous's package folder, `$(npm root -g)/@subsneaker/dexterous/dist`.
 
@@ -541,7 +541,7 @@ DeXterous looks for a new version about once a day: when it starts, if the last 
 DeXterous 0.3.0 is available (you have 0.2.0). To update, ...
 ```
 
-The connect screen shows it too, in a banner at the top: *DeXterous X.Y.Z is available*, with a *What's new* link. When DeXterous can update itself, the banner has an *Update now* button. Otherwise it shows the command to run, with a *Copy* button. Close the banner with its × to hide it until the next version. The version you're running is at the bottom of the connect screen, next to links to this guide and the project site.
+The connect screen shows it too, in a banner at the top: *DeXterous X.Y.Z is available*, with a *What's new* link. When DeXterous can update itself, the banner has an *Update now* button. Otherwise it shows the command to run, with a *Copy* button. Close the banner with its × to hide it until the next version. The version you're running is at the bottom of the connect screen, next to links to the project site and to DeXterous on GitHub.
 
 The rest of the terminal line says how to update the way you installed it:
 
@@ -588,7 +588,7 @@ The check is off when:
 
 - **The page says a DeX session is open:** disconnect first, in every tab and on every device. DeXterous restarts after an update, which would end the session.
 - **"DeXterous is updating":** an update is installing, so DeXterous doesn't start new sessions, and *Start DeX* is greyed out. Wait for the page to reload with the new version, then start DeX.
-- **"DeXterous can't update itself here":** npm needs administrator rights, or DeXterous wasn't installed with `npm install -g`. Run the command the message shows in a terminal.
+- **"DeXterous can't update itself", or the banner shows a command instead of *Update now*:** npm needs administrator rights, DeXterous wasn't installed with `npm install -g`, or the page is open on another device (only the computer running DeXterous can install updates). Run the command it shows in a terminal.
 - **The update failed:** the terminal running DeXterous shows the end of npm's error message, and `update.log` in the [state directory](#files-and-the-state-directory) has all of it. Or run `npm install -g @subsneaker/dexterous@latest` yourself to see the whole story. If it says "EACCES" or "EPERM", see the `EACCES` tip under [Linux](#linux). Your current version keeps running either way.
 - **"The new version needs a newer Node.js":** install a current Node.js (see [Install DeXterous](#install-dexterous)), then update again.
 - **No update shows up:** DeXterous only checks about once a day. Run `dexterous update --check` to check right away.
@@ -607,7 +607,7 @@ The check is off when:
 - **"That pairing code didn't work":** check the 6-digit code and the pairing address in the pairing window. Codes only work while that window is open on the phone. If it closed, tap *Pair device with pairing code* again and enter the new code and address.
 - **"Couldn't reach" a Wi‑Fi phone:** check the address and port on the phone's *Wireless debugging* screen (the port changes when Wireless debugging is turned off and on), and that both devices are on the same Wi‑Fi.
 - **"The phone hasn't accepted this connection":** pair it first, under *First time pairing this phone?*.
-- **Browser-only mode says adb is using the phone:** only one program can use the phone's USB connection at a time, and where DeXterous runs, its adb server usually has it. Close the programs that use adb, or click *Use Through DeXterous* to start DeX through DeXterous instead (it works over USB too). Running `adb kill-server` also works, but it stops scrcpy and other adb tools, and DeXterous's own mode needs adb.
+- **Browser-only mode says adb is using the phone:** only one program can use the phone's USB connection at a time, and where DeXterous runs, its adb server usually has it. Close the programs that use adb, or click *Use Through DeXterous* (shown when DeXterous is running) to start DeX through DeXterous instead. It works over USB too. Running `adb kill-server` also works, but it stops scrcpy and other adb tools, and DeXterous's own mode needs adb.
 
 ### While using DeX
 

@@ -1,8 +1,10 @@
-# DeXterous
+<p align="center"><img src="brand/icon.png" width="112" height="112" alt=""></p>
 
-**Run Samsung DeX from your Galaxy phone in a browser tab.**
+<h1 align="center">DeXterous</h1>
 
-DeXterous runs Samsung DeX from your Galaxy phone or tablet in a browser tab, on a Mac, a Windows PC or a Linux computer, or on any device on your network. Samsung discontinued its DeX apps for Windows and Mac; DeXterous brings DeX back to your computer without them. It doesn't mirror your phone screen. It gives the phone a second, *virtual* monitor sized to your browser window, and DeX runs on it. You get a full desktop with resizable windows, a taskbar, right-click menus, your keyboard and the phone's audio, and the phone stays usable at the same time. No root, and no app to install on the phone.
+<p align="center"><strong>Run Samsung DeX from your Galaxy phone in a browser tab.</strong></p>
+
+DeXterous works with Galaxy phones and tablets, on a Mac, a Windows PC or a Linux computer, or on any device on your network. Samsung discontinued its DeX apps for Windows and Mac; DeXterous brings DeX back to your computer without them. It doesn't mirror your phone screen. It gives the phone a second, *virtual* monitor sized to your browser window, and DeX runs on it. You get a full desktop with resizable windows, a taskbar, right-click menus, your keyboard and the phone's audio, and the phone stays usable at the same time. No root, and no app to install on the phone.
 
 > DeXterous is an independent project. It is not affiliated with or endorsed by Samsung. "Samsung", "Galaxy" and "DeX" are trademarks of Samsung Electronics.
 
@@ -123,7 +125,7 @@ The panel also lists DeX's own shortcuts: ⊞+/ (all DeX shortcuts), ⊞+← / �
 
 ### Controls dock
 
-Move the mouse to the top middle of the DeX screen and hold it there for a moment, or slide it off the top edge. The dock has Back, Home, Recent apps, show keyboard, mute, lock phone, full screen, the shortcuts panel (?) and disconnect. On a touch screen, tap the ⌄ handle in the top-right corner.
+Move the mouse to the top middle of the DeX screen and hold it there for a moment, or slide it off the top edge. It doesn't open while you drag, so dragging a window to the top still works. The dock has Back, Home, Recent apps, show keyboard, mute, lock phone, full screen, the shortcuts panel (?) and disconnect. On a touch screen, tap the ⌄ handle in the top-right corner.
 
 ### Clipboard
 
@@ -176,7 +178,7 @@ At the top right of the connect screen, choose a *System*, *Light* or *Dark* the
 |---|---|---|---|
 | **Through DeXterous** (default) | `dexterous` | Any modern browser on your computer | Uses the computer's adb server, so the phone can be on USB *or* Wi‑Fi adb. A desktop `scrcpy` can keep running alongside; turn its audio off (`scrcpy --no-audio`) or you'll hear everything twice. |
 | **From other devices on your network** (a tablet, another computer…) | `dexterous --lan` | Any modern browser on your LAN | Serves HTTPS with a self-signed certificate and requires an access token. Open the printed `https://<ip>:8686/#token=…` link and accept the certificate warning once. The computer's firewall must allow incoming connections; on a Mac, *Block all incoming connections* must be off. Some browsers, Safari in particular, may refuse the self-signed certificate for the live connection; if so, use `--cert`/`--key` with a certificate from mkcert or `tailscale cert`. |
-| **USB, browser only** | Open the app, choose *USB, browser only* | Chrome, Edge (WebUSB) | The browser talks to the phone directly over USB, with no relay. The built `dist/` folder can be hosted on any HTTPS static host, even under a sub-path. It's for computers without DeXterous: where DeXterous runs, its adb server holds the phone, so use *Through DeXterous* there. |
+| **USB, browser only** | Open the app, choose *USB, browser only* | Chrome, Edge (WebUSB) | The browser talks to the phone directly over USB, with no relay. The built `dist/` folder can be hosted on any HTTPS static host, even under a sub-path, like the copy at [subsneaker.github.io/DeXterous/app/](https://subsneaker.github.io/DeXterous/app/). This mode is for computers without DeXterous: where DeXterous runs, its adb server holds the phone, so use *Through DeXterous* there. A hosted copy has no relay, so its *Through DeXterous* tab shows how to install DeXterous instead. |
 
 Details for each mode are in the [guide](docs/GUIDE.md).
 
@@ -290,9 +292,11 @@ npm run dev         # terminal 2: Vite dev server with hot reload
 | `bin/` | The `dexterous` command, which starts the relay and restarts it after an update. |
 | `server/` | The relay: HTTP(S) server, WebSocket-to-adb tunnel, access checks, certificates, update checks. |
 | `src/` | The web app: UI controller, scrcpy session, input, transports, settings and styles. |
-| `public/` | Static files copied into the build. The scrcpy server and its license are downloaded here at build time. |
+| `public/` | Static files copied into the build: the app icons and the fonts. The build adds the scrcpy server, downloaded from GitHub, and its license. |
 | `docs/` | The user guide. |
 | `scripts/` | Build helpers and the smoke test. |
+| `site/` | The [project site](https://subsneaker.github.io/DeXterous/), published with a copy of the web app under `/app/`. |
+| `brand/` | The full-size app icon, which the icons in `public/` and `site/` are made from. |
 
 CI runs on GitHub Actions (Linux with Node 22 and 24, macOS and Windows with Node 22): type-check, build, and smoke tests of the build and of the packed npm package. Pushing a version tag publishes the package to npm and creates the GitHub release. [CONTRIBUTING.md](CONTRIBUTING.md) has the architecture map, the coding rules and the release steps.
 

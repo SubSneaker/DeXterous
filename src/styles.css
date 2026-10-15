@@ -326,17 +326,14 @@ svg {
   line-height: 1.4;
 }
 
+/* The app icon (public/icon-*.png, from brand/icon.png). Its orange is brighter than the band,
+   so a soft shadow lifts it off the band rather than a ring around it. */
 .brand-mark {
-  width: 56px;
-  height: 56px;
+  display: block;
+  width: 88px;
+  height: 88px;
   flex: none;
-  stroke-width: 4;
-}
-
-.brand-mark-phone {
-  fill: currentColor;
-  transform-box: fill-box;
-  transform-origin: center;
+  filter: drop-shadow(0 3px 8px oklch(25% 0.1 30 / 0.4));
 }
 
 .band-link {
@@ -1046,6 +1043,83 @@ svg {
   border-radius: var(--radius-medium);
 }
 
+/* ---------- Through DeXterous, without DeXterous running ---------- */
+
+.relay-setup {
+  display: grid;
+  /* minmax(0, …) lets the command box scroll instead of widening the page. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 18px 20px 20px;
+  font-size: 0.925rem;
+  color: var(--text-muted);
+  background: var(--surface-sunken);
+  border-radius: var(--radius-medium);
+}
+
+.relay-setup p {
+  margin: 0;
+}
+
+.relay-setup-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-stretch: 106%;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.relay-setup p code {
+  padding: 0.08em 0.4em;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--text);
+  background: color-mix(in oklch, var(--text) 9%, transparent);
+  border-radius: 6px;
+}
+
+/* Wraps the Copy button under the commands when there's no room beside them. */
+.command-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.command-box .command-lines {
+  flex: 1 1 17rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.command-lines code {
+  display: block;
+  font: inherit;
+}
+
+.command-box .button-secondary {
+  color: var(--text);
+}
+
+.relay-setup .link-arrow {
+  margin-left: 4px;
+  vertical-align: -0.1em;
+}
+
+.relay-setup-alt .link-button,
+.relay-setup-alt em {
+  padding: 0;
+  font-size: inherit;
+  color: var(--text);
+}
+
+.relay-setup-alt em {
+  font-style: normal;
+  font-weight: 700;
+}
+
 /* ---------- Add a phone over Wi-Fi ---------- */
 
 .wifi {
@@ -1355,7 +1429,8 @@ svg {
 }
 
 /* The command, styled like the site's command box. */
-.update-command code {
+.update-command code,
+.command-lines {
   flex: 1;
   min-width: 0;
   padding: 10px 14px;
@@ -1371,7 +1446,8 @@ svg {
   border-radius: var(--radius-small);
 }
 
-.update-command code::before {
+.update-command code::before,
+.command-lines code::before {
   content: "$ ";
   color: var(--prompt);
   user-select: none;
@@ -1708,13 +1784,17 @@ svg {
   }
 
   .brand-mark {
-    width: 44px;
-    height: 44px;
+    width: 64px;
+    height: 64px;
   }
 
   .card {
     padding: 20px;
     border-radius: 20px;
+  }
+
+  .relay-setup {
+    padding: 16px;
   }
 
   .methods,
@@ -1785,7 +1865,7 @@ svg {
   animation: spin 2.4s linear infinite !important;
 }
 
-/* The page rises in, a beat apart; the phone in the logo slides into its screen. This runs when
+/* The page rises in, a beat apart; the icon pops into place. This runs when
    the connect screen first shows (on load, and back from a session), not when the switch flips. */
 :root[data-motion="on"] :is(.prefs, .brand, .card, .checklist, .help, .footer, .update) {
   transition:
@@ -1793,7 +1873,7 @@ svg {
     transform 700ms var(--ease) var(--rise-delay, 0ms);
 }
 
-:root[data-motion="on"] .brand-mark-phone {
+:root[data-motion="on"] .brand-mark {
   transition: transform 800ms var(--ease-spring) 250ms;
 }
 
@@ -1807,8 +1887,8 @@ svg {
     transform: translateY(-8px);
   }
 
-  :root[data-motion="on"] .brand-mark-phone {
-    transform: translateY(9px) scale(0.7);
+  :root[data-motion="on"] .brand-mark {
+    transform: scale(0.7) rotate(-6deg);
   }
 }
 

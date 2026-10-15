@@ -23,7 +23,10 @@
     </script>
     <meta name="description" content="Run Samsung DeX from your Galaxy phone in any web browser." />
     <title>DeXterous</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png" />
+    <link rel="icon" href="/icon-192.png" sizes="192x192" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preload" href="/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/src/styles.css" />
@@ -62,10 +65,7 @@
         </div>
 
         <div class="brand">
-          <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
-            <rect x="4" y="9" width="40" height="26" rx="5" />
-            <rect x="17" y="17" width="14" height="22" rx="3.5" class="brand-mark-phone" />
-          </svg>
+          <img class="brand-mark" src="/icon-112.png" srcset="/icon-112.png 112w, /icon-192.png 192w, /icon-512.png 512w" sizes="(max-width: 480px) 64px, 88px" width="88" height="88" alt="" />
           <div class="brand-text">
             <h1>DeXterous</h1>
             <p class="tagline">Run Samsung DeX from your phone in a browser tab.</p>
@@ -101,7 +101,7 @@
         <div class="methods" id="methods" role="tablist" aria-label="Connection method">
           <button type="button" role="tab" class="method" id="tab-relay" aria-controls="panel-relay" aria-selected="true">
             <span class="method-name">Through DeXterous</span>
-            <span class="method-detail">USB or Wi‑Fi, any browser</span>
+            <span class="method-detail" id="tab-relay-detail">USB or Wi‑Fi, any browser</span>
           </button>
           <button type="button" role="tab" class="method" id="tab-webusb" aria-controls="panel-webusb" aria-selected="false">
             <span class="method-name">USB, browser only</span>
@@ -110,51 +110,73 @@
         </div>
 
         <div class="panel" id="panel-relay" role="tabpanel" aria-labelledby="tab-relay">
-          <div class="panel-head">
-            <span class="field-label" id="relay-label">Your phone</span>
-            <button type="button" class="icon-button" id="relay-refresh" aria-label="Refresh phone list" title="Refresh phone list">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 4v5h-5" /></svg>
-            </button>
-          </div>
-          <div class="phones" id="relay-devices" role="radiogroup" aria-labelledby="relay-label" hidden></div>
-          <p class="phones-empty" id="relay-empty"></p>
-          <p class="hint" id="relay-hint"></p>
+          <div class="relay-connect" id="relay-connect">
+            <div class="panel-head">
+              <span class="field-label" id="relay-label">Your phone</span>
+              <button type="button" class="icon-button" id="relay-refresh" aria-label="Refresh phone list" title="Refresh phone list">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 4v5h-5" /></svg>
+              </button>
+            </div>
+            <div class="phones" id="relay-devices" role="radiogroup" aria-labelledby="relay-label" hidden></div>
+            <p class="phones-empty" id="relay-empty"></p>
+            <p class="hint" id="relay-hint"></p>
 
-          <details class="wifi" id="wifi-add">
-            <summary>Add a phone over Wi‑Fi</summary>
-            <form class="wifi-form" id="wifi-form" novalidate>
-              <p class="wifi-help">
-                Your phone and the computer running DeXterous need to be on the same Wi‑Fi. On the phone, open
-                Settings › Developer options › Wireless debugging and turn it on.
-              </p>
-              <label class="field">
-                <span class="field-label">Phone address</span>
-                <input class="input" id="wifi-address" name="address" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="192.168.1.20:37215" aria-describedby="wifi-address-help" />
-                <span class="field-help" id="wifi-address-help">Shown on the Wireless debugging screen, next to “IP address &amp; port”.</span>
-              </label>
-              <details class="wifi-pair" id="wifi-pair">
-                <summary>First time pairing this phone?</summary>
+            <details class="wifi" id="wifi-add">
+              <summary>Add a phone over Wi‑Fi</summary>
+              <form class="wifi-form" id="wifi-form" novalidate>
                 <p class="wifi-help">
-                  Tap <em>Pair device with pairing code</em> on the phone. It shows a pairing address and a
-                  6-digit code. Enter both, and keep that window open until it works.
+                  Your phone and the computer running DeXterous need to be on the same Wi‑Fi. On the phone, open
+                  Settings › Developer options › Wireless debugging and turn it on.
                 </p>
-                <div class="wifi-pair-fields">
-                  <label class="field">
-                    <span class="field-label">Pairing address</span>
-                    <input class="input" id="wifi-pair-address" name="pairAddress" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="192.168.1.20:41555" />
-                  </label>
-                  <label class="field">
-                    <span class="field-label">Pairing code</span>
-                    <input class="input input-code" id="wifi-pair-code" name="pairCode" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="123456" />
-                  </label>
+                <label class="field">
+                  <span class="field-label">Phone address</span>
+                  <input class="input" id="wifi-address" name="address" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="192.168.1.20:37215" aria-describedby="wifi-address-help" />
+                  <span class="field-help" id="wifi-address-help">Shown on the Wireless debugging screen, next to “IP address &amp; port”.</span>
+                </label>
+                <details class="wifi-pair" id="wifi-pair">
+                  <summary>First time pairing this phone?</summary>
+                  <p class="wifi-help">
+                    Tap <em>Pair device with pairing code</em> on the phone. It shows a pairing address and a
+                    6-digit code. Enter both, and keep that window open until it works.
+                  </p>
+                  <div class="wifi-pair-fields">
+                    <label class="field">
+                      <span class="field-label">Pairing address</span>
+                      <input class="input" id="wifi-pair-address" name="pairAddress" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="192.168.1.20:41555" />
+                    </label>
+                    <label class="field">
+                      <span class="field-label">Pairing code</span>
+                      <input class="input input-code" id="wifi-pair-code" name="pairCode" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="123456" />
+                    </label>
+                  </div>
+                </details>
+                <div class="wifi-actions">
+                  <button type="submit" class="button-secondary" id="wifi-submit">Connect</button>
+                  <p class="form-status" id="wifi-status" role="status" aria-live="polite"></p>
                 </div>
-              </details>
-              <div class="wifi-actions">
-                <button type="submit" class="button-secondary" id="wifi-submit">Connect</button>
-                <p class="form-status" id="wifi-status" role="status" aria-live="polite"></p>
-              </div>
-            </form>
-          </details>
+              </form>
+            </details>
+          </div>
+
+          <!-- Shown when DeXterous isn't running, e.g. on the hosted copy of the app (src/main.ts, showRelaySetup). -->
+          <div class="relay-setup" id="relay-setup" hidden>
+            <h3 class="relay-setup-title">Set up DeXterous first</h3>
+            <p>DeXterous is a small program that runs on your computer. It connects to your phone over USB or Wi‑Fi and works in any browser.</p>
+            <p>You need Node.js 22.18 or newer and Android platform-tools. Then install and start it:</p>
+            <div class="command-box">
+              <pre class="command-lines" id="relay-setup-commands" tabindex="0" aria-label="Commands to install and run DeXterous"><code>npm install -g @subsneaker/dexterous</code><code>dexterous</code></pre>
+              <button type="button" class="button-secondary" id="relay-setup-copy">Copy</button>
+            </div>
+            <p><code>dexterous</code> opens DeXterous in your browser, at <a class="link" href="http://localhost:8686/">http://localhost:8686</a>.</p>
+            <p>
+              <a class="link" href="https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md#install-dexterous" target="_blank" rel="noopener noreferrer">Install steps for macOS, Windows and Linux<svg class="link-arrow" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 11 11 5M6 5h5v5" /></svg></a>
+            </p>
+            <p class="relay-setup-alt">
+              On Chrome or Edge, you can also use
+              <button type="button" class="link-button" id="relay-setup-webusb">USB, browser only</button><em id="relay-setup-webusb-name" hidden>USB, browser only</em>
+              right here, with nothing to install.
+            </p>
+          </div>
         </div>
 
         <div class="panel" id="panel-webusb" role="tabpanel" aria-labelledby="tab-webusb" hidden>

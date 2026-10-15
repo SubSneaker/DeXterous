@@ -5,6 +5,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- Without DeXterous running, as on the hosted copy of the app, the *Through DeXterous* tab is no longer greyed out. It says "Needs DeXterous on your computer", and choosing it shows what DeXterous is, the commands to install and start it with a *Copy* button, and a link to the install steps. It also points Chrome and Edge users to *USB, browser only*. *Start DeX* stays off on that tab, and the checklist's *DeXterous is running* step points to the same steps.
+- The project site's command box has a third tab, *Browser*, with a button that opens the browser-only app, and the *No Node.js?* line under *Get started* links to it as *Open it in your browser*. On narrow screens, *Copy* shrinks to its icon.
+- New app icon: an orange tile with a phone docked to a monitor. It's the browser tab icon, the home screen icon on phones and tablets, and the logo at the top of the app. On the project site, it sits beside the headline, in the footer and on the link preview image, and the top bar shows just the name.
+
 ## [0.2.2] - 2026-10-15
 
 ### Added

@@ -11,7 +11,10 @@
   <script>try{var t=localStorage.getItem("dexterous-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
   <script>(function(){var m=null;try{m=localStorage.getItem("dexterous-motion")}catch(e){}if(m!=="on"&&m!=="off"){m="on";try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)m="off"}catch(e){}}document.documentElement.setAttribute("data-motion",m)})()</script>
   <link rel="canonical" href="https://subsneaker.github.io/DeXterous/">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="favicon-16.png" sizes="16x16" type="image/png">
+  <link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="DeXterous">
@@ -53,10 +56,6 @@
   <header class="site-head" id="top">
     <div class="topbar wrap">
       <a class="logo" href="#top" aria-label="DeXterous, back to top">
-        <svg class="logo-mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-          <rect x="4" y="9" width="40" height="26" rx="5" />
-          <rect x="17" y="17" width="14" height="22" rx="3.5" class="logo-phone" />
-        </svg>
         <span>DeXterous</span>
       </a>
       <div class="topbar-end">
@@ -91,7 +90,10 @@
     <!-- Hero -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="wrap hero-grid">
-        <h1 id="hero-title">DeX for your Galaxy, <span class="nowrap">anytime and anywhere</span></h1>
+        <div class="hero-title">
+          <img class="hero-icon" src="icon-192.png" srcset="icon-192.png 192w, icon-512.png 512w" sizes="(min-width: 960px) 152px, 88px" width="152" height="152" alt="">
+          <h1 id="hero-title">DeX for your Galaxy, <span class="nowrap">anytime and anywhere</span></h1>
+        </div>
         <div class="hero-copy">
           <p class="lede">Plug in your phone, run one command, and DeX opens in your browser.</p>
 
@@ -100,8 +102,9 @@
               <div class="cmd-tabs" role="tablist" aria-label="Ways to run DeXterous">
                 <button class="cmd-tab" role="tab" type="button" id="tab-install" aria-controls="panel-install" aria-selected="true">Install</button>
                 <button class="cmd-tab" role="tab" type="button" id="tab-npx" aria-controls="panel-npx" aria-selected="false" tabindex="-1">Run once</button>
+                <button class="cmd-tab" role="tab" type="button" id="tab-browser" aria-controls="panel-browser" aria-selected="false" tabindex="-1" data-no-copy>Browser</button>
               </div>
-              <button class="copy" type="button" data-copy>
+              <button class="copy" type="button" data-copy aria-label="Copy the command">
                 <svg class="icon icon-copy" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>
                 <svg class="icon icon-check" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>
                 <span class="copy-label">Copy</span>
@@ -113,6 +116,13 @@
             </div>
             <div class="cmd-panel" role="tabpanel" tabindex="0" id="panel-npx" aria-labelledby="tab-npx" data-copy-text="npx @subsneaker/dexterous@latest" hidden>
               <pre><code><span class="p" aria-hidden="true">$ </span>npx @subsneaker/dexterous@latest</code></pre>
+            </div>
+            <div class="cmd-panel cmd-panel-app" role="tabpanel" tabindex="0" id="panel-browser" aria-labelledby="tab-browser" hidden>
+              <p>Works in Chrome or Edge over a USB cable. Nothing to install.</p>
+              <a class="open-app" href="app/">
+                <span>Open in your browser</span>
+                <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg>
+              </a>
             </div>
           </div>
 
@@ -239,7 +249,7 @@
 
         <ul class="also">
           <li>Open it from any device on your network with <code>dexterous --lan</code> (<a href="https://github.com/SubSneaker/DeXterous/blob/main/docs/GUIDE.md#use-it-from-another-device">guide</a>).</li>
-          <li>No Node.js? Try the <a href="app/">browser-only version</a> in Chrome or Edge, over USB.</li>
+          <li>No Node.js? <a href="app/">Open it in your browser</a> instead.</li>
         </ul>
       </div>
     </section>
@@ -377,10 +387,7 @@
   <footer class="footer">
     <div class="wrap footer-inner">
       <a class="logo" href="#top" aria-label="DeXterous, back to top">
-        <svg class="logo-mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-          <rect x="4" y="9" width="40" height="26" rx="5" />
-          <rect x="17" y="17" width="14" height="22" rx="3.5" class="logo-phone" />
-        </svg>
+        <img class="logo-mark" src="favicon-32.png" srcset="favicon-32.png 1x, icon-64.png 2x, icon-112.png 3x" width="30" height="30" alt="">
         <span>DeXterous</span>
       </a>
       <nav class="footer-links" aria-label="Project links">
@@ -404,6 +411,7 @@
       <symbol id="i-sun" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.9" fill="none" stroke="currentColor" stroke-width="1.5"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M8 1.4v1.5M8 13.1v1.5M1.4 8h1.5M13.1 8h1.5M3.3 3.3l1 1M11.7 11.7l1 1M3.3 12.7l1-1M11.7 4.3l1-1"/></symbol>
       <symbol id="i-moon" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" d="M13.6 9.7A5.7 5.7 0 0 1 6.3 2.4a5.7 5.7 0 1 0 7.3 7.3Z"/></symbol>
       <symbol id="i-copy" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" d="M5.5 5.5h7a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Zm-2 6h-1a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v1"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M2.5 8h10.5M8.5 3.5 13 8l-4.5 4.5"/></symbol>
       <symbol id="i-check" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m3 8.5 3.2 3.2L13 4.8"/></symbol>
     </defs>
   </svg>

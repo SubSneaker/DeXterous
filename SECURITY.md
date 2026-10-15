@@ -4,7 +4,7 @@
 
 | Version | Supported |
 |---|---|
-| 0.1.x | Yes |
+| 0.2.x | Yes |
 | Older | No |
 
 Security fixes are released as new patch versions. DeXterous tells you when one is out; update with `dexterous update`, or as the [guide](docs/GUIDE.md#updating) explains for npx and source installs.

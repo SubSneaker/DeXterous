@@ -141,6 +141,7 @@
 
   // ---- Tabs (hero install box and the OS picker) ----
   function setupTabs(root) {
+    var copyButton = root.querySelector("[data-copy]");
     var tabs = Array.prototype.slice.call(root.querySelectorAll('[role="tab"]'));
     if (!tabs.length) return;
 
@@ -152,6 +153,8 @@
         var panel = document.getElementById(t.getAttribute("aria-controls"));
         if (panel) panel.hidden = !on;
       });
+      // A tab marked data-no-copy has nothing to copy, so the Copy button steps aside.
+      if (copyButton) copyButton.hidden = tab.hasAttribute("data-no-copy");
       if (focus) tab.focus();
     }
 
@@ -218,6 +221,7 @@
         if (status) status.textContent = "Copied to clipboard";
       }, function () {
         var keys = /mac/i.test(navigator.platform || navigator.userAgent) ? "\u2318C" : "Ctrl+C";
+        button.setAttribute("data-state", "failed");
         if (label) label.textContent = "Press " + keys;
         liveRegion.textContent = "Copy failed. The command is selected. Press " + keys + ".";
         var code = panel.querySelector("code");

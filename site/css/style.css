@@ -338,16 +338,15 @@ main:focus { outline: none; }
   font-size: 1.1875rem;
   letter-spacing: -0.02em;
 }
+/* The app icon (icon-*.png, made from brand/icon.png). Its orange is brighter than the hero's,
+   so a soft shadow lifts it off the background. */
 .logo-mark {
+  display: block;
   flex: none;
   width: 30px;
   height: 30px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 4;
-  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 3px oklch(25% 0.1 30 / 0.35));
 }
-.logo-mark .logo-phone { fill: currentColor; }
 
 /* ------------------------------------------------------------------ */
 /* Hero                                                               */
@@ -485,6 +484,35 @@ main:focus { outline: none; }
   min-width: 0;
 }
 
+/* The app icon beside the title: above it on narrow screens, as tall as its two lines on wide
+   ones. Its orange is brighter than the hero's, so a soft shadow lifts it off. */
+.hero-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+.hero-icon {
+  display: block;
+  flex: none;
+  width: 88px;
+  height: 88px;
+  filter: drop-shadow(0 4px 12px oklch(25% 0.1 30 / 0.4));
+}
+@media (min-width: 960px) {
+  .hero-title {
+    flex-direction: row;
+    align-items: center;
+    gap: clamp(20px, 2.4vw, 36px);
+  }
+  /* As tall as the title's two lines (1.9 × its font size, at line-height 0.95). */
+  .hero-icon {
+    width: calc(clamp(2.5rem, 0.2rem + 4.5vw, 5rem) * 1.9);
+    height: calc(clamp(2.5rem, 0.2rem + 4.5vw, 5rem) * 1.9);
+  }  /* Beside the icon, the title gets a little smaller so both fit on one row. */
+  .hero .hero-title h1 { font-size: clamp(2.5rem, 0.2rem + 4.5vw, 5rem); }
+}
+
 .hero h1 {
   font-size: clamp(2.625rem, 0.9rem + 5.4vw, 5.75rem);
   font-stretch: 112%;
@@ -527,6 +555,7 @@ main:focus { outline: none; }
   background: transparent;
   color: var(--code-dim);
   font: 600 0.9375rem/1 var(--font-body);
+  white-space: nowrap;
   cursor: pointer;
 }
 .cmd-tab:hover { color: var(--code-fg); }
@@ -565,6 +594,61 @@ main:focus { outline: none; }
   line-height: 1.75;
 }
 .cmd .p { color: var(--prompt); user-select: none; -webkit-user-select: none; }
+.copy[hidden] { display: none; }
+
+/* "In your browser" panel: one line and one button instead of a command */
+.cmd-panel-app {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-md);
+  padding: 16px 20px 20px;
+}
+@media (max-width: 480px) {
+  .cmd-bar { padding: 6px 6px 0; gap: 4px; }
+  .cmd-tab { padding: 0 11px; }
+}
+/* Narrow phones: Copy shrinks to its icon so three tabs and the button fit one row.
+   The label comes back for "Press Ctrl+C" when copying fails. */
+@media (max-width: 420px) {
+  .cmd-bar .copy { padding: 0 12px; }
+  .cmd-bar .copy:not([data-state]) .copy-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+@media (max-width: 340px) {
+  .cmd-tab { padding: 0 8px; font-size: 0.875rem; }
+}
+.cmd-panel-app[hidden] { display: none; }
+.cmd-panel-app p {
+  margin: 0;
+  max-width: 44ch;
+  color: var(--code-dim);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.open-app {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--butter);
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.open-app .icon { width: 16px; height: 16px; transition: transform 0.2s var(--ease); }
+.open-app:hover { background: var(--butter-deep); }
+.open-app:hover .icon { transform: translateX(3px); }
+.open-app:active { transform: scale(0.97); }
 
 .hero-actions {
   display: flex;
@@ -651,7 +735,7 @@ main:focus { outline: none; }
 }
 
 /* Entrance */
-.hero h1,
+.hero-title,
 .hero-copy > * { animation: rise 0.9s var(--ease) both; }
 .hero-copy > :nth-child(1) { animation-delay: 0.08s; }
 .hero-copy > :nth-child(2) { animation-delay: 0.16s; }
@@ -674,7 +758,7 @@ main:focus { outline: none; }
     row-gap: 0;
     padding-bottom: 96px;
   }
-  .hero h1 { grid-area: title; }
+  .hero-title { grid-area: title; }
   .hero-copy { grid-area: copy; align-self: start; padding-top: clamp(32px, 3.5vw, 48px); }
   .hero-stage { grid-area: stage; margin: 0 calc(var(--gutter) * -1) 0 0; }
 }
@@ -1105,6 +1189,7 @@ html:not(.js) [role="tablist"],
 html:not(.js) .copy { display: none; }
 html:not(.js) .cmd-bar { padding: 0; }
 html:not(.js) .cmd-panel + .cmd-panel { border-top: 1px solid var(--code-line); }
+html:not(.js) .cmd-panel-app[hidden] { display: grid; }
 html:not(.js) .os-panel[hidden] { display: grid; }
 html:not(.js) .os-panel { margin-bottom: var(--space-md); }
 .os-name { display: none; }

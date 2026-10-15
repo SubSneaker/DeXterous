@@ -13,8 +13,8 @@ body:
     id: version
     attributes:
       label: DeXterous version
-      description: The output of `dexterous --version`, or the commit you built from.
-      placeholder: "0.1.0"
+      description: The output of `dexterous --version`, or the commit you built from. For the browser-only app on the project site, write `site`.
+      placeholder: "0.2.2"
     validations:
       required: true
 

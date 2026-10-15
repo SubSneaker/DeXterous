@@ -48,7 +48,7 @@ export function buildSteps(facts: RelayFacts | WebUsbFacts): Step[] {
             result: facts.relayRunning && !facts.tokenMissing,
             fix: facts.tokenMissing
               ? "This relay needs an access token. Open the link with #token=… that it printed when it started."
-              : "Run `dexterous` on the computer the phone is plugged into, then open the address it prints.",
+              : "Install DeXterous on the computer your phone is plugged into, and run `dexterous`. The steps are above.",
           },
           {
             label: "DeXterous can talk to adb",

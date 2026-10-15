@@ -38,7 +38,7 @@ import {
   type RelayInfo,
 } from "./lib/transports";
 import type { DeviceChoice, DexSettings, TransportKind } from "./lib/types";
-import { UpdateBanner } from "./lib/update-banner";
+import { copyCommand, UpdateBanner } from "./lib/update-banner";
 import { WirelessForm } from "./lib/wireless-form";
 
 // #region DOM
@@ -61,7 +61,13 @@ const ui = {
   relayEmpty: $("relay-empty"),
   relayRefresh: $<HTMLButtonElement>("relay-refresh"),
   relayHint: $("relay-hint"),
-  wifiAdd: $<HTMLDetailsElement>("wifi-add"),
+  relayTabDetail: $("tab-relay-detail"),
+  relayConnect: $("relay-connect"),
+  relaySetup: $("relay-setup"),
+  relaySetupCommands: $("relay-setup-commands"),
+  relaySetupCopy: $<HTMLButtonElement>("relay-setup-copy"),
+  relaySetupWebUsb: $<HTMLButtonElement>("relay-setup-webusb"),
+  relaySetupWebUsbName: $("relay-setup-webusb-name"),
   webUsbDevices: $("webusb-devices"),
   webUsbEmpty: $("webusb-empty"),
   webUsbPick: $<HTMLButtonElement>("webusb-pick"),
@@ -540,6 +546,25 @@ function renderChecklist() {
 
 // ---- Setup
 
+/**
+ * Without a relay (the hosted copy of the app, or DeXterous isn't running), the Through
+ * DeXterous tab stays selectable and explains how to get DeXterous instead of listing phones.
+ */
+function showRelaySetup(webUsbSupported: boolean) {
+  ui.relayConnect.hidden = true;
+  ui.relaySetup.hidden = false;
+  ui.relayTabDetail.textContent = "Needs DeXterous on your computer";
+  const commands = [...ui.relaySetupCommands.querySelectorAll("code")].map((line) => line.textContent).join("\n");
+  ui.relaySetupCopy.addEventListener("click", () => void copyCommand(ui.relaySetupCopy, commands, ui.relaySetupCommands));
+  // In Chrome and Edge, the browser-only tab is one click away; elsewhere it's only named.
+  ui.relaySetupWebUsb.hidden = !webUsbSupported;
+  ui.relaySetupWebUsbName.hidden = webUsbSupported;
+  ui.relaySetupWebUsb.addEventListener("click", () => {
+    selectMethod("webusb");
+    ui.tabs.webusb.focus();
+  });
+}
+
 function initTabs() {
   for (const kind of ["relay", "webusb"] as const) {
     ui.tabs[kind].addEventListener("click", () => {
@@ -685,11 +710,7 @@ async function initConnectScreen() {
       watchRelayDevices();
     }
   } else {
-    ui.tabs.relay.setAttribute("aria-disabled", "true");
-    ui.relayRefresh.disabled = true;
-    ui.wifiAdd.hidden = true;
-    relayEmptyText = "Relay not running.";
-    renderRelayPhones();
+    showRelaySetup(usb.supported);
     selectMethod(usb.supported ? "webusb" : "relay");
   }
 

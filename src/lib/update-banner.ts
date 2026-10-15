@@ -52,7 +52,6 @@ export class UpdateBanner {
   /** Set after a failed or impossible self-update, so the banner offers the command instead. */
   #forceManual = false;
   #message = "";
-  #copyTimer = 0;
   readonly #onUpdatingChange: () => void;
   #wasUpdating = false;
 
@@ -63,7 +62,7 @@ export class UpdateBanner {
     this.#onUpdatingChange = onUpdatingChange;
     elements.install.addEventListener("click", () => void this.#install());
     elements.dismiss.addEventListener("click", () => this.#dismiss());
-    elements.copy.addEventListener("click", () => void this.#copy());
+    elements.copy.addEventListener("click", () => this.#copy());
   }
 
   /** Call with each fresh `/api/info`. */
@@ -281,28 +280,38 @@ export class UpdateBanner {
     this.#el.root.hidden = true;
   }
 
-  async #copy() {
+  #copy() {
     const command = this.#info?.command;
-    if (!command) {
-      return;
+    if (command) {
+      void copyCommand(this.#el.copy, command, this.#el.commandText);
     }
-    const button = this.#el.copy;
-    let copied = false;
-    try {
-      await navigator.clipboard.writeText(command);
-      copied = true;
-    } catch {
-      // No clipboard access (plain http, or blocked): select the text so Ctrl+C works.
-      const selection = getSelection();
-      const range = document.createRange();
-      range.selectNodeContents(this.#el.commandText);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-    }
-    button.textContent = copied ? "Copied" : "Selected";
-    clearTimeout(this.#copyTimer);
-    this.#copyTimer = window.setTimeout(() => {
-      button.textContent = "Copy";
-    }, 2000);
   }
+}
+
+const copyTimers = new WeakMap<HTMLButtonElement, number>();
+
+/**
+ * Copies a command for the terminal, and says on the button whether it did. Without clipboard
+ * access (plain http, or blocked), it selects `shown` instead, so Ctrl+C works.
+ */
+export async function copyCommand(button: HTMLButtonElement, text: string, shown: HTMLElement) {
+  let copied = false;
+  try {
+    await navigator.clipboard.writeText(text);
+    copied = true;
+  } catch {
+    const selection = getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(shown);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }
+  button.textContent = copied ? "Copied" : "Selected";
+  clearTimeout(copyTimers.get(button));
+  copyTimers.set(
+    button,
+    window.setTimeout(() => {
+      button.textContent = "Copy";
+    }, 2000),
+  );
 }
